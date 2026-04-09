@@ -289,7 +289,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.8</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.9</span>
         </div>
     </footer>
 </div>
@@ -394,7 +394,6 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 🌟 雙表頭設計
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
                 return `
@@ -492,6 +491,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
+                // 🌟 終極鐵腕指令：強制使用標準 LaTeX，禁止純文字與 Unicode 排版
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材來改變數據與變化題型。
@@ -499,14 +499,17 @@ createApp({
 【出題原則】：\n${this.examRules}
 ⚠️【極致洗牌與原創】：絕對禁止一對一照抄原題換數字！請將所有題目打散、洗牌、重新排列。強烈建議將原本的選擇題改編為填充題。
 【輸出格式】：直接以 JSON 回傳。
-⚠️【題型強制規範】：你必須依照【題型配置】生成所有規定的題型（包括選擇、填充、計算），不可漏掉任何一種！
-⚠️【數學公式強制規範 (極重要)】：所有的數字、變數(如 x, y)、方程式(如 4x^2-9y^2=0)、極限(\\lim)、積分(\\int)、多項式、集合(如 A=\\{a,b\\})等，【必須而且只能】用單一個 $ 符號包住。例如：設 $f(x)=x^2+1$。絕對不允許直接輸出沒有 $ 包住的純文字數學式！
-⚠️【禁止重複】：絕對禁止把題目用純文字寫一次，又用 LaTeX 寫一次！
+⚠️【嚴格數學語法 (極重要)】：
+1. 所有的數字、變數(x, y)、座標(P(0,1,0))、向量(\\\\vec{u})、方程式、行列式、矩陣，【必須且只能】使用標準 LaTeX 語法，並用單個 $ 包住！
+2. 絕對禁止使用 Unicode 特殊符號(如 ∣, ⃗, ×) 或純文字來排版數學！
+3. 向量必須寫成 $\\\\vec{u}$，外積必須寫成 $\\\\vec{u} \\\\times \\\\vec{v}$。
+4. 矩陣與行列式必須使用 $\\\\begin{pmatrix}$ 或 $\\\\begin{vmatrix}$，禁止用純文字空格排版！(錯誤示範：∣1 2 3∣)
+5. JSON字串內的反斜線必須「雙重跳脫」，例如 $\\\\\\\\begin{vmatrix}$、$\\\\\\\\vec{u}$。
 {
   "questions": [
-    { "type": "選擇題", "question": "題目敘述(數學請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項", "solution": "詳解過程" },
-    { "type": "填充題", "question": "題目敘述(數學請用 $ 包住)", "answer": "正確答案", "solution": "詳解過程" },
-    { "type": "計算題", "question": "題目敘述(數學請用 $ 包住)", "answer": "正確答案", "solution": "詳解過程" }
+    { "type": "選擇題", "question": "題目敘述(所有數學請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項", "solution": "詳解過程" },
+    { "type": "填充題", "question": "題目敘述(所有數學請用 $ 包住)", "answer": "正確答案", "solution": "詳解過程" },
+    { "type": "計算題", "question": "題目敘述(所有數學請用 $ 包住)", "answer": "正確答案", "solution": "詳解過程" }
   ]
 }`;
 
@@ -528,15 +531,12 @@ createApp({
                     contentsParts.push(...parts);
                 }
 
-                // 🌟 V1.8 終極 JSON 穩定版：啟用 Google 官方的 responseMimeType 保證回傳完美 JSON
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
-                        generationConfig: {
-                            responseMimeType: "application/json"
-                        }
+                        generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
@@ -549,9 +549,8 @@ createApp({
                 try {
                     quizData = JSON.parse(resultText);
                 } catch (e) {
-                    // 保險起見的二次修復
                     let cleanJsonStr = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    cleanJsonStr = cleanJsonStr.replace(/[\x00-\x1F\x7F-\x9F]/g, ""); // 清除隱藏控制字元
+                    cleanJsonStr = cleanJsonStr.replace(/[\x00-\x1F\x7F-\x9F]/g, ""); 
                     try {
                         quizData = JSON.parse(cleanJsonStr);
                     } catch (err) {
