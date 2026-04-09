@@ -264,7 +264,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.3</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.4</span>
         </div>
     </footer>
 </div>
@@ -326,7 +326,7 @@ createApp({
             });
         },
         
-        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML (V1.3 強化防護)
+        // 🌟 破釜沉舟版核心突破：強制淨化 MathML，讓 Word 原生方程式 100% 成功
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -334,12 +334,14 @@ createApp({
             const convertToMathML = (tex) => {
                 try {
                     let cleanTex = tex.replace(/\\\\/g, '\\');
-                    // 全部強制轉為 inline 模式，避免 Word 產生多餘斷行
                     const html = katex.renderToString(cleanTex, { throwOnError: false, output: 'mathml', displayMode: false });
                     let match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
                     if (match) {
                         let mathml = match[0];
+                        // 🔥 終極暴力拆解：強制移除 Word 絕對看不懂的標籤 (semantics, annotation)
                         mathml = mathml.replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '');
+                        mathml = mathml.replace(/<\/?semantics[^>]*>/gi, '');
+                        
                         if (!mathml.includes('xmlns=')) {
                             mathml = mathml.replace('<math', '<math xmlns="http://www.w3.org/1998/Math/MathML"');
                         }
@@ -349,7 +351,6 @@ createApp({
                 } catch (e) { return tex; }
             };
 
-            // 支援所有的 $...$
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => convertToMathML(p1.trim()));
             result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => convertToMathML(p1.trim()));
             
@@ -435,7 +436,6 @@ createApp({
             }
         },
 
-        // 🌟 V1.3 解放換頁的排版引擎：每一題變成獨立的列，讓 Word 自由換頁
         generateTableWithHeader(headerHtml, rowsHtmlArray) {
             let html = `<table style="width: 100%; border-collapse: collapse; border: none;">
                 <thead style="display: table-header-group;">
@@ -467,7 +467,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // ⚠️ 終極指令：洗牌大師 ＋ MathML 絕對守門員
+                // ⚠️ 終極拯救指令：強制補回「填充題」和「計算題」的範例，禁止 AI 裝死
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
@@ -475,10 +475,16 @@ createApp({
 【出題原則】：\n${this.examRules}
 ⚠️【極致洗牌與原創】：絕對禁止一對一照抄原題換數字！請將所有題目打散、洗牌、重新排列。強烈建議將原本的選擇題改編為填充題，或根據相同觀念自行設計全新的類似題。確保考卷具有極高的鑑別度與新鮮感！
 【輸出格式】：直接以 JSON 回傳，格式如下：
-⚠️【數學公式強制規範 (極度重要)】：你輸出的所有數字(如 1, 2)、變數(如 x, y)、方程式(如 4x^2-9y^2=0)、極限(如 \\lim_{n\\to\\infty})、積分符號等，【必須而且只能】用單一個 $ 符號包住。例如：設 $f(x)=x^2+1$。絕對不允許直接輸出純文字的數學式！
-⚠️【禁止重複輸出】：絕不允許把題目用純文字寫一次，又用 LaTeX 寫一次！(錯誤示範：設集合 A={1,2} $A=\\{1,2\\}$)
-⚠️【跳脫字元】：JSON 內的數學反斜線必須「雙重跳脫」，例如寫 $\\\\vec{v}$ 或 $\\\\frac{1}{2}$，絕對不能只寫單個反斜線！
-{ "questions": [ { "type": "選擇題", "question": "題目敘述", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
+⚠️【題型強制規範】：你必須依照【題型配置】生成所有規定的題型（包括選擇、填充、計算），不可以漏掉任何一種！
+⚠️【數學公式強制規範】：所有的數字、變數(x, y)、方程式(4x^2-9y^2=0)、極限(\\lim)、積分(\\int)、多項式等，【全部且唯一】只能用單個 $ 包住。例如：設 $f(x)=x^2+1$。絕對不允許直接輸出純文字的數學式！
+⚠️【跳脫字元】：JSON 內的數學反斜線必須「雙重跳脫」，例如寫 $\\\\lim$ 或 $\\\\int$，絕對不能只寫單個反斜線！
+{
+  "questions": [
+    { "type": "選擇題", "question": "題目敘述(所有數學請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" },
+    { "type": "填充題", "question": "題目敘述(所有數學請用 $ 包住)", "answer": "正確答案數值", "solution": "詳解過程" },
+    { "type": "計算題", "question": "題目敘述(所有數學請用 $ 包住)", "answer": "正確答案數值", "solution": "詳解過程" }
+  ]
+}`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -578,9 +584,8 @@ createApp({
                     docHTML += this.generateTableWithHeader(this.getHeaderHTML(false), qHtmlArray);
 
                 // ==========================================
-                // 2. 輸出作答網格區 (強制換頁，有名表頭，跨頁重複)
+                // 2. 輸出作答網格區 (強制換頁，有名表頭)
                 // ==========================================
-                    // 🌟 強制換頁指令，保證作答區必定在第二頁
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
                     let aHtmlArray = [];
@@ -674,7 +679,7 @@ createApp({
                 const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！作答區已換頁，數學公式皆可原生編輯，請至「下載」資料夾查看。";
+                statusDiv.innerText = "✅ 考卷生成成功！作答區已換頁，填充題已補回，公式皆可原生編輯！";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
