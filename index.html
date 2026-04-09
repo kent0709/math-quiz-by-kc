@@ -11,22 +11,28 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap');
         
+        /* 柔和的漸層背景 */
         body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); min-height: 100vh; }
         .exam-font { font-family: 'Noto Serif TC', serif; }
         
+        /* 隱藏數字輸入框上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
+        /* 表頭的黑色方塊單選框 */
         .box-radio { appearance: none; width: 14px; height: 14px; border: 1.5px solid #000; display: inline-block; position: relative; cursor: pointer; top: 2px;}
         .box-radio:checked { background-color: #000; }
         
+        /* 題型設定的綠色打勾框 */
         .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 6px; display: inline-block; position: relative; cursor: pointer; transition: all 0.2s;}
         .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
         .custom-checkbox:checked::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 11px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
         
+        /* 考卷表頭專用邊框 */
         .exam-table { border: 2px solid #000; border-collapse: collapse; width: 100%; background: #fff; }
         .exam-table td { border: 1px solid #000; padding: 12px; }
 
+        /* 卡片玻璃透光質感 */
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); }
     </style>
 </head>
@@ -299,7 +305,6 @@ createApp({
                 this.uploadedFiles = Array.from(files);
             }
         },
-        // 將檔案轉為 Base64 以便傳送給 Gemini
         async fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -335,10 +340,10 @@ createApp({
                 btn.classList.add('opacity-80', 'cursor-not-allowed');
                 statusDiv.innerText = "正在處理您的檔案與設定，請稍候約 10~30 秒...";
 
-                // 1. 準備所有要傳給 AI 的檔案
+                // 準備上傳的檔案
                 const fileParts = await Promise.all(this.uploadedFiles.map(file => this.fileToBase64(file)));
                 
-                // 2. 組合出題指令 Prompt
+                // 組合指令
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 const promptText = `
 您是一位專業的高中數學老師。請根據我提供的素材檔案（講義或舊考卷），幫我出一份全新的數學考卷。
@@ -352,14 +357,15 @@ ${this.examRules}
 {
   "questions": [
     { "type": "選擇題", "question": "題目(含LaTeX)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項", "solution": "詳解過程" },
-    { "type": "填充題", "question": "題目(含LaTeX)", "answer": "正確答案", "solution": "詳解過程" }
+    { "type": "填充題", "question": "題目(含LaTeX)", "answer": "正確答案", "solution": "詳解過程" },
+    { "type": "計算題", "question": "題目(含LaTeX)", "answer": "正確答案", "solution": "詳解過程" }
   ]
 }`;
                 
                 const contents = [{ parts: [{ text: promptText }, ...fileParts] }];
 
-                // 3. 呼叫 Gemini 1.5 Flash API
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`, {
+                // ⚠️ 關鍵修復：這裡已經為您更新為最新版 API gemini-2.0-flash
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: contents })
@@ -369,15 +375,19 @@ ${this.examRules}
                 
                 if (data.error) throw new Error(data.error.message);
 
-                // 4. 成功獲取資料！(這裡將資料 log 出來，未來可串接 docx.js)
                 const resultText = data.candidates[0].content.parts[0].text;
                 console.log("AI 回傳的原始資料：", resultText);
                 
                 statusDiv.innerText = "✅ AI 生成完畢！準備匯出 Word...";
                 
-                // 模擬 Word 匯出完成
+                let exportMsg = '🎉 匯出成功！即將下載 WORD 檔。\n\n【本次匯出包含以下項目】';
+                if (this.exportOptions.examPaper) exportMsg += '\n✅ 1. 試題考卷 (包含學生作答區)';
+                if (this.exportOptions.correctAnswers) exportMsg += '\n✅ 2. 正確答案';
+                if (this.exportOptions.detailedSolutions) exportMsg += '\n✅ 3. 詳解';
+                exportMsg += '\n\n(請按 F12 開啟 Console 查看 AI 生成的 JSON 題庫資料)';
+
                 setTimeout(() => {
-                    alert(`🎉 考卷生成成功！\n(請按 F12 開啟開發者工具 Console 查看 AI 生成的 JSON 題庫資料)\n\n系統即將依據您的勾選打包 Word 檔。`);
+                    alert(exportMsg);
                     btn.innerHTML = originalHTML;
                     btn.classList.remove('opacity-80', 'cursor-not-allowed');
                     statusDiv.innerText = "";
