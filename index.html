@@ -251,7 +251,7 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含雙表頭與作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含雙面表頭與作答區)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
@@ -332,35 +332,25 @@ createApp({
             });
         },
         
-        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML！
+        // 將 LaTeX 轉換為 Word 原生可編輯的 MathML
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
             
-            // 將 LaTeX 餵給 KaTeX 引擎，並指定只輸出 mathml 格式
             const convertToMathML = (tex, displayMode) => {
                 try {
-                    const html = katex.renderToString(tex, { 
-                        throwOnError: false, 
-                        output: 'mathml', 
-                        displayMode: displayMode 
-                    });
-                    // 只提取 <math ...> ... </math> 的部分，Word 就能原生識別為公式物件！
+                    const html = katex.renderToString(tex, { throwOnError: false, output: 'mathml', displayMode: displayMode });
                     const match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
                     return match ? match[0] : tex;
                 } catch (e) { return tex; }
             };
 
-            // 處理獨立行公式 $$...$$
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 return '<div style="text-align:center;">' + convertToMathML(p1.trim(), true) + '</div>';
             });
-            
-            // 處理行內公式 $...$
             result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 return convertToMathML(p1.trim(), false);
             });
-            
             return result;
         },
 
@@ -376,7 +366,6 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 動態生成表頭 HTML：第一頁無姓名，作答區有姓名與成績
         getHeaderHTML(hasNameAndScore) {
             let html = `<table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                 <tr>
@@ -421,16 +410,18 @@ createApp({
                 btn.classList.add('opacity-80', 'cursor-not-allowed');
                 statusDiv.innerText = "正在處理檔案，並為您生成實體 Word 檔案中，請稍候...";
 
-                // 準備分區素材給 AI
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
+                
+                // ⚠️防呆升級：強力要求 LLM 雙重跳脫反斜線
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
 【題型配置】：${activeTypes}
 【出題原則】：\n${this.examRules}
-【輸出格式】：直接以 JSON 回傳，格式如下(請確保數學公式與符號務必用 $ 包住，例如 $x^2+y^2=1$)：
-{ "questions": [ { "type": "選擇題", "question": "題目敘述", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
+【輸出格式】：直接以 JSON 回傳，格式如下：
+⚠️重要警告：JSON內的數學公式反斜線必須「雙重跳脫」，例如寫 $\\\\vec{v}$ 或 $\\\\frac{1}{2}$，絕對不能只寫單個反斜線！
+{ "questions": [ { "type": "選擇題", "question": "題目敘述(數學公式請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -463,12 +454,22 @@ createApp({
                 
                 let cleanJsonStr = "";
                 const jsonMatch = resultText.match(/\{[\s\S]*\}/);
-                if(jsonMatch) cleanJsonStr = jsonMatch[0];
-                else throw new Error("AI 回傳的格式不正確。");
+                if(jsonMatch) {
+                    cleanJsonStr = jsonMatch[0];
+                } else {
+                    throw new Error("AI 回傳的格式不正確。");
+                }
                 
-                let quizData = JSON.parse(cleanJsonStr);
+                let quizData;
+                try {
+                    quizData = JSON.parse(cleanJsonStr);
+                } catch (parseError) {
+                    console.warn("啟動 JSON 防呆修復機制...");
+                    // 若 AI 忘記雙重跳脫，在此處強制補上反斜線拯救它
+                    let rescuedJsonStr = cleanJsonStr.replace(/\\/g, "\\\\").replace(/\\\\"/g, '\\"').replace(/\\\\n/g, '\\n');
+                    quizData = JSON.parse(rescuedJsonStr);
+                }
                 
-                // 為了讓 Word 完美辨識 MathML，我們在 html 標籤補上 xmlns:m 宣告
                 let docHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns:m='http://schemas.microsoft.com/office/2004/12/omml' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head><meta charset='utf-8'><title>數學考卷</title>
@@ -505,7 +506,6 @@ createApp({
                             sectionIdx++;
                             
                             groupedQs[tName].forEach((q, idx) => {
-                                // 將題目中的 LaTeX 轉為可編輯的 MathML
                                 docHTML += `<p style="font-size: 14pt; margin-top: 8px; line-height: 1.5;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
                                 if (q.options && q.options.length > 0) {
                                     const formattedOptions = q.options.map(opt => this.formatMathToWord(opt)).join('　　');
@@ -517,7 +517,7 @@ createApp({
                         }
                     });
 
-                    // --- 2. 輸出作答網格區 (換頁：有名表頭 + 極致緊湊的作答線) ---
+                    // --- 2. 輸出作答網格區 (換頁：有名表頭) ---
                     docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
                     docHTML += this.getHeaderHTML(true);
                     docHTML += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:10px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
@@ -551,12 +551,11 @@ createApp({
                     }
                 }
 
-                // --- 3. 輸出教師版解答與詳解 (含對答案網格) ---
+                // --- 3. 輸出教師版解答與詳解 ---
                 if (this.exportOptions.correctAnswers) {
                     docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
                     docHTML += `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
                     
-                    // 神器：直接把正確答案填入網格，並轉為 MathML
                     if (groupedQs['選擇題'].length > 0) {
                         docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; color: blue;">【選擇題 正確解答】</p>`;
                         docHTML += `<table class="ans-table" style="border: 2px solid blue;">`;
@@ -585,7 +584,6 @@ createApp({
                         docHTML += `</table>`;
                     }
 
-                    // 文字詳解
                     docHTML += `<br><hr><p style="font-size: 14pt; font-weight: bold; margin-top: 15px;">【各題詳解過程】</p>`;
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         if (groupedQs[tName].length > 0) {
@@ -613,7 +611,7 @@ createApp({
 
             } catch (error) {
                 console.error(error);
-                alert("生成失敗，請確認 API Key 是否正確，或檔案是否不支援。\n錯誤訊息：" + error.message);
+                alert("生成失敗，請確認檔案是否過大，或嘗試重新上傳。\n錯誤細節：" + error.message);
                 btn.innerHTML = originalHTML;
                 btn.classList.remove('opacity-80', 'cursor-not-allowed');
                 statusDiv.innerText = "❌ 發生錯誤，請重試。";
