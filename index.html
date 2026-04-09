@@ -146,7 +146,7 @@
                     <div v-if="textbookFiles.length === 0" class="text-center group-hover:scale-105 transition">
                         <i class="fas fa-book text-4xl text-blue-500 mb-3"></i>
                         <h3 class="text-blue-800 font-bold">上傳課本 / 習作</h3>
-                        <p class="text-xs text-blue-600 mt-1">(AI 將抽取此區 70% 作為標準題)</p>
+                        <p class="text-xs text-blue-600 mt-1">建立標準題型基礎</p>
                     </div>
                     <div v-else class="text-center w-full">
                         <i class="fas fa-check-circle text-3xl text-blue-600 mb-2"></i>
@@ -160,7 +160,7 @@
                     <div v-if="examFiles.length === 0" class="text-center group-hover:scale-105 transition">
                         <i class="fas fa-file-signature text-4xl text-green-500 mb-3"></i>
                         <h3 class="text-green-800 font-bold">上傳補充考卷 / 題庫</h3>
-                        <p class="text-xs text-green-600 mt-1">(AI 將抽取此區 30% 作為變化題)</p>
+                        <p class="text-xs text-green-600 mt-1">供 AI 修改數據與變化題型</p>
                     </div>
                     <div v-else class="text-center w-full">
                         <i class="fas fa-check-circle text-3xl text-green-600 mb-2"></i>
@@ -248,12 +248,12 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含雙表頭與作答區)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
                     <input type="checkbox" v-model="exportOptions.correctAnswers" class="custom-checkbox mr-3">
-                    <i class="fas fa-check-circle mr-2 text-blue-500 text-lg"></i> 2. 正確答案與詳解
+                    <i class="fas fa-check-circle mr-2 text-blue-500 text-lg"></i> 2. 教師版解答與詳解 (含對答案網格)
                 </label>
             </div>
 
@@ -289,12 +289,10 @@ createApp({
                 useCard: false,
                 specialNeeds: false
             },
-            // 分區上傳的陣列
             textbookFiles: [],
             examFiles: [],
             scopeFiles: [],
             targetUnit: '',
-            // 完美更新 10 點原則
             examRules: `1. 至少 70%為課本、習作為出題標準
 2. 數據可改
 3. 選擇題至少佔 40 分
@@ -318,7 +316,6 @@ createApp({
     },
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
-        
         handleTextbookUpload(event) { if (event.target.files.length > 0) this.textbookFiles = Array.from(event.target.files); },
         handleExamUpload(event) { if (event.target.files.length > 0) this.examFiles = Array.from(event.target.files); },
         handleScopeUpload(event) { if (event.target.files.length > 0) this.scopeFiles = Array.from(event.target.files); },
@@ -354,28 +351,31 @@ createApp({
 
         // 動態生成表頭 HTML：第一頁無姓名，作答區有姓名
         getHeaderHTML(hasNameAndScore) {
-            let html = `<table class="header-table">
+            let html = `<table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 20pt; color: red; font-weight: bold; letter-spacing: 2px; padding: 15px;">
+                    <td style="text-align: center; font-size: 20pt; color: red; font-weight: bold; letter-spacing: 2px; padding: 15px;">
                         ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                     </td>
-                    <td rowspan="2" style="width: 25%; line-height: 1.5; font-size: 12pt;">
+                    <td style="width: 25%; line-height: 1.5; font-size: 12pt;" rowspan="2">
                         科目：<b>數學</b><br>
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
-                    ${hasNameAndScore ? '<td rowspan="2" style="width: 10%; text-align: center; vertical-align: middle; font-size: 14pt;">(總　分)</td>' : ''}
+                    ${hasNameAndScore ? '<td rowspan="3" style="width: 10%; text-align: center; vertical-align: middle; font-size: 14pt;">(總　分)</td>' : ''}
                 </tr>
                 <tr>
-                    <td style="font-size: 12pt;">科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科</td>
-                    <td style="font-size: 12pt;">${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三</td>
+                    <td style="font-size: 12pt; padding: 5px;">
+                        科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
+                        　｜　
+                        ${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
+                    </td>
                 </tr>`;
             
             if (hasNameAndScore) {
-                html += `<tr><td colspan="4" style="font-size: 14pt; padding: 10px;">　班級：　　　　　　　學號：　　　　　　　姓名：</td></tr>`;
+                html += `<tr><td colspan="2" style="font-size: 14pt; padding: 10px;">　班級：　　　　　　　學號：　　　　　　　姓名：</td></tr>`;
             }
-            html += `</table><br>`;
+            html += `</table>`;
             return html;
         },
 
@@ -399,7 +399,7 @@ createApp({
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
-【出題比例】：必須嚴格遵守「課本/習作內容佔 70%」、「補充考卷佔 30%」。
+【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
 【題型配置】：${activeTypes}
 【出題原則】：\n${this.examRules}
 【輸出格式】：直接以 JSON 回傳，格式如下：
@@ -413,12 +413,12 @@ createApp({
                     contentsParts.push(...parts);
                 }
                 if(this.textbookFiles.length > 0) {
-                    contentsParts.push({ text: "--- 以下為【課本/習作】素材 (佔出題70%) ---" });
+                    contentsParts.push({ text: "--- 以下為【課本/習作】素材 ---" });
                     const parts = await Promise.all(this.textbookFiles.map(f => this.fileToBase64(f)));
                     contentsParts.push(...parts);
                 }
                 if(this.examFiles.length > 0) {
-                    contentsParts.push({ text: "--- 以下為【舊考卷/補充】素材 (佔出題30%) ---" });
+                    contentsParts.push({ text: "--- 以下為【舊考卷/補充】素材 ---" });
                     const parts = await Promise.all(this.examFiles.map(f => this.fileToBase64(f)));
                     contentsParts.push(...parts);
                 }
@@ -463,6 +463,7 @@ createApp({
                 // --- 1. 輸出試題區 (首頁：無名表頭) ---
                 if (this.exportOptions.examPaper) {
                     docHTML += this.getHeaderHTML(false);
+                    docHTML += `<br>`;
 
                     let sectionNum = ['一', '二', '三'];
                     let sectionIdx = 0;
@@ -490,7 +491,7 @@ createApp({
                     // --- 2. 輸出作答網格區 (換頁：有名表頭 + 極致緊湊的作答線) ---
                     docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
                     docHTML += this.getHeaderHTML(true);
-                    docHTML += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin:0; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
+                    docHTML += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:10px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
                     
                     if (groupedQs['選擇題'].length > 0) {
                         docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
