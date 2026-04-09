@@ -198,7 +198,7 @@
                         
                         <div class="flex items-center gap-3">
                             <span class="text-sm font-bold text-gray-500">每題配分</span>
-                            <input type="text" placeholder="自動" disabled class="w-20 bg-gray-100 border border-gray-200 rounded-lg p-2.5 text-center text-gray-400 placeholder-gray-400 cursor-not-allowed">
+                            <input type="number" v-model="type.score" class="w-20 border border-gray-300 rounded-lg p-2.5 text-center focus:ring-2 focus:ring-teal-500 outline-none font-bold text-gray-700 bg-white">
                         </div>
 
                         <div class="flex items-center gap-3 flex-grow">
@@ -226,7 +226,7 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (含作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (含分隔線與作答網格)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
@@ -283,10 +283,11 @@ createApp({
 7. 用詞明確：避免否定式敘述或模糊條件。
 8. 無歧視性：題目內容不應對特定性別、種族、城鄉背景有偏見。
 9. 排版清晰：題幹與選項在同一頁，符號正確。`,
+            // 新增 score 屬性，並預設為 6, 5, 10
             questionTypes: [
-                { name: '選擇題', enabled: true, count: 5, difficulty: '中階 (Procedural)' },
-                { name: '填充題', enabled: true, count: 5, difficulty: '中階 (Procedural)' },
-                { name: '計算題', enabled: false, count: 0, difficulty: '中階 (Procedural)' }
+                { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
+                { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
+                { name: '計算題', enabled: false, count: 0, score: 10, difficulty: '中階 (Procedural)' }
             ],
             exportOptions: {
                 examPaper: true,
@@ -322,9 +323,8 @@ createApp({
             });
         },
         
-        // 核心更新：將結果轉換成實體檔案並觸發下載
         downloadDocFile(htmlContent, filename) {
-            // 加入 BOM 確保中文在 Word 裡面不會變成亂碼
+            // 加入 BOM (\ufeff) 確保中文在 Word 裡面絕對不會亂碼
             const blob = new Blob(['\ufeff', htmlContent], {
                 type: 'application/msword'
             });
@@ -353,14 +353,12 @@ createApp({
             const originalHTML = btn.innerHTML;
             
             try {
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-3 text-3xl"></i> AI 正在努力解析並生成考卷...';
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-3 text-3xl"></i> AI 正在讀取並生成題目...';
                 btn.classList.add('opacity-80', 'cursor-not-allowed');
                 statusDiv.innerText = "正在處理檔案，並為您生成實體 Word 檔案中，請稍候...";
 
-                // 準備上傳的檔案
                 const fileParts = await Promise.all(this.uploadedFiles.map(file => this.fileToBase64(file)));
                 
-                // 組合指令
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 const promptText = `
 您是一位專業的高中數學老師。請根據我提供的素材檔案（講義或舊考卷），幫我出一份全新的數學考卷。
@@ -392,72 +390,155 @@ ${this.examRules}
 
                 const resultText = data.candidates[0].content.parts[0].text;
                 
-                // 開始把 AI 吐出來的 JSON 組裝成 Word 可以讀取的 HTML 格式
+                // ==============================================================
+                // 📝 開始組裝高質感的 Word 考卷 HTML (神還原段考格式)
+                // ==============================================================
                 let docHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head><meta charset='utf-8'><title>數學考卷</title></head>
-                <body style="font-family: '標楷體', 'Times New Roman', serif;">
-                    <h1 style="text-align: center;">${this.exam.school} ${this.exam.year}學年度第${this.exam.semester}學期 ${this.exam.name}</h1>
-                    <h3 style="text-align: center;">科目：數學 ｜ 適用對象：${this.exam.grade}${this.exam.dept}</h3>
-                    <hr>
+                <head><meta charset='utf-8'><title>數學考卷</title>
+                <style>
+                    body { font-family: '標楷體', 'Times New Roman', serif; }
+                    .header-table { border-collapse: collapse; width: 100%; border: 2px solid black; }
+                    .header-table td { border: 1px solid black; padding: 8px; font-size: 14pt; }
+                    .ans-table { border-collapse: collapse; width: 100%; border: 2px solid black; text-align: center; margin-top: 10px; }
+                    .ans-table td { border: 1px solid black; padding: 15px; font-size: 14pt; height: 50px; }
+                </style>
+                </head>
+                <body>
+                `;
+
+                // --- 考卷表頭設計 (對齊 111.png 圖片格式) ---
+                docHTML += `
+                <table class="header-table">
+                    <tr>
+                        <td colspan="2" style="text-align: center; font-size: 24pt; color: red; font-weight: bold; letter-spacing: 2px; padding: 20px;">
+                            ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
+                        </td>
+                        <td rowspan="2" style="width: 25%; line-height: 1.5; font-size: 12pt;">
+                            科目：<b>數學</b><br>
+                            ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
+                            ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
+                            ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
+                        </td>
+                        <td rowspan="2" style="width: 10%; text-align: center; vertical-align: middle;">(總　分)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 12pt;">科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科</td>
+                        <td style="font-size: 12pt;">${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="font-size: 14pt; padding: 15px;">班級：　　　　　　　學號：　　　　　　　姓名：</td>
+                    </tr>
+                </table>
+                <br>
                 `;
 
                 try {
-                    // 清理掉 Markdown 的 json 標籤
                     let cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
                     let quizData = JSON.parse(cleanJson);
                     
-                    if (quizData.questions) {
-                        // 1. 生成試題區 (若勾選)
-                        if (this.exportOptions.examPaper) {
-                            quizData.questions.forEach((q, idx) => {
-                                docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px;">${idx + 1}. ${q.question}</p>`;
-                                if (q.options && q.options.length > 0) {
-                                    docHTML += `<p style="font-size: 12pt;">${q.options.join('　　')}</p>`;
-                                }
-                                // 加入學生作答的空白區塊
-                                if (q.type === '計算題') {
-                                    docHTML += `<br><br><br><br><br><br>`;
-                                } else {
-                                    docHTML += `<br>`;
-                                }
-                            });
+                    const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
+                    if(quizData.questions) {
+                        quizData.questions.forEach(q => { if(groupedQs[q.type]) groupedQs[q.type].push(q); });
+                    }
+
+                    const getScore = (typeName) => {
+                        const t = this.questionTypes.find(x => x.name === typeName);
+                        return t ? t.score : 0;
+                    };
+
+                    // --- 1. 輸出試題區 ---
+                    if (this.exportOptions.examPaper) {
+                        let sectionNum = ['一', '二', '三'];
+                        let sectionIdx = 0;
+
+                        ['選擇題', '填充題', '計算題'].forEach(tName => {
+                            if (groupedQs[tName].length > 0) {
+                                let score = getScore(tName);
+                                let totalScore = score * groupedQs[tName].length;
+                                
+                                docHTML += `<p style="font-size: 16pt; font-weight: bold; margin-top: 20px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`;
+                                sectionIdx++;
+                                
+                                groupedQs[tName].forEach((q, idx) => {
+                                    docHTML += `<p style="font-size: 14pt; margin-top: 10px;">${idx + 1}. ${q.question}</p>`;
+                                    if (q.options && q.options.length > 0) {
+                                        docHTML += `<p style="font-size: 14pt; margin-left: 25px;">${q.options.join('　　')}</p>`;
+                                    }
+                                    if (tName === '計算題') docHTML += `<br><br><br><br><br><br><br>`;
+                                    else if (tName === '填充題') docHTML += `<br><br>`;
+                                });
+                            }
+                        });
+
+                        // --- 2. 輸出作答網格區 (還原考卷下方的作答區) ---
+                        docHTML += `<br><br><br><p style="text-align: center; font-size: 12pt; letter-spacing: 2px;">---------------------------------------作答分隔線---------------------------------------</p><br>`;
+                        
+                        if (groupedQs['選擇題'].length > 0) {
+                            docHTML += `<p style="font-size: 14pt; font-weight: bold;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
+                            docHTML += `<table class="ans-table">`;
+                            let count = groupedQs['選擇題'].length;
+                            let cols = 5; // 一排 5 格
+                            for (let i = 0; i < count; i += cols) {
+                                docHTML += `<tr>`;
+                                for (let j = 0; j < cols; j++) { if (i + j < count) docHTML += `<td>${i + j + 1}.</td>`; else docHTML += `<td></td>`; }
+                                docHTML += `</tr><tr>`;
+                                for (let j = 0; j < cols; j++) docHTML += `<td></td>`;
+                                docHTML += `</tr>`;
+                            }
+                            docHTML += `</table><br>`;
                         }
 
-                        // 2. 生成解答與詳解區 (若勾選)
-                        if (this.exportOptions.correctAnswers || this.exportOptions.detailedSolutions) {
-                            docHTML += `<br><hr><h2 style="text-align: center; color: red;">解答與解析</h2>`;
-                            quizData.questions.forEach((q, idx) => {
-                                docHTML += `<p style="font-size: 12pt;"><b>第 ${idx + 1} 題：</b><br>`;
-                                if (this.exportOptions.correctAnswers) {
-                                    docHTML += `<span style="color: red; font-weight: bold;">【解答】 ${q.answer || '無'}</span><br>`;
-                                }
-                                if (this.exportOptions.detailedSolutions) {
-                                    docHTML += `【詳解】 ${q.solution || '無'}`;
-                                }
-                                docHTML += `</p>`;
-                            });
+                        if (groupedQs['填充題'].length > 0) {
+                            docHTML += `<p style="font-size: 14pt; font-weight: bold;">填充題答題區（每格 ${getScore('填充題')} 分）</p>`;
+                            docHTML += `<table class="ans-table">`;
+                            let count = groupedQs['填充題'].length;
+                            let cols = 4; // 一排 4 格
+                            for (let i = 0; i < count; i += cols) {
+                                docHTML += `<tr>`;
+                                for (let j = 0; j < cols; j++) { if (i + j < count) docHTML += `<td>(${i + j + 1})</td>`; else docHTML += `<td></td>`; }
+                                docHTML += `</tr><tr>`;
+                                for (let j = 0; j < cols; j++) docHTML += `<td></td>`;
+                                docHTML += `</tr>`;
+                            }
+                            docHTML += `</table><br>`;
                         }
                     }
+
+                    // --- 3. 輸出解答與詳解區 ---
+                    if (this.exportOptions.correctAnswers || this.exportOptions.detailedSolutions) {
+                        docHTML += `<br style="page-break-before: always; clear: both;" />`; // 強制換頁
+                        docHTML += `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
+                        
+                        ['選擇題', '填充題', '計算題'].forEach(tName => {
+                            if (groupedQs[tName].length > 0) {
+                                docHTML += `<h3>【${tName}】</h3>`;
+                                groupedQs[tName].forEach((q, idx) => {
+                                    docHTML += `<p style="font-size: 14pt;"><b>第 ${idx + 1} 題：</b><br>`;
+                                    if (this.exportOptions.correctAnswers) docHTML += `<span style="color: red; font-weight: bold;">[解答] ${q.answer || '無'}</span><br>`;
+                                    if (this.exportOptions.detailedSolutions) docHTML += `[詳解] ${q.solution || '無'}`;
+                                    docHTML += `</p>`;
+                                });
+                            }
+                        });
+                    }
+
                 } catch(e) {
-                    // 若 AI 回傳的不是完美的 JSON，就直接把純文字塞進去避免空白
-                    docHTML += `<pre style="font-size: 12pt; white-space: pre-wrap; font-family: '標楷體';">${resultText}</pre>`;
+                    docHTML += `<pre style="font-size: 12pt; white-space: pre-wrap;">${resultText}</pre>`;
                 }
 
                 docHTML += `</body></html>`;
 
-                // 設定下載檔名 (例如：三重商工_第一次期中考_數學考卷.doc)
+                // 下載檔案命名
                 const fileName = `${this.exam.school}_${this.exam.name}_數學考卷.doc`;
-                
-                // 呼叫實體下載功能
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！請至「下載」資料夾查看檔案。";
+                statusDiv.innerText = "✅ 考卷生成成功！請至瀏覽器的「下載」資料夾查看。";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
                     btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                }, 1000);
+                }, 1500);
 
             } catch (error) {
                 console.error(error);
