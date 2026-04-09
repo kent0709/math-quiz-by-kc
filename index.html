@@ -241,7 +241,7 @@
             </div>
 
             <button @click="generateAndExport" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-12 py-5 rounded-2xl text-2xl font-black shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 w-full md:w-auto inline-flex items-center justify-center">
-                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並匯出 WORD
+                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載 WORD
             </button>
             
             <div id="status-message" class="text-sm font-bold mt-5 text-teal-600 h-6"></div>
@@ -321,6 +321,23 @@ createApp({
                 reader.onerror = error => reject(error);
             });
         },
+        
+        // 核心更新：將結果轉換成實體檔案並觸發下載
+        downloadDocFile(htmlContent, filename) {
+            // 加入 BOM 確保中文在 Word 裡面不會變成亂碼
+            const blob = new Blob(['\ufeff', htmlContent], {
+                type: 'application/msword'
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        },
+
         async generateAndExport(event) {
             if (!this.apiKey) {
                 alert('⚠️ 老師，請先在最上方輸入您的 Gemini API Key！');
@@ -336,9 +353,9 @@ createApp({
             const originalHTML = btn.innerHTML;
             
             try {
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-3 text-3xl"></i> AI 正在讀取並生成題目...';
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-3 text-3xl"></i> AI 正在努力解析並生成考卷...';
                 btn.classList.add('opacity-80', 'cursor-not-allowed');
-                statusDiv.innerText = "正在處理您的檔案與設定，請稍候約 10~30 秒...";
+                statusDiv.innerText = "正在處理檔案，並為您生成實體 Word 檔案中，請稍候...";
 
                 // 準備上傳的檔案
                 const fileParts = await Promise.all(this.uploadedFiles.map(file => this.fileToBase64(file)));
@@ -371,25 +388,75 @@ ${this.examRules}
                 });
 
                 const data = await response.json();
-                
                 if (data.error) throw new Error(data.error.message);
 
                 const resultText = data.candidates[0].content.parts[0].text;
-                console.log("AI 回傳的原始資料：", resultText);
                 
-                statusDiv.innerText = "✅ AI 生成完畢！準備匯出 Word...";
-                
-                let exportMsg = '🎉 匯出成功！即將下載 WORD 檔。\n\n【本次匯出包含以下項目】';
-                if (this.exportOptions.examPaper) exportMsg += '\n✅ 1. 試題考卷 (包含學生作答區)';
-                if (this.exportOptions.correctAnswers) exportMsg += '\n✅ 2. 正確答案';
-                if (this.exportOptions.detailedSolutions) exportMsg += '\n✅ 3. 詳解';
-                exportMsg += '\n\n(請按 F12 開啟 Console 查看 AI 生成的 JSON 題庫資料)';
+                // 開始把 AI 吐出來的 JSON 組裝成 Word 可以讀取的 HTML 格式
+                let docHTML = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head><meta charset='utf-8'><title>數學考卷</title></head>
+                <body style="font-family: '標楷體', 'Times New Roman', serif;">
+                    <h1 style="text-align: center;">${this.exam.school} ${this.exam.year}學年度第${this.exam.semester}學期 ${this.exam.name}</h1>
+                    <h3 style="text-align: center;">科目：數學 ｜ 適用對象：${this.exam.grade}${this.exam.dept}</h3>
+                    <hr>
+                `;
 
+                try {
+                    // 清理掉 Markdown 的 json 標籤
+                    let cleanJson = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    let quizData = JSON.parse(cleanJson);
+                    
+                    if (quizData.questions) {
+                        // 1. 生成試題區 (若勾選)
+                        if (this.exportOptions.examPaper) {
+                            quizData.questions.forEach((q, idx) => {
+                                docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px;">${idx + 1}. ${q.question}</p>`;
+                                if (q.options && q.options.length > 0) {
+                                    docHTML += `<p style="font-size: 12pt;">${q.options.join('　　')}</p>`;
+                                }
+                                // 加入學生作答的空白區塊
+                                if (q.type === '計算題') {
+                                    docHTML += `<br><br><br><br><br><br>`;
+                                } else {
+                                    docHTML += `<br>`;
+                                }
+                            });
+                        }
+
+                        // 2. 生成解答與詳解區 (若勾選)
+                        if (this.exportOptions.correctAnswers || this.exportOptions.detailedSolutions) {
+                            docHTML += `<br><hr><h2 style="text-align: center; color: red;">解答與解析</h2>`;
+                            quizData.questions.forEach((q, idx) => {
+                                docHTML += `<p style="font-size: 12pt;"><b>第 ${idx + 1} 題：</b><br>`;
+                                if (this.exportOptions.correctAnswers) {
+                                    docHTML += `<span style="color: red; font-weight: bold;">【解答】 ${q.answer || '無'}</span><br>`;
+                                }
+                                if (this.exportOptions.detailedSolutions) {
+                                    docHTML += `【詳解】 ${q.solution || '無'}`;
+                                }
+                                docHTML += `</p>`;
+                            });
+                        }
+                    }
+                } catch(e) {
+                    // 若 AI 回傳的不是完美的 JSON，就直接把純文字塞進去避免空白
+                    docHTML += `<pre style="font-size: 12pt; white-space: pre-wrap; font-family: '標楷體';">${resultText}</pre>`;
+                }
+
+                docHTML += `</body></html>`;
+
+                // 設定下載檔名 (例如：三重商工_第一次期中考_數學考卷.doc)
+                const fileName = `${this.exam.school}_${this.exam.name}_數學考卷.doc`;
+                
+                // 呼叫實體下載功能
+                this.downloadDocFile(docHTML, fileName);
+
+                statusDiv.innerText = "✅ 考卷生成成功！請至「下載」資料夾查看檔案。";
+                
                 setTimeout(() => {
-                    alert(exportMsg);
                     btn.innerHTML = originalHTML;
                     btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    statusDiv.innerText = "";
                 }, 1000);
 
             } catch (error) {
