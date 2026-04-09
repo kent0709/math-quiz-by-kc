@@ -226,7 +226,7 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (含作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含作答區)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
@@ -322,6 +322,26 @@ createApp({
             });
         },
         
+        // 🌟 新增：強大的 LaTeX 轉圖片處理器
+        formatMathToImages(text) {
+            if (!text) return '';
+            
+            // 處理換行
+            let result = text.replace(/\n/g, '<br>');
+            
+            // 替換 $$ ... $$ (獨立行大公式) -> 轉成 CodeCogs 圖片，加上垂直置中
+            result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
+                return `<br><img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white}${encodeURIComponent(p1.trim())}" style="vertical-align: middle; max-width: 100%;" /><br>`;
+            });
+            
+            // 替換 $ ... $ (行內小公式) -> 轉成 CodeCogs 圖片，加上垂直置中
+            result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
+                return `<img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white}${encodeURIComponent(p1.trim())}" style="vertical-align: middle;" />`;
+            });
+            
+            return result;
+        },
+
         downloadDocFile(htmlContent, filename) {
             // 加入 BOM (\ufeff) 確保中文在 Word 裡面絕對不會亂碼
             const blob = new Blob(['\ufeff', htmlContent], {
@@ -370,8 +390,8 @@ ${this.examRules}
 請直接以 JSON 格式回傳，不要加上 \`\`\`json 標籤，格式如下：
 {
   "questions": [
-    { "type": "選擇題", "question": "題目敘述(數學符號請用 $ 包著)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項", "solution": "詳解過程" },
-    { "type": "填充題", "question": "題目敘述", "answer": "正確答案", "solution": "詳解過程" },
+    { "type": "選擇題", "question": "題目敘述(數學公式與符號請務必用 $ 包住，例如 $x^2+y^2=1$)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項", "solution": "詳解過程" },
+    { "type": "填充題", "question": "題目敘述(數學公式與符號請務必用 $ 包住)", "answer": "正確答案", "solution": "詳解過程" },
     { "type": "計算題", "question": "題目敘述", "answer": "正確答案", "solution": "詳解過程" }
   ]
 }`;
@@ -389,7 +409,7 @@ ${this.examRules}
 
                 const resultText = data.candidates[0].content.parts[0].text;
                 
-                // 🎯 嚴格解析 AI 的 JSON 回應，防止抓到 Markdown 標籤導致系統崩潰
+                // 嚴格解析 AI 的 JSON 回應
                 let cleanJsonStr = "";
                 const jsonMatch = resultText.match(/\{[\s\S]*\}/);
                 if(jsonMatch) {
@@ -401,12 +421,20 @@ ${this.examRules}
                 let quizData = JSON.parse(cleanJsonStr);
                 
                 // ==============================================================
-                // 📝 開始組裝高質感的 Word 考卷 HTML (神還原段考格式)
+                // 📝 預設為 B4 紙張，並神還原段考格式
                 // ==============================================================
                 let docHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head><meta charset='utf-8'><title>數學考卷</title>
                 <style>
+                    /* 🌟 核心：設定微軟 Word 讀取的頁面大小為 B4 (257mm x 364mm) */
+                    @page WordSection1 {
+                        size: 257mm 364mm;
+                        margin: 15mm 15mm 15mm 15mm;
+                        mso-page-orientation: portrait;
+                    }
+                    div.WordSection1 { page: WordSection1; }
+                    
                     body { font-family: '標楷體', 'Times New Roman', serif; }
                     .header-table { border-collapse: collapse; width: 100%; border: 2px solid black; }
                     .header-table td { border: 1px solid black; padding: 5px; font-size: 14pt; }
@@ -415,9 +443,10 @@ ${this.examRules}
                 </style>
                 </head>
                 <body>
+                <div class="WordSection1">
                 `;
 
-                // --- 考卷表頭設計 (完美對齊 111.png 圖片格式) ---
+                // --- 考卷表頭設計 ---
                 docHTML += `
                 <table class="header-table">
                     <tr>
@@ -442,13 +471,11 @@ ${this.examRules}
                 <br>
                 `;
 
-                // 將題目依照題型分類
                 const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
                 if(quizData.questions) {
                     quizData.questions.forEach(q => { if(groupedQs[q.type]) groupedQs[q.type].push(q); });
                 }
 
-                // 取得使用者設定的配分
                 const getScore = (typeName) => {
                     const t = this.questionTypes.find(x => x.name === typeName);
                     return t ? parseInt(t.score) || 0 : 0;
@@ -464,30 +491,31 @@ ${this.examRules}
                             let score = getScore(tName);
                             let totalScore = score * groupedQs[tName].length;
                             
-                            // 大題標題
                             docHTML += `<p style="font-size: 16pt; font-weight: bold; margin-top: 20px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`;
                             sectionIdx++;
                             
                             groupedQs[tName].forEach((q, idx) => {
-                                docHTML += `<p style="font-size: 14pt; margin-top: 10px; line-height: 1.5;">${idx + 1}. ${q.question}</p>`;
+                                // 🌟 核心：套用 formatMathToImages 將 LaTeX 轉換為清晰圖片
+                                docHTML += `<p style="font-size: 14pt; margin-top: 10px; line-height: 1.5;">${idx + 1}. ${this.formatMathToImages(q.question)}</p>`;
                                 if (q.options && q.options.length > 0) {
-                                    docHTML += `<p style="font-size: 14pt; margin-left: 25px;">${q.options.join('　　')}</p>`;
+                                    // 選項也要轉
+                                    const formattedOptions = q.options.map(opt => this.formatMathToImages(opt)).join('　　');
+                                    docHTML += `<p style="font-size: 14pt; margin-left: 25px;">${formattedOptions}</p>`;
                                 }
-                                // 依照題型給予計算空間
                                 if (tName === '計算題') docHTML += `<br><br><br><br><br><br><br>`;
                                 else if (tName === '填充題') docHTML += `<br><br>`;
                             });
                         }
                     });
 
-                    // --- 2. 輸出作答網格區 (對齊 114學年段考考卷格式) ---
+                    // --- 2. 輸出作答網格區 ---
                     docHTML += `<br><br><p style="text-align: center; font-size: 12pt; letter-spacing: 2px;">---------------------------------------作答分隔線---------------------------------------</p><br>`;
                     
                     if (groupedQs['選擇題'].length > 0) {
                         docHTML += `<p style="font-size: 14pt; font-weight: bold;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
                         docHTML += `<table class="ans-table">`;
                         let count = groupedQs['選擇題'].length;
-                        let cols = 5; // 一排 5 格
+                        let cols = 5; 
                         for (let i = 0; i < count; i += cols) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < cols; j++) { if (i + j < count) docHTML += `<td>${i + j + 1}.</td>`; else docHTML += `<td></td>`; }
@@ -502,7 +530,7 @@ ${this.examRules}
                         docHTML += `<p style="font-size: 14pt; font-weight: bold;">填充題答題區（每格 ${getScore('填充題')} 分）</p>`;
                         docHTML += `<table class="ans-table">`;
                         let count = groupedQs['填充題'].length;
-                        let cols = 4; // 一排 4 格
+                        let cols = 4; 
                         for (let i = 0; i < count; i += cols) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < cols; j++) { if (i + j < count) docHTML += `<td>(${i + j + 1})</td>`; else docHTML += `<td></td>`; }
@@ -524,21 +552,20 @@ ${this.examRules}
                             docHTML += `<h3>【${tName}】</h3>`;
                             groupedQs[tName].forEach((q, idx) => {
                                 docHTML += `<p style="font-size: 14pt; line-height: 1.5;"><b>第 ${idx + 1} 題：</b><br>`;
-                                if (this.exportOptions.correctAnswers) docHTML += `<span style="color: red; font-weight: bold;">[解答] ${q.answer || '無'}</span><br>`;
-                                if (this.exportOptions.detailedSolutions) docHTML += `[詳解] ${q.solution || '無'}`;
+                                if (this.exportOptions.correctAnswers) docHTML += `<span style="color: red; font-weight: bold;">[解答] ${this.formatMathToImages(q.answer || '無')}</span><br>`;
+                                if (this.exportOptions.detailedSolutions) docHTML += `[詳解] ${this.formatMathToImages(q.solution || '無')}`;
                                 docHTML += `</p>`;
                             });
                         }
                     });
                 }
 
-                docHTML += `</body></html>`;
+                docHTML += `</div></body></html>`;
 
-                // 下載檔案命名 (自動帶入表頭資訊)
-                const fileName = `${this.exam.school}_${this.exam.name}_數學考卷.doc`;
+                const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！請至瀏覽器的「下載」資料夾查看。";
+                statusDiv.innerText = "✅ 考卷生成成功！(B4版面且包含公式圖片)，請至「下載」資料夾查看。";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
@@ -547,7 +574,7 @@ ${this.examRules}
 
             } catch (error) {
                 console.error(error);
-                alert("生成失敗，請確認 API Key 是否正確，或檔案是否不支援 (Word 檔請轉 PDF)。\n錯誤訊息：" + error.message);
+                alert("生成失敗，請確認 API Key 是否正確，或檔案是否不支援。\n錯誤訊息：" + error.message);
                 btn.innerHTML = originalHTML;
                 btn.classList.remove('opacity-80', 'cursor-not-allowed');
                 statusDiv.innerText = "❌ 發生錯誤，請重試。";
