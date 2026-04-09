@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - 完美排版與公式圖片版</title>
+    <title>數學出題小幫手 - 圖片公式與完美表頭版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap');
-        
-        body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); min-height: 100vh; }
-        .exam-font { font-family: 'Noto Serif TC', serif; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: #f0fdfa; min-height: 100vh; }
         .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #e2e8f0;}
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle; position: relative;}
+        .custom-checkbox { appearance: none; width: 20px; height: 20px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle; position: relative;}
         .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
-        .custom-checkbox:checked::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 11px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+        .custom-checkbox:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .box-radio { appearance: none; width: 14px; height: 14px; border: 1.5px solid #000; cursor: pointer; vertical-align: middle; position: relative; top: -1px;}
+        .box-radio:checked { background-color: #000; }
     </style>
 </head>
 <body class="text-gray-800 pb-10">
@@ -46,7 +45,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式直出 ‧ 完美換頁對齊版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">完美表頭還原 ‧ 圖片公式直出 ‧ 預設 B4 尺寸</p>
     </div>
 
     <div class="glass-card flex items-center bg-white border-l-4 border-amber-400">
@@ -69,48 +68,31 @@
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
                 考卷表頭資訊
             </h2>
-            <div class="overflow-x-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <table class="w-full border-collapse border-2 border-black bg-white exam-font text-black min-w-[700px]">
-                    <tr>
-                        <td colspan="2" class="border border-black p-6 text-center">
-                            <div class="text-2xl md:text-3xl font-bold text-red-600 tracking-widest flex justify-center items-center gap-2 flex-wrap">
-                                <input v-model="exam.school" class="w-32 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
-                                <input v-model="exam.year" type="number" class="w-16 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
-                                <span>學年第</span>
-                                <input v-model="exam.semester" type="number" class="w-12 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
-                                <span>學期</span>
-                                <input v-model="exam.name" class="w-32 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
-                            </div>
-                        </td>
-                        <td rowspan="2" class="border border-black p-4 w-48 text-sm leading-loose">
-                            <label class="cursor-pointer block hover:text-teal-700 font-bold">
-                                <input type="radio" v-model="exam.useCard" :value="true" class="hidden">
-                                {{ exam.useCard === true ? '■' : '□' }} 使用答案卡
-                            </label>
-                            <label class="cursor-pointer block hover:text-teal-700 font-bold">
-                                <input type="radio" v-model="exam.useCard" :value="false" class="hidden">
-                                {{ exam.useCard === false ? '■' : '□' }} 不使用答案卡
-                            </label>
-                            <label class="cursor-pointer block hover:text-teal-700 mt-2 text-red-600 font-bold">
-                                <input type="checkbox" v-model="exam.specialNeeds" class="hidden">
-                                {{ exam.specialNeeds ? '■' : '□' }} 特殊生考卷
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="border border-black p-3 text-base w-1/2">
-                            <span class="mr-1 font-bold">科別：</span>
-                            <label class="cursor-pointer mr-1 hover:text-teal-700"><input type="radio" v-model="exam.dept" value="工科" class="hidden">{{ exam.dept === '工科' ? '■' : '□' }}工科</label>、
-                            <label class="cursor-pointer mr-1 hover:text-teal-700"><input type="radio" v-model="exam.dept" value="商科" class="hidden">{{ exam.dept === '商科' ? '■' : '□' }}商科</label>、
-                            <label class="cursor-pointer hover:text-teal-700"><input type="radio" v-model="exam.dept" value="體育科" class="hidden">{{ exam.dept === '體育科' ? '■' : '□' }}體育科</label>
-                        </td>
-                        <td class="border border-black p-3 text-base w-1/2">
-                            <label class="cursor-pointer mr-1 hover:text-teal-700"><input type="radio" v-model="exam.grade" value="高一" class="hidden">{{ exam.grade === '高一' ? '■' : '□' }}高一</label>、
-                            <label class="cursor-pointer mr-1 hover:text-teal-700"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>、
-                            <label class="cursor-pointer hover:text-teal-700"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
-                        </td>
-                    </tr>
-                </table>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">學校名稱</label><input v-model="exam.school" class="w-full border p-2 rounded outline-none focus:border-teal-500 text-center font-bold"></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">學年度</label><input v-model="exam.year" type="number" class="w-full border p-2 rounded outline-none focus:border-teal-500 text-center font-bold"></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">學期</label><input v-model="exam.semester" type="number" class="w-full border p-2 rounded outline-none focus:border-teal-500 text-center font-bold"></div>
+                <div><label class="text-xs font-bold text-gray-500 mb-1 block">考試名稱</label><input v-model="exam.name" class="w-full border p-2 rounded outline-none focus:border-teal-500 text-center font-bold"></div>
+            </div>
+            <div class="flex flex-wrap gap-8 mt-5 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 block mb-2">科別</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.dept" value="工科" class="box-radio mr-1">工科</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.dept" value="商科" class="box-radio mr-1">商科</label>
+                    <label class="cursor-pointer"><input type="radio" v-model="exam.dept" value="體育科" class="box-radio mr-1">體育科</label>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 block mb-2">年級</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.grade" value="高一" class="box-radio mr-1">高一</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.grade" value="高二" class="box-radio mr-1">高二</label>
+                    <label class="cursor-pointer"><input type="radio" v-model="exam.grade" value="高三" class="box-radio mr-1">高三</label>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 block mb-2">卡片與特殊生</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.useCard" :value="true" class="box-radio mr-1">使用答案卡</label>
+                    <label class="mr-3 cursor-pointer"><input type="radio" v-model="exam.useCard" :value="false" class="box-radio mr-1">不使用答案卡</label>
+                    <label class="cursor-pointer text-red-600 font-bold"><input type="checkbox" v-model="exam.specialNeeds" class="box-radio mr-1">特殊生考卷</label>
+                </div>
             </div>
         </div>
 
@@ -227,6 +209,7 @@
             <button @click="generateExam" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto">
                 <i class="fas fa-file-word mr-3 text-2xl"></i> 開始產生 WORD 考卷 (.doc)
             </button>
+            <p class="text-sm text-red-500 mt-4 font-bold tracking-wide">⚠️ 下載後打開若出現「檔案格式警告」，請放心點擊「是(Y)」，確保圖片公式正常載入。</p>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
@@ -271,29 +254,33 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換：直接利用 API 產生高畫質圖片，Word 100% 絕對能讀懂！
+        // 🌟 終極圖片公式轉換引擎：將 LaTeX 轉換為 Codecogs 的高畫質圖片
         formatMath(text) {
             if (!text) return '';
             
             const toImg = (tex) => {
                 let cleanTex = tex.replace(/\\\\/g, '\\');
                 let encoded = encodeURIComponent(cleanTex);
-                // 呼叫外部 API 將公式轉為圖片，align="middle" 使其對齊文字
-                return `<img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white} ${encoded}" align="middle" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
+                // 產生帶有白色背景、對齊文字的數學公式圖片
+                return `<img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
             };
 
             let mathBlocks = [];
             let placeholderText = text;
             
+            // 處理獨立行公式 $$ $$
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
+            
+            // 處理行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 mathBlocks.push(toImg(p1.trim()));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
 
+            // 處理換行，並補回公式圖片
             let result = placeholderText.replace(/\n/g, '<br>');
             mathBlocks.forEach((block, idx) => {
                 result = result.replace(`__MATH_BLOCK_${idx}__`, block);
@@ -302,66 +289,64 @@ createApp({
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版，紅色標題，完美還原附件)
+        // 🌟 表頭 1 (第一頁：無姓名版，紅色大標題，精準還原附件)
         getHeaderPage1() {
             return `
-            <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 12px; font-family: '標楷體', 'Times New Roman', serif;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 15px; font-family: '標楷體', 'Times New Roman', serif;">
                 <tr>
-                    <td colspan="2" align="center" style="border: 1px solid black; padding: 15px;">
-                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
-                            ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
+                    <td colspan="2" align="center" style="height: 80px; padding: 10px;">
+                        <span style="font-size: 24pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                            ${this.exam.school} ${this.exam.year} 學年第 ${this.exam.semester} 學期 ${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="2" width="20%" style="border: 1px solid black; padding: 8px; font-size: 12pt; line-height: 1.5;">
-                        科目：<b>數學</b><br>
+                    <td rowspan="2" width="18%" style="padding: 10px; font-size: 13pt; line-height: 1.8;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
                 </tr>
                 <tr>
-                    <td width="40%" style="border: 1px solid black; padding: 8px; font-size: 12pt;">
-                        科別：${this.exam.dept==='工科'?'■':'□'}工科　${this.exam.dept==='商科'?'■':'□'}商科　${this.exam.dept==='體育科'?'■':'□'}體育科
+                    <td width="41%" style="padding: 10px; font-size: 13pt;">
+                        科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
                     </td>
-                    <td width="40%" style="border: 1px solid black; padding: 8px; font-size: 12pt;">
-                        年級：${this.exam.grade==='高一'?'■':'□'}高一　${this.exam.grade==='高二'?'■':'□'}高二　${this.exam.grade==='高三'?'■':'□'}高三
+                    <td width="41%" style="padding: 10px; font-size: 13pt;">
+                        年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                 </tr>
             </table>
-            <p style="text-align: right; font-size: 12pt; margin-top: 0; margin-bottom: 15px; font-family: '標楷體', 'Times New Roman', serif;">注意：請將答案填入背面作答區！！</p>
+            <div style="text-align: right; font-size: 13pt; font-weight: bold; margin-bottom: 15px; font-family: '標楷體', 'Times New Roman', serif;">注意：請將答案填入背面作答區！！</div>
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名、總分框版，紅色標題，完美還原附件)
+        // 🌟 表頭 2 (第二頁：有姓名、總分框版，紅色大標題，精準還原附件)
         getHeaderPage2() {
             return `
-            <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 12px; font-family: '標楷體', 'Times New Roman', serif;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 15px; font-family: '標楷體', 'Times New Roman', serif;">
                 <tr>
-                    <td colspan="2" align="center" style="border: 1px solid black; padding: 15px;">
-                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
-                            ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
+                    <td colspan="2" align="center" style="height: 80px; padding: 10px;">
+                        <span style="font-size: 24pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                            ${this.exam.school} ${this.exam.year} 學年第 ${this.exam.semester} 學期 ${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="2" width="20%" style="border: 1px solid black; padding: 8px; font-size: 12pt; line-height: 1.5;">
-                        科目：<b>數學</b><br>
+                    <td rowspan="2" width="18%" style="padding: 10px; font-size: 13pt; line-height: 1.8;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
-                    <td rowspan="3" width="15%" align="center" valign="middle" style="border: 1px solid black; font-size: 14pt; font-weight: bold;">
-                        (總　分)
+                    <td rowspan="3" width="12%" align="center" valign="top" style="padding-top: 15px; font-size: 16pt; font-weight: bold;">
+                        (總 分)
                     </td>
                 </tr>
                 <tr>
-                    <td width="32.5%" style="border: 1px solid black; padding: 8px; font-size: 12pt;">
-                        科別：${this.exam.dept==='工科'?'■':'□'}工科　${this.exam.dept==='商科'?'■':'□'}商科　${this.exam.dept==='體育科'?'■':'□'}體育科
+                    <td width="35%" style="padding: 10px; font-size: 13pt;">
+                        科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
                     </td>
-                    <td width="32.5%" style="border: 1px solid black; padding: 8px; font-size: 12pt;">
-                        年級：${this.exam.grade==='高一'?'■':'□'}高一　${this.exam.grade==='高二'?'■':'□'}高二　${this.exam.grade==='高三'?'■':'□'}高三
+                    <td width="35%" style="padding: 10px; font-size: 13pt;">
+                        年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="border: 1px solid black; padding: 15px 8px; font-size: 14pt;">
+                    <td colspan="3" style="padding: 15px 10px; font-size: 15pt; font-weight: bold;">
                         班級：＿＿＿＿＿＿　學號：＿＿＿＿＿＿　姓名：＿＿＿＿＿＿＿＿
                     </td>
                 </tr>
@@ -383,13 +368,12 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 嚴格套用您的指示：標準 LaTeX 語法
+                // ⚠️ 確保 AI 輸出絕對正確的 JSON
                 const promptText = `請出一份數學考卷。必須回傳純 JSON 格式。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes}
 【要求】：${this.examRules}
-【重要輸出格式】：
-1. 數學公式：請一律使用標準 LaTeX 語法呈現（行內公式使用 $ $，獨立行公式使用 $$ $$）。絕對禁止使用純文字排版矩陣與方程式！`;
+【重要數學格式警告】：所有數字、變數、矩陣、方程式，必須用單個 $ 包住，例如：$x^2+1=0$。絕對禁止純文字拼湊數學式！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -440,8 +424,16 @@ createApp({
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
 
+                if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content.parts[0].text) {
+                    throw new Error("AI 回傳了空白資料，請重試！");
+                }
+
                 const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
                 
+                if (!quizData.questions || quizData.questions.length === 0) {
+                    throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
+                }
+
                 // 🌟 Word 宣告 (B4 尺寸)
                 let docHTML = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
@@ -449,6 +441,7 @@ createApp({
                       xmlns="http://www.w3.org/TR/REC-html40">
                 <head>
                 <meta charset="utf-8">
+                <title>數學考卷</title>
                 <style>
                     /* 預設 B4 尺寸與邊界 */
                     @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 2cm; }
@@ -461,13 +454,11 @@ createApp({
                 const getScore = (tName) => { const t = this.questionTypes.find(x => x.name === tName); return t ? parseInt(t.score) || 0 : 0; };
                 const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
                 
-                if(quizData.questions) {
-                    quizData.questions.forEach(q => {
-                        let t = q.type;
-                        if(t.includes('選擇')) t = '選擇題';
-                        if(groupedQs[t]) groupedQs[t].push(q);
-                    });
-                }
+                quizData.questions.forEach(q => {
+                    let t = q.type;
+                    if(t.includes('選擇')) t = '選擇題';
+                    if(groupedQs[t]) groupedQs[t].push(q);
+                });
 
                 let allQuestions = [];
                 let sectionNum = ['一', '二', '三'];
@@ -478,7 +469,7 @@ createApp({
                         let score = getScore(tName);
                         let total = score * groupedQs[tName].length;
                         let unit = tName === '填充題' ? '格' : '題';
-                        allQuestions.push({ isHeader: true, html: `<p style="font-size: 16pt; font-weight: bold; margin-top: 15px;">${sectionNum[sectionIdx]}、${tName}（每${unit} ${score} 分，共 ${total} 分）</p>` });
+                        allQuestions.push({ isHeader: true, html: `<p style="font-size: 16pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px;">${sectionNum[sectionIdx]}、${tName}（每${unit} ${score} 分，共 ${total} 分）</p>` });
                         sectionIdx++;
                         
                         groupedQs[tName].forEach((q, idx) => {
@@ -525,7 +516,7 @@ createApp({
                     docHTML += part2HTML;
                     
                     // --- 【第二頁最下方：作答格子】 ---
-                    docHTML += `<br><p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 15px;">---------------------------------------作答區---------------------------------------</p>`;
+                    docHTML += `<br><p style="text-align: center; letter-spacing: 2px; font-size: 13pt; margin-top: 15px;">---------------------------------------作答區---------------------------------------</p>`;
 
                     if (groupedQs['選擇題'].length > 0) {
                         docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 10px 0;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
@@ -535,7 +526,7 @@ createApp({
                             docHTML += `<tr>`;
                             for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td width="20%" style="font-size:14pt; height:45px;">${i + j + 1}.</td>`; else docHTML += `<td width="20%"></td>`; }
                             docHTML += `</tr><tr>`;
-                            for (let j = 0; j < 5; j++) docHTML += `<td style="height:45px;"></td>`;
+                            for (let j = 0; j < 5; j++) docHTML += `<td style="height:50px;"></td>`;
                             docHTML += `</tr>`;
                         }
                         docHTML += `</table>`;
@@ -549,23 +540,23 @@ createApp({
                             docHTML += `<tr>`;
                             for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td width="25%" style="font-size:14pt; height:45px;">(${i + j + 1})</td>`; else docHTML += `<td width="25%"></td>`; }
                             docHTML += `</tr><tr>`;
-                            for (let j = 0; j < 4; j++) docHTML += `<td style="height:45px;"></td>`;
+                            for (let j = 0; j < 4; j++) docHTML += `<td style="height:50px;"></td>`;
                             docHTML += `</tr>`;
                         }
                         docHTML += `</table>`;
                     }
                 }
 
-                // --- 【第三頁解答】 ---
+                // --- 【第三頁：解答區】 ---
                 if (this.exportOptions.correctAnswers) {
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
-                    docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px;">教師版解答與解析</h2><hr style="margin-bottom: 15px;">`;
+                    docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px; font-weight: bold;">教師版解答與解析</h2><hr style="margin-bottom: 15px;">`;
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         if (groupedQs[tName].length > 0) {
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName}</h3>`;
                             groupedQs[tName].forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                docHTML += `<p style="line-height: 1.5; margin-bottom: 15px;"><b>第 ${numStr} 題：</b> 解答：<span style="font-weight:bold;">${this.formatMath(q.answer)}</span><br>詳解：${this.formatMath(q.solution)}</p>`;
+                                docHTML += `<p style="line-height: 1.5; margin-bottom: 25px;"><b>第 ${numStr} 題：</b> 解答：<span style="color:red; font-weight:bold;">${this.formatMath(q.answer)}</span><br>詳解：${this.formatMath(q.solution)}</p>`;
                             });
                         }
                     });
@@ -585,7 +576,7 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                status.innerHTML = `✅ 考卷生成成功！已下載檔案。打開若出現格式警告請選「是」，公式將以圖片完美呈現！`;
+                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 若打開出現格式警告請選「是」，數學圖片與排版即會完美呈現。</span>`;
 
             } catch (error) {
                 console.error(error);
