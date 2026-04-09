@@ -84,7 +84,7 @@
         <div class="glass-card rounded-2xl p-6 md:p-8 border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
-                考卷表頭資訊 (將自動生成首頁無名、作答頁有名的雙表頭排版)
+                考卷表頭資訊 (自動生成首頁無名、作答頁有名的雙表頭排版)
             </h2>
             <div class="overflow-x-auto rounded-lg shadow-sm">
                 <table class="exam-table exam-font text-black min-w-[700px]">
@@ -264,7 +264,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.1</span>
         </div>
     </footer>
 </div>
@@ -326,7 +326,7 @@ createApp({
             });
         },
         
-        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML (防護版)
+        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML (防護版 V1.1)
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -338,7 +338,7 @@ createApp({
                     let match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
                     if (match) {
                         let mathml = match[0];
-                        // 🔥 強制移除 annotation，防止 Word 解析成原生 LaTeX 亂碼
+                        // 🔥 強制移除 annotation，防止 Word 顯示出原生 LaTeX 亂碼
                         mathml = mathml.replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '');
                         if (!mathml.includes('xmlns=')) {
                             mathml = mathml.replace('<math', '<math xmlns="http://www.w3.org/1998/Math/MathML"');
@@ -349,12 +349,16 @@ createApp({
                 } catch (e) { return tex; }
             };
 
-            // 支援 $$公式$$
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 return '<div style="text-align:center;">' + convertToMathML(p1.trim(), true) + '</div>';
             });
-            // 支援 $公式$
+            result = result.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
+                return '<div style="text-align:center;">' + convertToMathML(p1.trim(), true) + '</div>';
+            });
             result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
+                return convertToMathML(p1.trim(), false);
+            });
+            result = result.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
                 return convertToMathML(p1.trim(), false);
             });
             
@@ -376,7 +380,6 @@ createApp({
         // 🌟 表頭 1 與 表頭 2 精準排版：替換掉 | 符號，改用真正的表格分隔線
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
-                // 第一頁：無姓名欄位，騰出空間給題目
                 return `
                 <table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                     <tr>
@@ -402,7 +405,6 @@ createApp({
                 <p style="text-align: right; font-size: 12pt; margin-top: 5px; margin-bottom: 0;">注意：請將答案填入背面作答區！！</p>
                 `;
             } else {
-                // 第二頁作答區：有姓名欄位與巨大總分框
                 return `
                 <table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                     <tr>
@@ -439,7 +441,6 @@ createApp({
             }
         },
 
-        // 包裝成能跨頁重複的 Table
         wrapWithRepeatingHeader(headerHtml, contentHtml) {
             return `
             <table style="width: 100%; border-collapse: collapse; border: none;">
@@ -471,17 +472,16 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // ⚠️ 終極防呆指令：嚴格禁止控制字元，要求雙重跳脫，統一 MathML 處理
+                // ⚠️ 終極防呆指令：強制包裹所有數學式，拒絕混淆排版
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
 【題型配置】：${activeTypes}
 【出題原則】：\n${this.examRules}
 【輸出格式】：直接以 JSON 回傳，格式如下：
-⚠️絕對禁止：請勿「重複」輸出題目！不要出現「純文字」與「LaTeX」並存的狀況。(錯誤示範：設集合 A={1,2} $A=\\{1,2\\}$)。
-⚠️公式規範：所有的數學式子、變數、集合符號、座標等，【全部且唯一】只能用 $ 包住一次，例如：設集合 $A=\\{1,2\\}$。
-⚠️跳脫與換行字元警告：JSON字串內絕對不允許真實的換行符號(Enter)，請一律使用字串 "\\n"。數學反斜線必須「雙重跳脫」，例如寫 $\\\\vec{v}$ 或 $\\\\frac{1}{2}$，絕對不能只寫單個反斜線！
-{ "questions": [ { "type": "選擇題", "question": "題目敘述", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
+⚠️公式規範：所有的數字、變數、方程式、集合符號、座標等，【全部且唯一】只能用 $ 包住，例如：設集合 $A=\\{1,2\\}$，直線 $L: 2x+y=3$。請勿使用純文字表示數學式！
+⚠️跳脫字元：JSON 內的數學反斜線必須「雙重跳脫」，例如寫 $\\\\vec{v}$ 或 $\\\\frac{1}{2}$，絕對不能只寫單個反斜線！
+{ "questions": [ { "type": "選擇題", "question": "題目敘述(數學公式請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -527,7 +527,6 @@ createApp({
                     quizData = JSON.parse(cleanJsonStr);
                 } catch (parseError) {
                     console.warn("啟動 JSON 防呆修復機制...");
-                    // 若 AI 忘記雙重跳脫，強制補上反斜線拯救它
                     let rescuedJsonStr = cleanJsonStr.replace(/\\/g, "\\\\").replace(/\\\\"/g, '\\"');
                     quizData = JSON.parse(rescuedJsonStr);
                 }
@@ -584,7 +583,8 @@ createApp({
                 // ==========================================
                 // 2. 輸出作答網格區 (強制換頁，有名表頭，跨頁重複)
                 // ==========================================
-                    docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
+                    // 🌟 使用微軟官方專屬強制換頁代碼，保證作答區必定在第二頁
+                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
                     let answersHtml = "";
                     answersHtml += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
@@ -624,7 +624,7 @@ createApp({
                 // 3. 輸出教師版解答與詳解 (對答案神器)
                 // ==========================================
                 if (this.exportOptions.correctAnswers) {
-                    docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
+                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     let solutionsHtml = `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
                     
                     if (groupedQs['選擇題'].length > 0) {
