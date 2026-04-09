@@ -1,67 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Word 方程式測試</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+</head>
+<body style="padding: 50px; text-align: center; font-family: sans-serif;">
+
+<div id="app">
+    <h2>🧪 Word 原生方程式極限測試</h2>
+    <button @click="generate" style="padding: 15px 30px; font-size: 18px; background: #0d9488; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        下載 Word 測試檔 (.doc)
+    </button>
+</div>
+
 <script>
 const { createApp } = Vue;
 
 createApp({
-    data() {
-        return {
-            apiKey: localStorage.getItem('gemini_api_key') || '',
-            exam: { school: '三重商工', year: '114', semester: '2', name: '第一次期中考' }
-        }
-    },
     methods: {
-
-        // ⭐ MathML → OMML（Word可編輯核心）
-        mathMLToOMML(mathml) {
-            try {
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(mathml, "text/xml");
-
-                const serializer = new XMLSerializer();
-                const content = xml.documentElement.textContent;
-
-                // ⭐ 轉成 Word 可讀的 OMML
-                return `
-                <m:oMath>
-                    <m:r>
-                        <m:t>${content}</m:t>
-                    </m:r>
-                </m:oMath>
-                `;
-            } catch (e) {
-                return mathml;
-            }
-        },
-
-        // ⭐ LaTeX → OMML
+        // ⭐ 精簡、強大的轉換器：把 LaTeX 轉成 Word 絕對看得懂的 MathML
         formatMathToWord(text) {
             if (!text) return '';
-
             let result = text.replace(/\n/g, '<br>');
 
             const convert = (tex) => {
                 try {
-                    const html = katex.renderToString(tex, {
-                        throwOnError: false,
-                        output: 'mathml'
-                    });
-
+                    // 將 LaTeX 餵給 KaTeX，只產出 mathml
+                    const html = katex.renderToString(tex, { throwOnError: false, output: 'mathml' });
                     let match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
-
+                    
                     if (match) {
                         let mathml = match[0];
-
+                        // 🔥 關鍵防呆：移除 Word 看不懂的備用標籤
                         mathml = mathml.replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '');
                         mathml = mathml.replace(/<\/?semantics[^>]*>/gi, '');
-
-                        return this.mathMLToOMML(mathml);
+                        
+                        // 🔥 核心關鍵：補上 Word 辨識所需的 xmlns 命名空間
+                        if (!mathml.includes('xmlns=')) {
+                            mathml = mathml.replace('<math', '<math xmlns="http://www.w3.org/1998/Math/MathML"');
+                        }
+                        return mathml;
                     }
-
                     return tex;
-                } catch {
+                } catch (e) {
                     return tex;
                 }
             };
 
+            // 支援 $包裹的公式$
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (_, p1) => convert(p1.trim()));
             result = result.replace(/\$([^$]+)\$/g, (_, p1) => convert(p1.trim()));
 
@@ -72,36 +61,48 @@ createApp({
         downloadDoc(html) {
             const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'math_exam.doc';
+            a.download = 'Math_Test.doc';
+            document.body.appendChild(a);
             a.click();
-
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
         },
 
         // ⭐ 測試生成
         generate() {
-
+            // 這裡模擬 AI 產出的字串，確保都有用 $ 包住
             const sample = `
-            1. 解方程式：$x^2 + 5x + 6 = 0$
-
-            2. 計算：$\\frac{1}{2}x^2 + 3x$
-
+            1. 一元二次方程式：$x^2 + 5x + 6 = 0$
+            
+            2. 分數與多項式：$\\frac{1}{2}x^2 + 3x$
+            
             3. 根號：$\\sqrt{16 + x}$
+            
+            4. 排列組合大魔王：$P_n^3 = 10 \\times C_n^2$
+            
+            5. 極限測試：$\\lim_{n \\to \\infty} \\frac{3n^2 - 2n + 1}{-3n^2 + 5n}$
+            
+            6. 矩陣測試：$\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}$
             `;
 
+            // 將純文字轉換為含有 MathML 的 HTML
             const content = this.formatMathToWord(sample);
 
+            // 🌟 最終魔法：組合 Word HTML
+            // 包含了微軟專屬的 xmlns 宣告，以及 <m:mathPr> 喚醒方程式編輯器的代碼
             const html = `
             <html xmlns:o='urn:schemas-microsoft-com:office:office'
                   xmlns:w='urn:schemas-microsoft-com:office:word'
-                  xmlns:m='http://schemas.microsoft.com/office/2004/12/omml'>
+                  xmlns:m='http://schemas.microsoft.com/office/2004/12/omml'
+                  xmlns='http://www.w3.org/TR/REC-html40'>
             <head>
                 <meta charset='utf-8'>
-            </head>
-            <body style="font-family:標楷體; font-size:14pt;">
+                </head>
+            <body style="font-family: '標楷體', serif; font-size: 14pt; line-height: 2;">
+                <h2>Word 原生方程式轉換測試</h2>
+                <hr>
                 ${content}
             </body>
             </html>
@@ -112,3 +113,6 @@ createApp({
     }
 }).mount('#app');
 </script>
+
+</body>
+</html>
