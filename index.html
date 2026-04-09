@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap');
@@ -44,7 +47,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 text-lg font-medium tracking-wide">運用 AI 強大算力・精準匯入素材・LaTeX 完美排版</p>
+        <p class="text-gray-500 text-lg font-medium tracking-wide">AI 強大算力・精準匯入素材・Word 原生公式排版</p>
     </div>
 
     <div class="glass-card rounded-xl p-4 mb-8 flex items-center justify-between border-l-4 border-amber-400 max-w-2xl mx-auto">
@@ -87,7 +90,7 @@
         <div class="glass-card rounded-2xl p-6 md:p-8 border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
-                考卷表頭資訊 (將自動生成首頁無名、答案卷有名的雙表頭)
+                考卷表頭資訊 (將自動生成雙面雙表頭)
             </h2>
             <div class="overflow-x-auto rounded-lg shadow-sm">
                 <table class="exam-table exam-font text-black min-w-[700px]">
@@ -145,8 +148,8 @@
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center group-hover:scale-105 transition">
                         <i class="fas fa-book text-4xl text-blue-500 mb-3"></i>
-                        <h3 class="text-blue-800 font-bold">上傳課本 / 習作</h3>
-                        <p class="text-xs text-blue-600 mt-1">建立標準題型基礎</p>
+                        <h3 class="text-blue-800 font-bold">上傳課本 / 習作 <span class="text-xs text-blue-600 font-normal">(可選取多個檔案)</span></h3>
+                        <p class="text-xs text-blue-600 mt-1">若有上傳，以此作為 70% 標準題基礎</p>
                     </div>
                     <div v-else class="text-center w-full">
                         <i class="fas fa-check-circle text-3xl text-blue-600 mb-2"></i>
@@ -159,7 +162,7 @@
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center group-hover:scale-105 transition">
                         <i class="fas fa-file-signature text-4xl text-green-500 mb-3"></i>
-                        <h3 class="text-green-800 font-bold">上傳補充考卷 / 題庫</h3>
+                        <h3 class="text-green-800 font-bold">上傳補充考卷 / 題庫 <span class="text-xs text-green-600 font-normal">(可選取多個檔案)</span></h3>
                         <p class="text-xs text-green-600 mt-1">供 AI 修改數據與變化題型</p>
                     </div>
                     <div v-else class="text-center w-full">
@@ -329,11 +332,35 @@ createApp({
             });
         },
         
-        formatMathToImages(text) {
+        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML！
+        formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
-            result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => `<br><img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white}${encodeURIComponent(p1.trim())}" style="vertical-align: middle; max-width: 100%;" /><br>`);
-            result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => `<img src="https://latex.codecogs.com/png.image?\\dpi{150}\\bg{white}${encodeURIComponent(p1.trim())}" style="vertical-align: middle;" />`);
+            
+            // 將 LaTeX 餵給 KaTeX 引擎，並指定只輸出 mathml 格式
+            const convertToMathML = (tex, displayMode) => {
+                try {
+                    const html = katex.renderToString(tex, { 
+                        throwOnError: false, 
+                        output: 'mathml', 
+                        displayMode: displayMode 
+                    });
+                    // 只提取 <math ...> ... </math> 的部分，Word 就能原生識別為公式物件！
+                    const match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
+                    return match ? match[0] : tex;
+                } catch (e) { return tex; }
+            };
+
+            // 處理獨立行公式 $$...$$
+            result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
+                return '<div style="text-align:center;">' + convertToMathML(p1.trim(), true) + '</div>';
+            });
+            
+            // 處理行內公式 $...$
+            result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
+                return convertToMathML(p1.trim(), false);
+            });
+            
             return result;
         },
 
@@ -349,7 +376,7 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 動態生成表頭 HTML：第一頁無姓名，作答區有姓名
+        // 動態生成表頭 HTML：第一頁無姓名，作答區有姓名與成績
         getHeaderHTML(hasNameAndScore) {
             let html = `<table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                 <tr>
@@ -399,11 +426,11 @@ createApp({
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
-【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
+【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
 【題型配置】：${activeTypes}
 【出題原則】：\n${this.examRules}
-【輸出格式】：直接以 JSON 回傳，格式如下：
-{ "questions": [ { "type": "選擇題", "question": "題目敘述(數學公式請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
+【輸出格式】：直接以 JSON 回傳，格式如下(請確保數學公式與符號務必用 $ 包住，例如 $x^2+y^2=1$)：
+{ "questions": [ { "type": "選擇題", "question": "題目敘述", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -441,8 +468,9 @@ createApp({
                 
                 let quizData = JSON.parse(cleanJsonStr);
                 
+                // 為了讓 Word 完美辨識 MathML，我們在 html 標籤補上 xmlns:m 宣告
                 let docHTML = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns:m='http://schemas.microsoft.com/office/2004/12/omml' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head><meta charset='utf-8'><title>數學考卷</title>
                 <style>
                     @page WordSection1 { size: 257mm 364mm; margin: 15mm 15mm 15mm 15mm; mso-page-orientation: portrait; }
@@ -451,7 +479,7 @@ createApp({
                     .header-table { border-collapse: collapse; width: 100%; border: 2px solid black; }
                     .header-table td { border: 1px solid black; padding: 5px; font-size: 14pt; }
                     .ans-table { border-collapse: collapse; width: 100%; border: 2px solid black; text-align: center; }
-                    .ans-table td { border: 1px solid black; padding: 5px; font-size: 14pt; height: 45px; }
+                    .ans-table td { border: 1px solid black; padding: 5px; font-size: 14pt; height: 45px; vertical-align: middle; }
                 </style>
                 </head><body><div class="WordSection1">`;
 
@@ -477,9 +505,10 @@ createApp({
                             sectionIdx++;
                             
                             groupedQs[tName].forEach((q, idx) => {
-                                docHTML += `<p style="font-size: 14pt; margin-top: 8px; line-height: 1.5;">${idx + 1}. ${this.formatMathToImages(q.question)}</p>`;
+                                // 將題目中的 LaTeX 轉為可編輯的 MathML
+                                docHTML += `<p style="font-size: 14pt; margin-top: 8px; line-height: 1.5;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
                                 if (q.options && q.options.length > 0) {
-                                    const formattedOptions = q.options.map(opt => this.formatMathToImages(opt)).join('　　');
+                                    const formattedOptions = q.options.map(opt => this.formatMathToWord(opt)).join('　　');
                                     docHTML += `<p style="font-size: 14pt; margin-left: 25px; margin-top:0;">${formattedOptions}</p>`;
                                 }
                                 if (tName === '計算題') docHTML += `<br><br><br><br><br><br><br>`;
@@ -527,7 +556,7 @@ createApp({
                     docHTML += `<br clear=all style='mso-special-character:line-break;page-break-before:always'>`;
                     docHTML += `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
                     
-                    // 神器：直接把正確答案填入網格
+                    // 神器：直接把正確答案填入網格，並轉為 MathML
                     if (groupedQs['選擇題'].length > 0) {
                         docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; color: blue;">【選擇題 正確解答】</p>`;
                         docHTML += `<table class="ans-table" style="border: 2px solid blue;">`;
@@ -536,7 +565,7 @@ createApp({
                             docHTML += `<tr>`;
                             for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="width:20%; border-color:blue;">${i + j + 1}.</td>`; else docHTML += `<td style="width:20%; border-color:blue;"></td>`; }
                             docHTML += `</tr><tr>`;
-                            for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToImages(groupedQs['選擇題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
+                            for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['選擇題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
                             docHTML += `</tr>`;
                         }
                         docHTML += `</table>`;
@@ -550,7 +579,7 @@ createApp({
                             docHTML += `<tr>`;
                             for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="width:25%; border-color:blue;">(${i + j + 1})</td>`; else docHTML += `<td style="width:25%; border-color:blue;"></td>`; }
                             docHTML += `</tr><tr>`;
-                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToImages(groupedQs['填充題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
+                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['填充題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
                             docHTML += `</tr>`;
                         }
                         docHTML += `</table>`;
@@ -563,7 +592,7 @@ createApp({
                             docHTML += `<h3 style="background-color:#f0f0f0; display:inline-block; padding:5px;">${tName}</h3>`;
                             groupedQs[tName].forEach((q, idx) => {
                                 docHTML += `<p style="font-size: 14pt; line-height: 1.5; margin-bottom: 20px;"><b>第 ${idx + 1} 題：</b><br>`;
-                                docHTML += `[詳解] ${this.formatMathToImages(q.solution || '無')}`;
+                                docHTML += `[詳解] ${this.formatMathToWord(q.solution || '無')}`;
                                 docHTML += `</p>`;
                             });
                         }
@@ -575,7 +604,7 @@ createApp({
                 const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！請至瀏覽器的「下載」資料夾查看。";
+                statusDiv.innerText = "✅ 考卷生成成功！數學公式皆可編輯，請至瀏覽器的「下載」資料夾查看。";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
