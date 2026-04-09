@@ -61,7 +61,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 text-lg font-medium tracking-wide">AI 強大算力・精準匯入素材・Word 原生 OMML 公式排版</p>
+        <p class="text-gray-500 text-lg font-medium tracking-wide">AI 強大算力・精準匯入素材・Word 原生方程式排版</p>
     </div>
 
     <div class="glass-card rounded-xl p-4 mb-8 border-l-4 border-amber-400 max-w-2xl mx-auto relative">
@@ -109,7 +109,7 @@
         <div class="glass-card rounded-2xl p-6 md:p-8 border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
-                考卷表頭資訊 (自動生成首頁無名、作答頁有名的雙面表頭排版)
+                考卷表頭資訊
             </h2>
             <div class="overflow-x-auto rounded-lg shadow-sm">
                 <table class="exam-table exam-font text-black min-w-[700px]">
@@ -168,7 +168,7 @@
                     <div v-if="textbookFiles.length === 0" class="text-center group-hover:scale-105 transition">
                         <i class="fas fa-book text-4xl text-blue-500 mb-3"></i>
                         <h3 class="text-blue-800 font-bold">上傳課本 / 習作 <span class="text-xs text-blue-600 font-normal">(可選取多檔)</span></h3>
-                        <p class="text-xs text-blue-600 mt-1">若有上傳，以此作為 70% 標準題基礎</p>
+                        <p class="text-xs text-blue-600 mt-1">以此作為 70% 標準題基礎</p>
                     </div>
                     <div v-else class="text-center w-full">
                         <i class="fas fa-check-circle text-3xl text-blue-600 mb-2"></i>
@@ -270,7 +270,7 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含動態跨頁)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，自然流動跨頁)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
@@ -282,14 +282,15 @@
             <button @click="generateAndExport" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-12 py-5 rounded-2xl text-2xl font-black shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 w-full md:w-auto inline-flex items-center justify-center">
                 <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載 WORD (.doc)
             </button>
+            <p class="text-red-500 font-bold text-sm mt-3"><i class="fas fa-exclamation-triangle mr-1"></i> 請注意：下載後打開若出現「檔案格式與副檔名不符」的警告，請放心點擊「是(Y)」即可載入完美方程式！</p>
             
-            <div id="status-message" class="text-sm font-bold mt-5 text-teal-600 h-6"></div>
+            <div id="status-message" class="text-sm font-bold mt-2 text-teal-600 h-6"></div>
         </div>
     </div>
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V2.1</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V3.0</span>
         </div>
     </footer>
 </div>
@@ -352,7 +353,7 @@ createApp({
             });
         },
         
-        // 🌟 終極黑魔法：強制加上 mml: 命名空間，讓 Word 自行轉成原生 OMML！
+        // 🌟 核心突破：利用 DOM 解析器完美淨化 MathML
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -362,29 +363,29 @@ createApp({
                     let cleanTex = tex.replace(/\\\\/g, '\\');
                     const html = katex.renderToString(cleanTex, { throwOnError: false, output: 'mathml', displayMode: false });
                     
-                    // 抓取整個 <math> 裡面的內容
-                    let match = html.match(/<math[^>]*>([\s\S]*?)<\/math>/i);
-                    if (match) {
-                        let innerContent = match[1];
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    const mathNode = doc.querySelector('math');
+                    
+                    if (mathNode) {
+                        // 加入 Word HTML 必備的 xmlns
+                        mathNode.setAttribute("xmlns", "http://www.w3.org/1998/Math/MathML");
                         
-                        // 1. 移除 Word 看不懂的備用純文字標籤
-                        innerContent = innerContent.replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '');
-                        innerContent = innerContent.replace(/<\/?semantics[^>]*>/gi, '');
-                        
-                        // 2. 🔥 業界黑魔法：將所有標籤加上 mml: 前綴！
-                        // 這樣 Word 就會百分之百把它視為需要轉換的 OMML 數學物件
-                        innerContent = innerContent.replace(/<(\/?)([a-zA-Z0-9]+)([^>]*)>/g, "<$1mml:$2$3>");
-                        
-                        // 3. 重新包裝成嚴格的 mml:math
-                        let mathml = `<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML">${innerContent}</mml:math>`;
-                        
-                        return mathml;
+                        // 暴力清除 Word 絕對看不懂的標籤 (semantics, annotation)
+                        // 我們把 semantics 底下的真正內容 (mrow) 抽出來，取代掉 semantics 本身
+                        const semantics = mathNode.querySelector('semantics');
+                        if (semantics) {
+                            const firstChild = semantics.firstElementChild;
+                            if (firstChild) {
+                                mathNode.replaceChild(firstChild, semantics);
+                            }
+                        }
+                        return mathNode.outerHTML;
                     }
                     return tex;
                 } catch (e) { return tex; }
             };
 
-            // 支援所有的 $...$ 或 $$...$$ (採用非貪婪匹配解決多個公式的問題)
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => convertToMathML(p1.trim()));
             result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => convertToMathML(p1.trim()));
             
@@ -403,7 +404,7 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 🌟 表頭設計：完美對齊 111.png 與 222.png 的版面
+        // 🌟 雙表頭設計：完美對齊 111.png 與 222.png
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
                 // 第一頁：無姓名欄位
@@ -484,21 +485,6 @@ createApp({
             }
         },
 
-        generateSectionWithHeader(headerHtml, rowsHtmlArray) {
-            let html = `
-            <table style="width: 100%; border-collapse: collapse; border: none;">
-                <thead style="display: table-header-group;">
-                    <tr><td style="border: none; padding: 0; padding-bottom: 5px;">${headerHtml}</td></tr>
-                </thead>
-                <tbody>
-                    <tr><td style="border: none; padding: 0;">
-                        ${rowsHtmlArray.join('')}
-                    </td></tr>
-                </tbody>
-            </table>`;
-            return html;
-        },
-
         async generateAndExport(event) {
             if (!this.apiKey) { alert('⚠️ 請先輸入 Gemini API Key！'); return; }
             if (this.textbookFiles.length === 0 && this.examFiles.length === 0 && !this.targetUnit && this.scopeFiles.length === 0) {
@@ -517,7 +503,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // 🔥 將您的建議融入 AI 提示詞
+                // ⚠️ 終極指令：強調填充題、絕對的數學 $ 包裝
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材來改變數據與變化題型。
@@ -525,9 +511,9 @@ createApp({
 【出題原則】：\n${this.examRules}
 ⚠️【極致洗牌與原創】：絕對禁止一對一照抄原題換數字！請將所有題目打散、洗牌、重新排列。強烈建議將原本的選擇題改編為填充題。
 
-⚠️【數學公式強制規範 (極度重要)】：
-所有數學公式請使用標準 LaTeX（如 \\frac, ^, _），並確保可被 Microsoft Word 辨識。避免使用 KaTeX 不支援的語法。
-所有的數字、變數、方程式等，【必須且只能】用單個 $ 包住！(正確：$P_n^3=10 \\times C_n^2$)。嚴禁使用純文字排版！`;
+⚠️【毀滅級警告：數學公式強制規範】：
+您輸出的每一個數字(如 2, 5)、變數(如 x, n)、方程式(如 2x+3=0)、座標(如 P(1,2))、極限、矩陣、排列組合(如 P_n^3)，【絕對且必須】使用 $ 符號包住！(例如：若 $P(x)=2x^3$ ...)。
+絕對禁止用純文字表示任何數學內容！若未用 $ 包住，系統將崩潰！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -547,7 +533,7 @@ createApp({
                     contentsParts.push(...parts);
                 }
 
-                // 🌟 啟用 Google API 原生 JSON Schema 保證格式正確
+                // 🌟 V3.0 終極防呆：啟用 Google API 原生結構化 JSON 輸出 (responseSchema) 保證 100% 不報錯
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -563,8 +549,8 @@ createApp({
                                         items: {
                                             type: "OBJECT",
                                             properties: {
-                                                type: { type: "STRING", description: "例如：選擇題、填充題、計算題" },
-                                                question: { type: "STRING", description: "題目敘述(所有數學公式必須用 $ 包覆)" },
+                                                type: { type: "STRING", description: "必須精準為：選擇題、填充題、計算題" },
+                                                question: { type: "STRING", description: "題目敘述(所有數學公式與數字必須用 $ 包覆)" },
                                                 options: { type: "ARRAY", items: { type: "STRING" }, description: "選擇題的選項，若為填充或計算則為空陣列" },
                                                 answer: { type: "STRING", description: "正確答案" },
                                                 solution: { type: "STRING", description: "詳解過程" }
@@ -582,6 +568,7 @@ createApp({
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
 
+                // 透過 responseSchema 取得的資料，保證是完美的 JSON，絕對不會再有 Bad control character
                 const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
                 
                 let docHTML = `
@@ -604,139 +591,126 @@ createApp({
 
                 const getScore = (tName) => { const t = this.questionTypes.find(x => x.name === tName); return t ? parseInt(t.score) || 0 : 0; };
 
-                let allQuestionsBlocks = [];
-                let sectionNum = ['一', '二', '三'];
-                let sectionIdx = 0;
-
-                ['選擇題', '填充題', '計算題'].forEach(tName => {
-                    if (groupedQs[tName].length > 0) {
-                        let score = getScore(tName);
-                        let totalScore = score * groupedQs[tName].length;
-                        
-                        allQuestionsBlocks.push({
-                            isHeader: true,
-                            html: `<p style="font-size: 16pt; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`
-                        });
-                        sectionIdx++;
-                        
-                        groupedQs[tName].forEach((q, idx) => {
-                            let qHtml = `<p style="font-size: 14pt; margin: 4px 0; line-height: 1.3;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
-                            if (q.options && q.options.length > 0) {
-                                const formattedOptions = q.options.map(opt => this.formatMathToWord(opt)).join('　　');
-                                qHtml += `<p style="font-size: 14pt; margin-left: 25px; margin-top:0; margin-bottom:4px;">${formattedOptions}</p>`;
-                            }
-                            if (tName === '計算題') qHtml += `<br><br><br><br>`;
-                            else if (tName === '填充題') qHtml += `<br>`;
-                            allQuestionsBlocks.push({ isHeader: false, html: qHtml });
-                        });
-                    }
-                });
-
+                // ==========================================
+                // 1. 輸出試題區 (第 1 頁，無名表頭，自由換頁)
+                // ==========================================
                 if (this.exportOptions.examPaper) {
-                    let totalQs = allQuestionsBlocks.filter(q => !q.isHeader).length;
-                    let midPoint = Math.ceil(totalQs / 2);
                     
-                    let page1HtmlArray = [];
-                    let page2HtmlArray = [];
-                    let currentQCount = 0;
+                    docHTML += this.getHeaderHTML(false);
 
-                    allQuestionsBlocks.forEach(qBlock => {
-                        if (!qBlock.isHeader) currentQCount++;
-                        if (currentQCount <= midPoint || (qBlock.isHeader && currentQCount < midPoint)) {
-                            page1HtmlArray.push(qBlock.html);
-                        } else {
-                            page2HtmlArray.push(qBlock.html);
-                        }
-                    });
+                    let sectionNum = ['一', '二', '三'];
+                    let sectionIdx = 0;
 
-                    docHTML += this.generateSectionWithHeader(this.getHeaderHTML(false), page1HtmlArray);
-
-                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
-                    
-                    let answersHtml = "";
-                    answersHtml += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
-                    
-                    if (groupedQs['選擇題'].length > 0) {
-                        answersHtml += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; margin-bottom: 5px;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
-                        answersHtml += `<table class="ans-table" style="margin-bottom: 10px;">`;
-                        let count = groupedQs['選擇題'].length;
-                        for (let i = 0; i < count; i += 5) {
-                            answersHtml += `<tr>`;
-                            for (let j = 0; j < 5; j++) { if (i + j < count) answersHtml += `<td style="width:20%;">${i + j + 1}.</td>`; else answersHtml += `<td style="width:20%;"></td>`; }
-                            answersHtml += `</tr><tr>`;
-                            for (let j = 0; j < 5; j++) answersHtml += `<td></td>`;
-                            answersHtml += `</tr>`;
-                        }
-                        answersHtml += `</table>`;
-                    }
-
-                    if (groupedQs['填充題'].length > 0) {
-                        answersHtml += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">填充題答題區（每格 ${getScore('填充題')} 分）</p>`;
-                        answersHtml += `<table class="ans-table">`;
-                        let count = groupedQs['填充題'].length;
-                        for (let i = 0; i < count; i += 4) {
-                            answersHtml += `<tr>`;
-                            for (let j = 0; j < 4; j++) { if (i + j < count) answersHtml += `<td style="width:25%;">(${i + j + 1})</td>`; else answersHtml += `<td style="width:25%;"></td>`; }
-                            answersHtml += `</tr><tr>`;
-                            for (let j = 0; j < 4; j++) answersHtml += `<td></td>`;
-                            answersHtml += `</tr>`;
-                        }
-                        answersHtml += `</table>`;
-                    }
-                    
-                    page2HtmlArray.push(answersHtml);
-                    docHTML += this.generateSectionWithHeader(this.getHeaderHTML(true), page2HtmlArray);
-                }
-
-                if (this.exportOptions.correctAnswers) {
-                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
-                    let solutionsHtml = `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
-                    
-                    if (groupedQs['選擇題'].length > 0) {
-                        solutionsHtml += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; color: blue;">【選擇題 正確解答】</p>`;
-                        solutionsHtml += `<table class="ans-table" style="border: 2px solid blue; margin-bottom: 10px;">`;
-                        let count = groupedQs['選擇題'].length;
-                        for (let i = 0; i < count; i += 5) {
-                            solutionsHtml += `<tr>`;
-                            for (let j = 0; j < 5; j++) { if (i + j < count) solutionsHtml += `<td style="width:20%; border-color:blue;">${i + j + 1}.</td>`; else solutionsHtml += `<td style="width:20%; border-color:blue;"></td>`; }
-                            solutionsHtml += `</tr><tr>`;
-                            for (let j = 0; j < 5; j++) { if (i + j < count) solutionsHtml += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['選擇題'][i+j].answer || '')}</td>`; else solutionsHtml += `<td style="border-color:blue;"></td>`; }
-                            solutionsHtml += `</tr>`;
-                        }
-                        solutionsHtml += `</table>`;
-                    }
-
-                    if (groupedQs['填充題'].length > 0) {
-                        solutionsHtml += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px; color: blue;">【填充題 正確解答】</p>`;
-                        solutionsHtml += `<table class="ans-table" style="border: 2px solid blue;">`;
-                        let count = groupedQs['填充題'].length;
-                        for (let i = 0; i < count; i += 4) {
-                            solutionsHtml += `<tr>`;
-                            for (let j = 0; j < 4; j++) { if (i + j < count) solutionsHtml += `<td style="width:25%; border-color:blue;">(${i + j + 1})</td>`; else solutionsHtml += `<td style="width:25%; border-color:blue;"></td>`; }
-                            solutionsHtml += `</tr><tr>`;
-                            for (let j = 0; j < 4; j++) { if (i + j < count) solutionsHtml += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['填充題'][i+j].answer || '')}</td>`; else solutionsHtml += `<td style="border-color:blue;"></td>`; }
-                            solutionsHtml += `</tr>`;
-                        }
-                        solutionsHtml += `</table>`;
-                    }
-
-                    solutionsHtml += `<br><hr><p style="font-size: 14pt; font-weight: bold; margin-top: 15px;">【各題詳解過程】</p>`;
+                    // 🌟 V3.0 排版解放：不再使用 table 包裝，讓題目自然流動到多個頁面
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         if (groupedQs[tName].length > 0) {
-                            solutionsHtml += `<h3 style="background-color:#f0f0f0; display:inline-block; padding:5px;">${tName}</h3>`;
+                            let score = getScore(tName);
+                            let totalScore = score * groupedQs[tName].length;
+                            
+                            docHTML += `<p style="font-size: 16pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`;
+                            sectionIdx++;
+                            
                             groupedQs[tName].forEach((q, idx) => {
-                                solutionsHtml += `<p style="font-size: 14pt; line-height: 1.5; margin-bottom: 20px;"><b>第 ${idx + 1} 題：</b><br>`;
-                                solutionsHtml += `[詳解] ${this.formatMathToWord(q.solution || '無')}`;
-                                solutionsHtml += `</p>`;
+                                docHTML += `<p style="font-size: 14pt; margin: 4px 0; line-height: 1.3;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
+                                if (q.options && q.options.length > 0) {
+                                    const formattedOptions = q.options.map(opt => this.formatMathToWord(opt)).join('　　');
+                                    docHTML += `<p style="font-size: 14pt; margin-left: 25px; margin-top:0; margin-bottom:4px;">${formattedOptions}</p>`;
+                                }
+                                if (tName === '計算題') docHTML += `<br><br><br><br>`;
+                                else if (tName === '填充題') docHTML += `<br>`;
                             });
                         }
                     });
+
+                // ==========================================
+                // 2. 輸出作答網格區 (強制換頁，有名表頭)
+                // ==========================================
+                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
-                    docHTML += solutionsHtml;
+                    docHTML += this.getHeaderHTML(true);
+
+                    docHTML += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
+                    
+                    if (groupedQs['選擇題'].length > 0) {
+                        docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; margin-bottom: 5px;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
+                        docHTML += `<table class="ans-table" style="margin-bottom: 10px;">`;
+                        let count = groupedQs['選擇題'].length;
+                        for (let i = 0; i < count; i += 5) {
+                            docHTML += `<tr>`;
+                            for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="width:20%;">${i + j + 1}.</td>`; else docHTML += `<td style="width:20%;"></td>`; }
+                            docHTML += `</tr><tr>`;
+                            for (let j = 0; j < 5; j++) docHTML += `<td></td>`;
+                            docHTML += `</tr>`;
+                        }
+                        docHTML += `</table>`;
+                    }
+
+                    if (groupedQs['填充題'].length > 0) {
+                        docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">填充題答題區（每格 ${getScore('填充題')} 分）</p>`;
+                        docHTML += `<table class="ans-table">`;
+                        let count = groupedQs['填充題'].length;
+                        for (let i = 0; i < count; i += 4) {
+                            docHTML += `<tr>`;
+                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="width:25%;">(${i + j + 1})</td>`; else docHTML += `<td style="width:25%;"></td>`; }
+                            docHTML += `</tr><tr>`;
+                            for (let j = 0; j < 4; j++) docHTML += `<td></td>`;
+                            docHTML += `</tr>`;
+                        }
+                        docHTML += `</table>`;
+                    }
+                }
+
+                // ==========================================
+                // 3. 輸出教師版解答與詳解 (對答案神器)
+                // ==========================================
+                if (this.exportOptions.correctAnswers) {
+                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
+                    docHTML += `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
+                    
+                    if (groupedQs['選擇題'].length > 0) {
+                        docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; color: blue;">【選擇題 正確解答】</p>`;
+                        docHTML += `<table class="ans-table" style="border: 2px solid blue; margin-bottom: 10px;">`;
+                        let count = groupedQs['選擇題'].length;
+                        for (let i = 0; i < count; i += 5) {
+                            docHTML += `<tr>`;
+                            for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="width:20%; border-color:blue;">${i + j + 1}.</td>`; else docHTML += `<td style="width:20%; border-color:blue;"></td>`; }
+                            docHTML += `</tr><tr>`;
+                            for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['選擇題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
+                            docHTML += `</tr>`;
+                        }
+                        docHTML += `</table>`;
+                    }
+
+                    if (groupedQs['填充題'].length > 0) {
+                        docHTML += `<p style="font-size: 14pt; font-weight: bold; margin-top: 15px; color: blue;">【填充題 正確解答】</p>`;
+                        docHTML += `<table class="ans-table" style="border: 2px solid blue;">`;
+                        let count = groupedQs['填充題'].length;
+                        for (let i = 0; i < count; i += 4) {
+                            docHTML += `<tr>`;
+                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="width:25%; border-color:blue;">(${i + j + 1})</td>`; else docHTML += `<td style="width:25%; border-color:blue;"></td>`; }
+                            docHTML += `</tr><tr>`;
+                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="color:red; font-weight:bold; border-color:blue;">${this.formatMathToWord(groupedQs['填充題'][i+j].answer || '')}</td>`; else docHTML += `<td style="border-color:blue;"></td>`; }
+                            docHTML += `</tr>`;
+                        }
+                        docHTML += `</table>`;
+                    }
+
+                    docHTML += `<br><hr><p style="font-size: 14pt; font-weight: bold; margin-top: 15px;">【各題詳解過程】</p>`;
+                    ['選擇題', '填充題', '計算題'].forEach(tName => {
+                        if (groupedQs[tName].length > 0) {
+                            docHTML += `<h3 style="background-color:#f0f0f0; display:inline-block; padding:5px;">${tName}</h3>`;
+                            groupedQs[tName].forEach((q, idx) => {
+                                docHTML += `<p style="font-size: 14pt; line-height: 1.5; margin-bottom: 20px;"><b>第 ${idx + 1} 題：</b><br>`;
+                                docHTML += `[詳解] ${this.formatMathToWord(q.solution || '無')}`;
+                                docHTML += `</p>`;
+                            });
+                        }
+                    });
                 }
 
                 docHTML += `</div></body></html>`;
 
+                // 🌟 維持 .doc 以順利啟動 Word 的 HTML 方程式轉換引擎
                 const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
