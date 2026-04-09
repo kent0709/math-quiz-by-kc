@@ -37,6 +37,26 @@
 
 <div id="app" class="w-full max-w-5xl px-4 pt-12 pb-6">
     
+    <div v-if="showApiTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
+            <button @click="showApiTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
+            <h3 class="text-2xl font-bold text-teal-700 mb-4"><i class="fas fa-key mr-2"></i>如何獲取免費 API Key？</h3>
+            <div class="space-y-4 text-gray-700 font-medium">
+                <p class="text-sm bg-amber-50 text-amber-700 p-3 rounded-lg border border-amber-200">
+                    <i class="fas fa-info-circle mr-2"></i><b>分享給同事超安全：</b>本網頁是純靜態運行，金鑰只存在您的電腦。分享網址給別人時，他們必須自己申請金鑰才能用，不會扣到您的額度！
+                </p>
+                <ol class="list-decimal pl-5 space-y-3">
+                    <li>請前往 Google 官方開發者平台：<a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-bold">Google AI Studio</a></li>
+                    <li>登入您的 Google 帳號。</li>
+                    <li>點擊畫面左側的 <b>「Get API key」</b>，然後按下藍色按鈕 <b>「Create API key」</b>。</li>
+                    <li>在新專案中生成金鑰，複製那串以 <code class="bg-gray-100 text-red-500 px-1 rounded">AIza</code> 開頭的文字。</li>
+                    <li>回到這個網頁，將金鑰貼入下方的輸入框即可開始出題！</li>
+                </ol>
+            </div>
+            <button @click="showApiTutorial = false" class="mt-6 w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">我明白了，關閉教學</button>
+        </div>
+    </div>
+
     <div class="text-center mb-8">
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
@@ -44,14 +64,19 @@
         <p class="text-gray-500 text-lg font-medium tracking-wide">AI 強大算力・精準匯入素材・Word 原生公式排版</p>
     </div>
 
-    <div class="glass-card rounded-xl p-4 mb-8 flex items-center justify-between border-l-4 border-amber-400 max-w-2xl mx-auto">
+    <div class="glass-card rounded-xl p-4 mb-8 border-l-4 border-amber-400 max-w-2xl mx-auto relative">
         <div class="flex items-center w-full">
             <i class="fas fa-key text-amber-500 text-xl mr-3"></i>
             <div class="flex-grow">
-                <label class="text-xs font-bold text-gray-500">Gemini API Key (僅儲存於您的瀏覽器)</label>
-                <input type="password" v-model="apiKey" @change="saveApiKey" placeholder="輸入 _AIza_ 開頭的 API 金鑰..." class="w-full bg-transparent border-b border-gray-300 focus:border-teal-500 outline-none text-gray-700 py-1 text-sm font-mono">
+                <label class="text-xs font-bold text-gray-500 flex items-center justify-between">
+                    Gemini API Key (僅儲存於您的瀏覽器本地端)
+                    <button @click="showApiTutorial = true" class="text-blue-500 hover:text-blue-700 text-xs flex items-center bg-blue-50 px-2 py-0.5 rounded-full transition">
+                        <i class="fas fa-question-circle mr-1"></i>同事不會用？點我看教學
+                    </button>
+                </label>
+                <input type="password" v-model="apiKey" @change="saveApiKey" placeholder="輸入 _AIza_ 開頭的 API 金鑰..." class="w-full bg-transparent border-b border-gray-300 focus:border-teal-500 outline-none text-gray-700 py-2 text-sm font-mono mt-1">
             </div>
-            <div v-if="apiKey" class="ml-3 text-green-500 text-sm font-bold flex items-center">
+            <div v-if="apiKey" class="ml-3 text-green-500 text-sm font-bold flex items-center whitespace-nowrap">
                 <i class="fas fa-check-circle mr-1"></i> 已設定
             </div>
         </div>
@@ -245,17 +270,22 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，自動跨頁佈局與作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含動態跨頁)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
                     <input type="checkbox" v-model="exportOptions.correctAnswers" class="custom-checkbox mr-3">
-                    <i class="fas fa-check-circle mr-2 text-blue-500 text-lg"></i> 2. 教師版解答與詳解 (含對答案網格)
+                    <i class="fas fa-check-circle mr-2 text-blue-500 text-lg"></i> 2. 教師解答卷 (含對答案網格)
+                </label>
+
+                <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-amber-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-amber-200">
+                    <input type="checkbox" v-model="exportOptions.exportLatex" class="custom-checkbox mr-3">
+                    <i class="fas fa-code mr-2 text-amber-500 text-lg"></i> 3. 匯出純 LaTeX 原始碼 (.tex) <span class="text-xs text-gray-400 font-normal ml-1">(備用：供貼入Word轉換)</span>
                 </label>
             </div>
 
             <button @click="generateAndExport" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-12 py-5 rounded-2xl text-2xl font-black shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 w-full md:w-auto inline-flex items-center justify-center">
-                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載 WORD
+                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載檔案
             </button>
             
             <div id="status-message" class="text-sm font-bold mt-5 text-teal-600 h-6"></div>
@@ -264,7 +294,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.5</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.6</span>
         </div>
     </footer>
 </div>
@@ -276,6 +306,7 @@ createApp({
     data() {
         return {
             apiKey: localStorage.getItem('gemini_api_key') || '',
+            showApiTutorial: false,
             exam: {
                 school: '三重商工',
                 year: '114',
@@ -307,7 +338,8 @@ createApp({
             ],
             exportOptions: {
                 examPaper: true,
-                correctAnswers: true
+                correctAnswers: true,
+                exportLatex: false // V1.6 新增選項
             }
         }
     },
@@ -326,7 +358,7 @@ createApp({
             });
         },
         
-        // 🌟 破釜沉舟版：徹底淨化 MathML 標籤，保證 Word 100% 原生可編輯
+        // 🌟 破釜沉舟版核心突破：強制淨化 MathML，讓 Word 原生方程式 100% 成功
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -338,7 +370,7 @@ createApp({
                     let match = html.match(/<math[^>]*>[\s\S]*?<\/math>/i);
                     if (match) {
                         let mathml = match[0];
-                        // 🔥 終極殺招：強制移除 Word 看不懂的隱藏標籤，只保留乾淨的數學結構
+                        // 🔥 終極暴力拆解：強制移除 Word 看不懂的隱藏標籤，只保留乾淨的數學結構
                         mathml = mathml.replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '');
                         mathml = mathml.replace(/<\/?semantics[^>]*>/gi, '');
                         
@@ -369,9 +401,23 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 🌟 完美雙表頭：首頁無姓名，作答頁有姓名與總分
+        // V1.6 備用保險：匯出純文字 LaTeX
+        downloadLatexFile(jsonText, filename) {
+            const blob = new Blob(['\ufeff', jsonText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        },
+
+        // 🌟 表頭設計
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
+                // 第一頁：無姓名欄位
                 return `
                 <table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                     <tr>
@@ -397,6 +443,7 @@ createApp({
                 <p style="text-align: right; font-size: 12pt; margin-top: 2px; margin-bottom: 5px;">注意：請將答案填入背面作答區！！</p>
                 `;
             } else {
+                // 第二頁作答區：有姓名欄位與巨大總分框
                 return `
                 <table class="header-table" style="border-collapse: collapse; width: 100%; border: 2px solid black;">
                     <tr>
@@ -434,9 +481,7 @@ createApp({
             }
         },
 
-        // 🌟 解放換頁排版：不再使用綁死的大表格，使用標準的 HTML 流動排版
         generateSectionWithHeader(headerHtml, rowsHtmlArray) {
-            // 利用 Word 專屬的頭部標籤結構，讓表頭能自動重複
             let html = `
             <table style="width: 100%; border-collapse: collapse; border: none;">
                 <thead style="display: table-header-group;">
@@ -469,7 +514,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // ⚠️ V1.5 終極指令：強制題型格式、嚴格禁止雙胞胎、強力要求單一 $ 包覆
+                // ⚠️ 終極指令：強調填充題與計算題，嚴格禁止純文字公式
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材來改變數據與變化題型。
@@ -522,7 +567,6 @@ createApp({
                 const jsonMatch = resultText.match(/\{[\s\S]*\}/);
                 if(jsonMatch) {
                     cleanJsonStr = jsonMatch[0];
-                    // 🚨 終極淨化：自動消滅所有隱藏的控制字元與真實換行，徹底解決 Bad control character
                     cleanJsonStr = cleanJsonStr.replace(/[\n\r\t]+/g, ' ');
                 } else {
                     throw new Error("AI 回傳的格式不正確。");
@@ -536,10 +580,25 @@ createApp({
                     let rescuedJsonStr = cleanJsonStr.replace(/\\/g, "\\\\").replace(/\\\\"/g, '\\"');
                     quizData = JSON.parse(rescuedJsonStr);
                 }
+
+                // 🌟 選項3：若勾選匯出純 LaTeX 檔，這裡先觸發下載
+                if (this.exportOptions.exportLatex) {
+                    let latexOutput = `% ${this.exam.school} ${this.exam.name} 考卷原始碼\n\n`;
+                    if(quizData.questions) {
+                        quizData.questions.forEach((q, i) => {
+                            latexOutput += `\\textbf{${i+1}. } ${q.question}\n`;
+                            if(q.options) latexOutput += q.options.join(" \\quad ") + "\n";
+                            latexOutput += `\n% 答案：${q.answer}\n% 詳解：${q.solution}\n\n`;
+                        });
+                    }
+                    this.downloadLatexFile(latexOutput, `${this.exam.school}_${this.exam.name}_LaTeX原始碼.tex`);
+                }
                 
+                // 🌟 V1.6 終極方程式喚醒代碼：加入 Microsoft Office Math XML 宣告
                 let docHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns:m='http://schemas.microsoft.com/office/2004/12/omml' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head><meta charset='utf-8'><title>數學考卷</title>
+                <head>
+                <meta charset='utf-8'><title>數學考卷</title>
                 <style>
                     @page WordSection1 { size: 257mm 364mm; margin: 12mm 15mm 15mm 15mm; mso-page-orientation: portrait; }
                     div.WordSection1 { page: WordSection1; }
@@ -547,7 +606,7 @@ createApp({
                     .header-table { border-collapse: collapse; width: 100%; border: 2px solid black; }
                     .header-table td { border: 1px solid black; padding: 5px; font-size: 14pt; }
                     .ans-table { border-collapse: collapse; width: 100%; border: 2px solid black; text-align: center; }
-                    .ans-table td { border: 1px solid black; padding: 5px; font-size: 14pt; height: 45px; vertical-align: middle; }
+                    .ans-table td { border: 1px solid black; padding: 5px; font-size: 14pt; height: 35px; vertical-align: middle; }
                 </style>
                 </head><body><div class="WordSection1">`;
 
@@ -556,7 +615,6 @@ createApp({
 
                 const getScore = (tName) => { const t = this.questionTypes.find(x => x.name === tName); return t ? parseInt(t.score) || 0 : 0; };
 
-                // 🌟 建立所有題目的平坦陣列，方便進行自動切頁
                 let allQuestionsBlocks = [];
                 let sectionNum = ['一', '二', '三'];
                 let sectionIdx = 0;
@@ -585,9 +643,6 @@ createApp({
                     }
                 });
 
-                // ==========================================
-                // 1. 自動拆分題目，避免全擠在第一頁
-                // ==========================================
                 if (this.exportOptions.examPaper) {
                     let totalQs = allQuestionsBlocks.filter(q => !q.isHeader).length;
                     let midPoint = Math.ceil(totalQs / 2);
@@ -598,8 +653,6 @@ createApp({
 
                     allQuestionsBlocks.forEach(qBlock => {
                         if (!qBlock.isHeader) currentQCount++;
-                        
-                        // 若還沒超過一半，或剛好遇到標題且還沒超過一半，就放第一頁
                         if (currentQCount <= midPoint || (qBlock.isHeader && currentQCount < midPoint)) {
                             page1HtmlArray.push(qBlock.html);
                         } else {
@@ -607,15 +660,10 @@ createApp({
                         }
                     });
 
-                    // 輸出第一頁 (無名表頭)
                     docHTML += this.generateSectionWithHeader(this.getHeaderHTML(false), page1HtmlArray);
 
-                // ==========================================
-                // 2. 輸出第二頁作答區 (強制換頁，有名表頭)
-                // ==========================================
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
-                    // 第二頁包含剩下的題目 + 作答網格
                     let answersHtml = "";
                     answersHtml += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
                     
@@ -651,9 +699,6 @@ createApp({
                     docHTML += this.generateSectionWithHeader(this.getHeaderHTML(true), page2HtmlArray);
                 }
 
-                // ==========================================
-                // 3. 輸出教師版解答與詳解 (對答案神器)
-                // ==========================================
                 if (this.exportOptions.correctAnswers) {
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     let solutionsHtml = `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
@@ -706,7 +751,7 @@ createApp({
                 const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！題目已自動分頁，公式皆可原生編輯！";
+                statusDiv.innerText = "✅ 考卷生成成功！Word 方程式引擎已喚醒，請至「下載」資料夾查看。";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
