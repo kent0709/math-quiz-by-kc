@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手</title>
+    <title>數學出題小幫手 (排版穩定版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background: #f0fdfa; min-height: 100vh; }
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 24px;}
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .custom-checkbox { appearance: none; width: 20px; height: 20px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle;}
         .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
         .box-radio { appearance: none; width: 14px; height: 14px; border: 1.5px solid #000; cursor: pointer; vertical-align: middle;}
@@ -25,7 +24,8 @@
 
 <div id="app" class="max-w-4xl mx-auto pt-10 px-4">
     <div class="text-center mb-8">
-        <h1 class="text-4xl font-black text-teal-600 mb-2">數學出題小幫手 (穩定排版版)</h1>
+        <h1 class="text-4xl font-black text-teal-600 mb-2">數學出題小幫手</h1>
+        <p class="text-gray-500">第一、二頁精準排版版</p>
     </div>
 
     <div class="glass-card flex items-center">
@@ -62,7 +62,7 @@
     <div class="glass-card">
         <h2 class="text-lg font-bold mb-4 border-l-4 border-teal-500 pl-2">2. 題型與素材設定</h2>
         <div class="mb-4">
-            <textarea v-model="examRules" rows="3" class="w-full border p-2 rounded" placeholder="輸入出題單元或特別要求..."></textarea>
+            <textarea v-model="examRules" rows="3" class="w-full border p-2 rounded" placeholder="輸入出題要求..."></textarea>
         </div>
         <div class="space-y-3">
             <div v-for="(type, index) in questionTypes" :key="index" class="flex items-center gap-4">
@@ -78,7 +78,7 @@
         <button @click="generateExam" class="bg-teal-600 text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-teal-700 text-xl">
             <i class="fas fa-file-word mr-2"></i> 開始產生 Word 考卷 (.doc)
         </button>
-        <div id="status-message" class="mt-4 text-red-600 font-bold"></div>
+        <div id="status-message" class="mt-4 text-red-600 font-bold text-lg"></div>
     </div>
 </div>
 
@@ -90,7 +90,7 @@ createApp({
         return {
             apiKey: localStorage.getItem('gemini_api_key') || '',
             exam: { school: '三重商工', year: '114', semester: '2', name: '第一次期中考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
-            examRules: '範圍：向量與矩陣。選擇題請出10題，填充題8題。公式請務必使用 LaTeX 語法。',
+            examRules: '範圍：高中數學。請務必使用 $ 包住所有的數學公式與數字。',
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6 },
                 { name: '填充題', enabled: true, count: 8, score: 5 },
@@ -101,17 +101,16 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
 
-        // 穩定版：公式轉換
+        // 轉換數學公式為 MathML
         formatMath(text) {
             if (!text) return '';
-            let res = text.replace(/\n/g, '<br/>');
+            let res = text.replace(/\n/g, '<br>');
             
             const toMathML = (tex) => {
                 try {
                     const html = katex.renderToString(tex, { output: 'mathml', throwOnError: false });
                     const match = html.match(/<math[^>]*>([\s\S]*?)<\/math>/i);
                     if (match) {
-                        // 乾淨的 MathML，Word 可以直接解析
                         let clean = match[1].replace(/<annotation[^>]*>[\s\S]*?<\/annotation>/gi, '').replace(/<\/?semantics[^>]*>/gi, '');
                         return `<math xmlns="http://www.w3.org/1998/Math/MathML">${clean}</math>`;
                     }
@@ -124,15 +123,15 @@ createApp({
             return res;
         },
 
-        // 表頭 1 (題目頁用，無姓名)
-        getHeader1() {
+        // 【精準排版】第一頁表頭 (無姓名)
+        getHeaderPage1() {
             return `
-            <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 10px;">
                 <tr>
-                    <td colspan="2" align="center" style="font-size: 20pt; font-weight: bold; color: red;">
+                    <td align="center" style="font-size: 20pt; font-weight: bold; color: red;">
                         ${this.exam.school} ${this.exam.year}學年第${this.exam.semester}學期 ${this.exam.name}
                     </td>
-                    <td rowspan="2" width="25%" style="font-size: 12pt; line-height: 1.5;">
+                    <td rowspan="2" width="120" style="font-size: 12pt; line-height: 1.5; padding: 10px;">
                         科目：<b>數學</b><br>
                         ${this.exam.useCard?'■':'□'}使用答案卡<br>
                         ${!this.exam.useCard?'■':'□'}不使用答案卡<br>
@@ -140,75 +139,70 @@ createApp({
                     </td>
                 </tr>
                 <tr>
-                    <td width="37.5%" style="font-size: 12pt; padding: 5px;">
+                    <td style="font-size: 12pt; padding: 10px;">
                         科別：${this.exam.dept==='工科'?'■':'□'}工科　${this.exam.dept==='商科'?'■':'□'}商科　${this.exam.dept==='體育科'?'■':'□'}體育科
-                    </td>
-                    <td width="37.5%" style="font-size: 12pt; padding: 5px;">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         年級：${this.exam.grade==='高一'?'■':'□'}高一　${this.exam.grade==='高二'?'■':'□'}高二　${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                 </tr>
             </table>
-            <p style="text-align: right; font-size: 12pt; margin: 5px 0;">注意：請將答案填入背面作答區！！</p>
+            <p style="text-align: right; font-size: 12pt; margin-top: 0; margin-bottom: 10px;">注意：請將答案填入背面作答區！！</p>
             `;
         },
 
-        // 表頭 2 (作答頁用，有姓名跟總分)
-        getHeader2() {
+        // 【精準排版】第二頁表頭 (有姓名與總分框)
+        getHeaderPage2() {
             return `
-            <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; margin-bottom: 10px;">
                 <tr>
-                    <td colspan="2" align="center" style="font-size: 20pt; font-weight: bold; color: red;">
+                    <td align="center" style="font-size: 20pt; font-weight: bold; color: red;">
                         ${this.exam.school} ${this.exam.year}學年第${this.exam.semester}學期 ${this.exam.name}
                     </td>
-                    <td rowspan="2" width="20%" style="font-size: 12pt; line-height: 1.5;">
+                    <td rowspan="2" width="120" style="font-size: 12pt; line-height: 1.5; padding: 10px;">
                         科目：<b>數學</b><br>
                         ${this.exam.useCard?'■':'□'}使用答案卡<br>
                         ${!this.exam.useCard?'■':'□'}不使用答案卡<br>
                         ${this.exam.specialNeeds?'■':'□'}特殊生考卷
                     </td>
-                    <td rowspan="3" width="15%" align="center" valign="top" style="font-size: 14pt; font-weight: bold; padding-top: 10px;">
+                    <td rowspan="3" width="80" align="center" valign="middle" style="font-size: 14pt; font-weight: bold;">
                         (總 分)
                     </td>
                 </tr>
                 <tr>
-                    <td width="32.5%" style="font-size: 12pt; padding: 5px;">
+                    <td style="font-size: 12pt; padding: 10px;">
                         科別：${this.exam.dept==='工科'?'■':'□'}工科　${this.exam.dept==='商科'?'■':'□'}商科　${this.exam.dept==='體育科'?'■':'□'}體育科
-                    </td>
-                    <td width="32.5%" style="font-size: 12pt; padding: 5px;">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         年級：${this.exam.grade==='高一'?'■':'□'}高一　${this.exam.grade==='高二'?'■':'□'}高二　${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="font-size: 14pt; padding: 15px 5px;">
-                        班級：　　　　學號：　　　　姓名：
+                    <td colspan="2" style="font-size: 14pt; padding: 10px;">
+                        班級：＿＿＿＿＿　　學號：＿＿＿＿＿　　姓名：＿＿＿＿＿＿＿＿
                     </td>
                 </tr>
             </table>
-            <br>
             `;
         },
 
         async generateExam(event) {
-            if (!this.apiKey) { alert('請輸入 API Key！'); return; }
+            if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
             const btn = event.currentTarget;
             const status = document.getElementById('status-message');
             const origHTML = btn.innerHTML;
-            btn.innerHTML = '處理中，請稍候...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成考卷，請稍候...';
             status.innerText = '';
 
             try {
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
-                const prompt = `請出一份數學考卷。必須回傳純 JSON 格式。
-【題型配置】：${activeTypes}
+                const prompt = `請出一份數學考卷，必須回傳純 JSON 格式。
+【題型】：${activeTypes}
 【要求】：${this.examRules}
-⚠️ 所有數學符號、數字、方程式必須用單個 $ 包住，例如：$x^2+1=0$、$P(0,1,0)$。
-絕對禁止使用 Markdown 標記，只能回傳 JSON 字串。
-JSON 格式範例：
+⚠️ 絕對禁止純文字數學！所有數學符號、數字、矩陣，必須用單個 $ 包住。
+格式：
 {
   "questions": [
-    { "type": "選擇題", "question": "問題敘述(數學用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "A" },
-    { "type": "填充題", "question": "問題敘述(數學用 $ 包住)", "answer": "正確答案", "options": [] }
+    { "type": "選擇題", "question": "問題", "options": ["(A)", "(B)", "(C)", "(D)"], "answer": "A", "solution": "詳解" }
   ]
 }`;
 
@@ -226,7 +220,55 @@ JSON 格式範例：
 
                 const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
                 
-                // 開始組合 Word 檔案
+                // 整理所有題目成一個陣列
+                let allQuestions = [];
+                const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
+                if(quizData.questions) quizData.questions.forEach(q => { if(groupedQs[q.type]) groupedQs[q.type].push(q); });
+                const getScore = (tName) => { const t = this.questionTypes.find(x => x.name === tName); return t ? parseInt(t.score) || 0 : 0; };
+                
+                let sectionNum = ['一', '二', '三'];
+                let sectionIdx = 0;
+
+                ['選擇題', '填充題', '計算題'].forEach(tName => {
+                    if (groupedQs[tName].length > 0) {
+                        let score = getScore(tName);
+                        allQuestions.push({ isHeader: true, html: `<p style="font-size: 16pt; font-weight: bold; margin-top: 15px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分）</p>` });
+                        sectionIdx++;
+                        
+                        groupedQs[tName].forEach((q, idx) => {
+                            let qHtml = `<p style="font-size: 14pt; margin: 8px 0;">${idx + 1}. ${this.formatMath(q.question)}</p>`;
+                            if (q.options && q.options.length > 0) {
+                                qHtml += `<p style="font-size: 14pt; margin-left: 20px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
+                            }
+                            if (tName === '計算題') qHtml += `<br><br><br>`;
+                            allQuestions.push({ isHeader: false, html: qHtml });
+                        });
+                    }
+                });
+
+                // ==========================================
+                // 【核心排版邏輯】：將題目切成兩半
+                // ==========================================
+                let totalQs = allQuestions.filter(q => !q.isHeader).length;
+                let midPoint = Math.ceil(totalQs / 2);
+                
+                let part1HTML = "";
+                let part2HTML = "";
+                let qCount = 0;
+
+                allQuestions.forEach(q => {
+                    if (!q.isHeader) qCount++;
+                    // 若還沒超過一半，或者剛好是標題且後面的題目屬於前半段，就放第一頁
+                    if (qCount <= midPoint || (q.isHeader && qCount < midPoint)) {
+                        part1HTML += q.html;
+                    } else {
+                        part2HTML += q.html;
+                    }
+                });
+
+                // ==========================================
+                // 組合 Word 檔案
+                // ==========================================
                 let docHTML = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
                 <head>
@@ -236,71 +278,63 @@ JSON 格式範例：
                 </style>
                 </head><body>`;
 
-                // 【第一部分：題目頁】
-                docHTML += this.getHeader1();
+                // --- 【第一頁】 ---
+                docHTML += this.getHeaderPage1();
+                docHTML += part1HTML;
 
-                const getScore = (tName) => { const t = this.questionTypes.find(x => x.name === tName); return t ? parseInt(t.score) || 0 : 0; };
-                const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
-                if(quizData.questions) quizData.questions.forEach(q => { if(groupedQs[q.type]) groupedQs[q.type].push(q); });
-
-                let sectionNum = ['一', '二', '三'];
-                let sectionIdx = 0;
-
-                ['選擇題', '填充題', '計算題'].forEach(tName => {
-                    if (groupedQs[tName].length > 0) {
-                        let score = getScore(tName);
-                        docHTML += `<p style="font-size: 16pt; font-weight: bold; margin-top: 15px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分）</p>`;
-                        sectionIdx++;
-                        
-                        groupedQs[tName].forEach((q, idx) => {
-                            docHTML += `<p style="margin: 5px 0;">${idx + 1}. ${this.formatMath(q.question)}</p>`;
-                            if (q.options && q.options.length > 0) {
-                                docHTML += `<p style="margin-left: 25px; margin-top: 0;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
-                            }
-                            if (tName === '計算題') docHTML += `<br><br><br><br>`;
-                            else if (tName === '填充題') docHTML += `<br>`;
-                        });
-                    }
-                });
-
-                // 【強制換頁！！】保證答案區在獨立的下一頁
+                // 強制換頁
                 docHTML += `<br clear="all" style="page-break-before:always" />`;
 
-                // 【第二部分：作答區】
-                docHTML += this.getHeader2();
-                docHTML += `<p style="text-align: center; letter-spacing: 2px;">---------------------------------------作答分隔線---------------------------------------</p>`;
+                // --- 【第二頁】 ---
+                docHTML += this.getHeaderPage2();
+                docHTML += part2HTML;
+                
+                // --- 【第二頁最下方：作答格子】 ---
+                docHTML += `<br><p style="text-align: center; letter-spacing: 2px; font-size: 12pt;">------------------------------作答區------------------------------</p>`;
 
                 if (groupedQs['選擇題'].length > 0) {
-                    docHTML += `<p style="font-weight: bold;">單選題答題區</p>`;
+                    docHTML += `<p style="font-weight: bold; font-size: 14pt;">單選題答題區</p>`;
                     docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin-bottom: 20px;">`;
                     let count = groupedQs['選擇題'].length;
                     for (let i = 0; i < count; i += 5) {
                         docHTML += `<tr>`;
                         for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td width="20%">${i + j + 1}.</td>`; else docHTML += `<td width="20%"></td>`; }
                         docHTML += `</tr><tr>`;
-                        for (let j = 0; j < 5; j++) docHTML += `<td style="height:45px;"></td>`;
+                        for (let j = 0; j < 5; j++) docHTML += `<td style="height:50px;"></td>`;
                         docHTML += `</tr>`;
                     }
                     docHTML += `</table>`;
                 }
 
                 if (groupedQs['填充題'].length > 0) {
-                    docHTML += `<p style="font-weight: bold;">填充題答題區</p>`;
+                    docHTML += `<p style="font-weight: bold; font-size: 14pt;">填充題答題區</p>`;
                     docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center;">`;
                     let count = groupedQs['填充題'].length;
                     for (let i = 0; i < count; i += 4) {
                         docHTML += `<tr>`;
                         for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td width="25%">(${i + j + 1})</td>`; else docHTML += `<td width="25%"></td>`; }
                         docHTML += `</tr><tr>`;
-                        for (let j = 0; j < 4; j++) docHTML += `<td style="height:45px;"></td>`;
+                        for (let j = 0; j < 4; j++) docHTML += `<td style="height:50px;"></td>`;
                         docHTML += `</tr>`;
                     }
                     docHTML += `</table>`;
                 }
 
+                // --- 【第三頁：解答】 ---
+                docHTML += `<br clear="all" style="page-break-before:always" />`;
+                docHTML += `<h2 style="text-align: center; color: red;">教師版解答與解析</h2><hr>`;
+                ['選擇題', '填充題', '計算題'].forEach(tName => {
+                    if (groupedQs[tName].length > 0) {
+                        docHTML += `<h3>${tName}</h3>`;
+                        groupedQs[tName].forEach((q, idx) => {
+                            docHTML += `<p><b>第 ${idx + 1} 題：</b> 解答：${this.formatMath(q.answer)}<br>詳解：${this.formatMath(q.solution)}</p>`;
+                        });
+                    }
+                });
+
                 docHTML += `</body></html>`;
 
-                // 產生檔案並下載 (保持 .doc 格式讓 Word 進行轉換)
+                // 產生並下載檔案
                 const blob = new Blob(['\ufeff', docHTML], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -312,12 +346,12 @@ JSON 格式範例：
                 URL.revokeObjectURL(url);
 
                 btn.innerHTML = origHTML;
-                status.innerHTML = `<span style="color:green;">✅ 生成成功！打開檔案後，按 Ctrl+A 全選，點擊上方【方程式】>【LaTeX】>【轉換】，即可看到完美公式。</span>`;
+                status.innerHTML = `✅ 考卷生成成功！已下載。打開 Word 如果跳出警告請按「是」。`;
 
             } catch (error) {
                 console.error(error);
                 btn.innerHTML = origHTML;
-                status.innerText = `❌ 發生錯誤：${error.message}。請確認 API 金鑰正確。`;
+                status.innerText = `❌ 發生錯誤：${error.message}`;
             }
         }
     }
