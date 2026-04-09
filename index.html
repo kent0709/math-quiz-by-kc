@@ -245,7 +245,7 @@
             <div class="flex justify-center flex-wrap gap-5 mb-8">
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-teal-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-teal-200">
                     <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-3">
-                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含跨頁雙表頭與作答區)
+                    <i class="fas fa-file-alt mr-2 text-teal-500 text-lg"></i> 1. 試題考卷 (預設 B4，含跨頁表頭與作答區)
                 </label>
                 
                 <label class="flex items-center cursor-pointer font-bold text-gray-600 hover:text-blue-600 transition bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-100 hover:border-blue-200">
@@ -264,7 +264,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.2</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.3</span>
         </div>
     </footer>
 </div>
@@ -326,7 +326,7 @@ createApp({
             });
         },
         
-        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML
+        // 🌟 核心突破：將 LaTeX 轉換為 Word 原生可編輯的 MathML (V1.3 強化防護)
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -349,7 +349,7 @@ createApp({
                 } catch (e) { return tex; }
             };
 
-            // 支援所有的 $...$ (強制不再使用 $$，節省空間)
+            // 支援所有的 $...$
             result = result.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => convertToMathML(p1.trim()));
             result = result.replace(/\$([\s\S]+?)\$/g, (match, p1) => convertToMathML(p1.trim()));
             
@@ -368,7 +368,7 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 🌟 表頭 1 與 表頭 2 精準排版：替換掉 | 符號，改用真正的表格分隔線
+        // 🌟 表頭設計
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
                 // 第一頁：無姓名欄位
@@ -430,22 +430,23 @@ createApp({
                         </td>
                     </tr>
                 </table>
+                <br>
                 `;
             }
         },
 
-        // 包裝成能跨頁重複的 Table
-        wrapWithRepeatingHeader(headerHtml, contentHtml) {
-            return `
-            <table style="width: 100%; border-collapse: collapse; border: none;">
+        // 🌟 V1.3 解放換頁的排版引擎：每一題變成獨立的列，讓 Word 自由換頁
+        generateTableWithHeader(headerHtml, rowsHtmlArray) {
+            let html = `<table style="width: 100%; border-collapse: collapse; border: none;">
                 <thead style="display: table-header-group;">
                     <tr><td style="border: none; padding: 0; padding-bottom: 5px;">${headerHtml}</td></tr>
                 </thead>
-                <tbody>
-                    <tr><td style="border: none; padding: 0;">${contentHtml}</td></tr>
-                </tbody>
-            </table>
-            `;
+                <tbody>`;
+            rowsHtmlArray.forEach(row => {
+                html += `<tr><td style="border: none; padding: 0;">${row}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            return html;
         },
 
         async generateAndExport(event) {
@@ -466,7 +467,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // ⚠️ 終極指令：洗牌大師 ＋ MathML 守門員
+                // ⚠️ 終極指令：洗牌大師 ＋ MathML 絕對守門員
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材(舊考卷)來改變數據與變化題型。
@@ -474,9 +475,10 @@ createApp({
 【出題原則】：\n${this.examRules}
 ⚠️【極致洗牌與原創】：絕對禁止一對一照抄原題換數字！請將所有題目打散、洗牌、重新排列。強烈建議將原本的選擇題改編為填充題，或根據相同觀念自行設計全新的類似題。確保考卷具有極高的鑑別度與新鮮感！
 【輸出格式】：直接以 JSON 回傳，格式如下：
-⚠️【公式嚴格規範 (極重要)】：所有的數字、變數(如 n, x, y)、方程式、排列組合符號、幾何符號等，【全部且唯一】只能用單個 $ 包住(行內公式)！(錯誤示範：Pn3=10×Cn2，正確示範：$P_n^3 = 10 \\times C_n^2$)。請勿使用純文字表示數學式，也不要用 $$！
+⚠️【數學公式強制規範 (極度重要)】：你輸出的所有數字(如 1, 2)、變數(如 x, y)、方程式(如 4x^2-9y^2=0)、極限(如 \\lim_{n\\to\\infty})、積分符號等，【必須而且只能】用單一個 $ 符號包住。例如：設 $f(x)=x^2+1$。絕對不允許直接輸出純文字的數學式！
+⚠️【禁止重複輸出】：絕不允許把題目用純文字寫一次，又用 LaTeX 寫一次！(錯誤示範：設集合 A={1,2} $A=\\{1,2\\}$)
 ⚠️【跳脫字元】：JSON 內的數學反斜線必須「雙重跳脫」，例如寫 $\\\\vec{v}$ 或 $\\\\frac{1}{2}$，絕對不能只寫單個反斜線！
-{ "questions": [ { "type": "選擇題", "question": "題目敘述(所有數學請用 $ 包住)", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
+{ "questions": [ { "type": "選擇題", "question": "題目敘述", "options": ["(A)...", "(B)...", "(C)...", "(D)..."], "answer": "正確選項(例: A)", "solution": "詳解過程" } ] }`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -548,7 +550,7 @@ createApp({
                 // 1. 輸出試題區 (第 1 頁，無名表頭，跨頁重複)
                 // ==========================================
                 if (this.exportOptions.examPaper) {
-                    let questionsHtml = "";
+                    let qHtmlArray = [];
                     let sectionNum = ['一', '二', '三'];
                     let sectionIdx = 0;
 
@@ -557,33 +559,34 @@ createApp({
                             let score = getScore(tName);
                             let totalScore = score * groupedQs[tName].length;
                             
-                            questionsHtml += `<p style="font-size: 16pt; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`;
+                            qHtmlArray.push(`<p style="font-size: 16pt; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">${sectionNum[sectionIdx]}、${tName}（每題 ${score} 分，共 ${totalScore} 分）</p>`);
                             sectionIdx++;
                             
                             groupedQs[tName].forEach((q, idx) => {
-                                // 縮減題目間距，極致省紙
-                                questionsHtml += `<p style="font-size: 14pt; margin: 4px 0; line-height: 1.3;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
+                                let qHtml = `<p style="font-size: 14pt; margin: 4px 0; line-height: 1.3;">${idx + 1}. ${this.formatMathToWord(q.question)}</p>`;
                                 if (q.options && q.options.length > 0) {
                                     const formattedOptions = q.options.map(opt => this.formatMathToWord(opt)).join('　　');
-                                    questionsHtml += `<p style="font-size: 14pt; margin-left: 25px; margin-top:0; margin-bottom:4px;">${formattedOptions}</p>`;
+                                    qHtml += `<p style="font-size: 14pt; margin-left: 25px; margin-top:0; margin-bottom:4px;">${formattedOptions}</p>`;
                                 }
-                                if (tName === '計算題') questionsHtml += `<br><br><br><br>`;
-                                else if (tName === '填充題') questionsHtml += `<br>`;
+                                if (tName === '計算題') qHtml += `<br><br><br><br>`;
+                                else if (tName === '填充題') qHtml += `<br>`;
+                                qHtmlArray.push(qHtml);
                             });
                         }
                     });
                     
-                    docHTML += this.wrapWithRepeatingHeader(this.getHeaderHTML(false), questionsHtml);
+                    docHTML += this.generateTableWithHeader(this.getHeaderHTML(false), qHtmlArray);
 
                 // ==========================================
                 // 2. 輸出作答網格區 (強制換頁，有名表頭，跨頁重複)
                 // ==========================================
-                    // 🌟 強制換頁指令
+                    // 🌟 強制換頁指令，保證作答區必定在第二頁
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
-                    let answersHtml = "";
-                    answersHtml += `<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`;
+                    let aHtmlArray = [];
+                    aHtmlArray.push(`<p style="text-align: center; font-size: 12pt; letter-spacing: 2px; margin-top:0px; margin-bottom:5px; padding:0;">---------------------------------------作答分隔線---------------------------------------</p>`);
                     
+                    let answersHtml = "";
                     if (groupedQs['選擇題'].length > 0) {
                         answersHtml += `<p style="font-size: 14pt; font-weight: bold; margin-top: 5px; margin-bottom: 5px;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
                         answersHtml += `<table class="ans-table">`;
@@ -611,8 +614,9 @@ createApp({
                         }
                         answersHtml += `</table>`;
                     }
+                    aHtmlArray.push(answersHtml);
 
-                    docHTML += this.wrapWithRepeatingHeader(this.getHeaderHTML(true), answersHtml);
+                    docHTML += this.generateTableWithHeader(this.getHeaderHTML(true), aHtmlArray);
                 }
 
                 // ==========================================
