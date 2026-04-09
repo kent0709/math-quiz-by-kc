@@ -280,7 +280,7 @@
             </div>
 
             <button @click="generateAndExport" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-12 py-5 rounded-2xl text-2xl font-black shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 w-full md:w-auto inline-flex items-center justify-center">
-                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載 WORD (.docx)
+                <i class="fas fa-file-word mr-4 text-3xl"></i> 開始解析並下載 WORD (.doc)
             </button>
             
             <div id="status-message" class="text-sm font-bold mt-5 text-teal-600 h-6"></div>
@@ -289,7 +289,7 @@
     
     <footer class="mt-16 text-center">
         <div class="inline-block border-t border-gray-300/60 pt-6 px-12">
-            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.7</span>
+            <span class="text-gray-400/80 font-black tracking-[0.3em] text-lg select-none">byKC V1.8 (修復版)</span>
         </div>
     </footer>
 </div>
@@ -352,7 +352,7 @@ createApp({
             });
         },
         
-        // 🌟 將 LaTeX 轉換為 Word 可原生編輯的 MathML
+        // 將 LaTeX 轉換為 Word 可原生編輯的 MathML
         formatMathToWord(text) {
             if (!text) return '';
             let result = text.replace(/\n/g, '<br>');
@@ -382,8 +382,8 @@ createApp({
             return result;
         },
 
+        // V1.8：改回 .doc 副檔名以避免 ZIP 格式報錯
         downloadDocFile(htmlContent, filename) {
-            // 加入 BOM 確保中文正常，並指定 MIME type 為 doc/docx 相容格式
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -395,7 +395,6 @@ createApp({
             URL.revokeObjectURL(url);
         },
 
-        // 🌟 雙表頭設計
         getHeaderHTML(isAnswerPage) {
             if (!isAnswerPage) {
                 return `
@@ -493,7 +492,6 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
-                // ⚠️ 告知 AI 使用純淨的 LaTeX 語法輸出
                 const promptText = `您是一位專業的高中數學老師。請根據以下指示與素材，出一份全新數學考卷。
 【指定範圍】：${this.targetUnit || '無特定文字範圍'}
 【出題比例與來源】：若有提供課本/習作素材，請以此為主要標準(佔70%)；若無上傳課本，請直接根據補充教材來改變數據與變化題型。
@@ -560,7 +558,6 @@ createApp({
                     quizData = JSON.parse(rescuedJsonStr);
                 }
                 
-                // 🌟 核心升級：強制加入微軟 Office Math 觸發宣告，讓 Word 完美辨識 MathML
                 let docHTML = `
                 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns:m='http://schemas.microsoft.com/office/2004/12/omml' xmlns='http://www.w3.org/TR/REC-html40'>
                 <head>
@@ -714,10 +711,11 @@ createApp({
 
                 docHTML += `</div></body></html>`;
 
-                const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).docx`;
+                // V1.8：改回 .doc 副檔名以避免打不開，Word開啟時會有格式提示，按「是」即可
+                const fileName = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
                 this.downloadDocFile(docHTML, fileName);
 
-                statusDiv.innerText = "✅ 考卷生成成功！已匯出 .docx，數學公式皆可原生編輯！";
+                statusDiv.innerText = "✅ 考卷生成成功！(開啟若有警告請點選「是」)，請至「下載」資料夾查看。";
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
