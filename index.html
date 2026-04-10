@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - 完美排版與公式圖片版</title>
+    <title>數學出題小幫手 - 完美排版與圖片公式版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap');
-        
-        body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); min-height: 100vh; }
-        .exam-font { font-family: 'Noto Serif TC', serif; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: #f0fdfa; min-height: 100vh; }
+        .exam-font { font-family: '標楷體', 'Times New Roman', serif; }
         .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #e2e8f0;}
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle; position: relative;}
@@ -48,7 +46,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式直出 ‧ 完美換頁對齊版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 完美還原段考排版 ‧ 圖片公式支援</p>
     </div>
 
     <div class="glass-card flex items-center bg-white border-l-4 border-amber-400">
@@ -74,7 +72,7 @@
             <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border border-gray-200 flex justify-center shadow-inner">
                 <table class="w-full max-w-4xl border-collapse border-2 border-black bg-white exam-font text-black">
                     <tr>
-                        <td class="border-r border-black p-0 w-3/4">
+                        <td class="p-0 w-3/4 border border-black">
                             <table class="w-full h-full border-collapse">
                                 <tr>
                                     <td colspan="2" class="border-b border-black p-6 text-center">
@@ -104,7 +102,7 @@
                                 </tr>
                             </table>
                         </td>
-                        <td class="p-0 w-1/4 align-top">
+                        <td class="p-0 w-1/4 align-top border border-black">
                             <table class="w-full h-full border-collapse">
                                 <tr><td class="border-b border-black p-3 text-center font-bold text-lg">科目：數學</td></tr>
                                 <tr>
@@ -234,7 +232,7 @@
             <button @click="generateExam" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto">
                 <i class="fas fa-file-word mr-3 text-2xl"></i> 開始產生 WORD 考卷 (.doc)
             </button>
-            <p class="text-sm text-red-500 mt-4 font-bold tracking-wide">⚠️ 下載後打開若出現「檔案格式警告」，請放心點擊「是(Y)」，確保公式正常載入。</p>
+            <p class="text-sm text-gray-500 mt-4 font-bold tracking-wide">💡 下載後打開即可看到精準排版，數學公式會以高畫質圖片完美呈現。</p>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
@@ -279,15 +277,15 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：將 LaTeX 轉換為 Codecogs 的高畫質圖片
+        // 🌟 終極圖片公式轉換引擎：將 LaTeX 轉換為高畫質圖片，絕對不會破圖
         formatMath(text) {
             if (!text) return '';
             
             const toImg = (tex) => {
                 let cleanTex = tex.replace(/\\\\/g, '\\');
                 let encoded = encodeURIComponent(cleanTex);
-                // 使用 \dpi{110} 確保公式大小與 14pt 文字契合，不會過大
-                return `<img src="https://latex.codecogs.com/png.image?\\dpi{110}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
+                // 使用 \dpi{120} 確保公式大小與 14pt 文字契合，並使用 vertical-align 對齊
+                return `<img src="https://latex.codecogs.com/png.image?\\dpi{120}\\bg{white} ${encoded}" style="vertical-align: -20%; margin: 0 2px;" alt="${cleanTex}" />`;
             };
 
             let mathBlocks = [];
@@ -314,37 +312,39 @@ createApp({
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版，紅色標題，完美還原 66.png)
+        // 🌟 表頭 1 (第一頁：無姓名版，紅色大標題，精準還原 11.png)
         getHeaderPage1() {
             return `
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 15px;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 2px solid black; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 15px;">
                 <tr>
-                    <td width="75%" style="border: 2px solid black; border-right: none;">
+                    <td width="75%" style="padding: 0; border: 1px solid black;">
                         <table width="100%" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td colspan="2" align="center" style="font-size: 22pt; font-weight: bold; color: red; letter-spacing: 2px; padding: 25px 10px; border-bottom: 1px solid black;">
-                                    ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　　${this.exam.name}
+                                <td colspan="2" align="center" style="padding: 25px 10px; border-bottom: 1px solid black;">
+                                    <span style="font-size: 22pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                                        ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　　${this.exam.name}
+                                    </span>
                                 </td>
                             </tr>
                             <tr>
-                                <td width="50%" style="font-size: 12pt; padding: 10px; border-right: 1px solid black;">
+                                <td width="50%" style="padding: 10px; font-size: 12pt; border-right: 1px solid black;">
                                     科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
                                 </td>
-                                <td width="50%" style="font-size: 12pt; padding: 10px;">
-                                    ${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
+                                <td width="50%" style="padding: 10px; font-size: 12pt;">
+                                    年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                                 </td>
                             </tr>
                         </table>
                     </td>
-                    <td width="25%" style="border: 2px solid black; vertical-align: top;">
+                    <td width="25%" valign="top" style="padding: 0; border: 1px solid black;">
                         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="height: 100%;">
                             <tr>
-                                <td align="center" style="font-size: 12pt; font-weight: bold; padding: 8px; border-bottom: 1px solid black;">
+                                <td align="center" style="padding: 8px; font-size: 12pt; font-weight: bold; border-bottom: 1px solid black;">
                                     科目：數學
                                 </td>
                             </tr>
                             <tr>
-                                <td style="font-size: 12pt; line-height: 1.8; padding: 15px 10px;">
+                                <td style="padding: 15px 10px; font-size: 12pt; line-height: 1.8;">
                                     ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                                     ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                                     ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
@@ -358,51 +358,53 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名、總分框版，紅色標題，完美還原 77.png)
+        // 🌟 表頭 2 (第二頁：有姓名、總分框版，紅色大標題，精準還原 22.png)
         getHeaderPage2() {
             return `
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 15px;">
+            <table width="100%" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 2px solid black; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 15px;">
                 <tr>
-                    <td width="65%" style="border: 2px solid black; border-right: none;">
+                    <td width="65%" style="padding: 0; border: 1px solid black;">
                         <table width="100%" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td colspan="2" align="center" style="font-size: 22pt; font-weight: bold; color: red; letter-spacing: 2px; padding: 25px 10px; border-bottom: 1px solid black;">
-                                    ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　　${this.exam.name}
+                                <td colspan="2" align="center" style="padding: 25px 10px; border-bottom: 1px solid black;">
+                                    <span style="font-size: 22pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                                        ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　　${this.exam.name}
+                                    </span>
                                 </td>
                             </tr>
                             <tr>
-                                <td width="50%" style="font-size: 12pt; padding: 10px; border-right: 1px solid black; border-bottom: 1px solid black;">
+                                <td width="50%" style="padding: 10px; font-size: 12pt; border-right: 1px solid black; border-bottom: 1px solid black;">
                                     科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
                                 </td>
-                                <td width="50%" style="font-size: 12pt; padding: 10px; border-bottom: 1px solid black;">
-                                    ${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
+                                <td width="50%" style="padding: 10px; font-size: 12pt; border-bottom: 1px solid black;">
+                                    年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="2" style="font-size: 14pt; padding: 15px 10px;">
+                                <td colspan="2" style="padding: 15px 10px; font-size: 14pt;">
                                     班級：＿＿＿＿＿＿　學號：＿＿＿＿＿＿　姓名：＿＿＿＿＿＿＿＿
                                 </td>
                             </tr>
                         </table>
                     </td>
-                    <td width="35%" style="border: 2px solid black; vertical-align: top;">
+                    <td width="20%" valign="top" style="padding: 0; border: 1px solid black;">
                         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="height: 100%;">
                             <tr>
-                                <td colspan="2" align="center" style="font-size: 12pt; font-weight: bold; padding: 8px; border-bottom: 1px solid black;">
+                                <td align="center" style="padding: 8px; font-size: 12pt; font-weight: bold; border-bottom: 1px solid black;">
                                     科目：數學
                                 </td>
                             </tr>
                             <tr>
-                                <td width="50%" style="font-size: 12pt; line-height: 1.8; padding: 15px 10px; border-right: 1px solid black;">
+                                <td style="padding: 15px 10px; font-size: 12pt; line-height: 1.8;">
                                     ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                                     ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                                     ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                                 </td>
-                                <td width="50%" align="center" valign="top" style="font-size: 14pt; font-weight: bold; padding: 15px 10px;">
-                                    (總　分)
-                                </td>
                             </tr>
                         </table>
+                    </td>
+                    <td width="15%" align="center" valign="top" style="padding-top: 20px; font-size: 14pt; font-weight: bold; border: 1px solid black;">
+                        (總　分)
                     </td>
                 </tr>
             </table>
@@ -421,18 +423,16 @@ createApp({
 
             try {
                 let contentsParts = [];
-                const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
+                const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 嚴格套用您的指示：標準 LaTeX 語法，加入 Code Block 指示
+                // ⚠️ 嚴格套用您的指示：確保回傳 JSON，公式用 $ 包住
                 const promptText = `請出一份數學考卷。必須回傳純 JSON 格式。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes}
 【要求】：${this.examRules}
 【重要輸出格式】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. 排版保留：請使用標準 Markdown 語法處理文字排版（如 ### 標題、** 粗體）。
-2. 表格規範：若有表格，請使用標準 Markdown 表格（| 表格 |），並且【表格的正上方與正下方，務必各保留一個空白行】。
-3. 數學公式：請一律使用標準 LaTeX 語法呈現（行內公式使用 $ $，獨立行公式使用 $$ $$）。絕對禁止使用純文字排版矩陣與方程式！`;
+1. 數學公式：請一律使用標準 LaTeX 語法呈現（行內公式使用 $ $，獨立行公式使用 $$ $$）。絕對禁止使用純文字排版矩陣與方程式！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -486,7 +486,7 @@ createApp({
 
                 const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
                 
-                // 🌟 Word 宣告 (B4 尺寸)
+                // 🌟 Word 宣告 (預設 B4 尺寸)
                 let docHTML = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
                       xmlns:w="urn:schemas-microsoft-com:office:word" 
@@ -528,9 +528,9 @@ createApp({
                         
                         groupedQs[tName].forEach((q, idx) => {
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                            let qHtml = `<p style="margin: 8px 0; line-height: 1.5;">${numStr} ${this.formatMath(q.question)}</p>`;
+                            let qHtml = `<p style="margin: 8px 0; line-height: 1.8;">${numStr} ${this.formatMath(q.question)}</p>`;
                             if (q.options && q.options.length > 0) {
-                                qHtml += `<p style="margin-left: 30px; margin-bottom: 12px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
+                                qHtml += `<p style="margin-left: 30px; margin-bottom: 15px; line-height: 1.8;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
                             }
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
                             else if (tName === '填充題') qHtml += `<br><br>`;
@@ -562,7 +562,7 @@ createApp({
                     docHTML += this.getHeaderPage1();
                     docHTML += part1HTML;
 
-                    // 🌟 【強制換頁 Ctrl+Enter】
+                    // 🌟 【強制換頁 Ctrl+Enter】 - Word 專用
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
 
                     // --- 【第二頁：有姓名總分表頭 + 後半段題目】 ---
@@ -610,7 +610,7 @@ createApp({
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName}</h3>`;
                             groupedQs[tName].forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                docHTML += `<p style="line-height: 1.5; margin-bottom: 25px;"><b>第 ${numStr} 題：</b> 解答：<span style="color:red; font-weight:bold;">${this.formatMath(q.answer)}</span><br>詳解：${this.formatMath(q.solution)}</p>`;
+                                docHTML += `<p style="line-height: 1.8; margin-bottom: 25px;"><b>第 ${numStr} 題：</b> 解答：<span style="color:red; font-weight:bold;">${this.formatMath(q.answer)}</span><br>詳解：${this.formatMath(q.solution)}</p>`;
                             });
                         }
                     });
@@ -618,7 +618,6 @@ createApp({
 
                 docHTML += `</div></body></html>`;
 
-                // 下載 Word 檔 (.doc)
                 const blob = new Blob(['\ufeff', docHTML], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -631,7 +630,7 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 若打開出現格式警告請選「是」，圖片公式與排版即會完美呈現！</span>`;
+                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 (開啟檔案若有警告請點選「是」，公式會以圖片形式完美對齊！)</span>`;
 
             } catch (error) {
                 console.error(error);
