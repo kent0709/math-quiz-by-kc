@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - 完美段考排版版</title>
+    <title>數學出題小幫手 - 完美排版與公式圖片版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        body { font-family: 'Noto Sans TC', sans-serif; background: #f0fdfa; min-height: 100vh; }
-        .exam-font { font-family: '標楷體', 'Times New Roman', serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap');
+        
+        body { font-family: 'Noto Sans TC', sans-serif; background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%); min-height: 100vh; }
+        .exam-font { font-family: 'Noto Serif TC', serif; }
         .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid #e2e8f0;}
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle; position: relative;}
@@ -46,7 +48,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">保留完整架構 ‧ 完美還原段考排版 ‧ 優化數學圖片</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式直出 ‧ 完美換頁對齊版</p>
     </div>
 
     <div class="glass-card flex items-center bg-white border-l-4 border-amber-400">
@@ -55,7 +57,7 @@
             <label class="text-xs font-bold text-gray-500 flex items-center justify-between mb-1">
                 Gemini API Key (僅儲存於您的瀏覽器本地端)
                 <button @click="showApiTutorial = true" class="text-blue-500 hover:text-blue-700 text-xs flex items-center bg-blue-50 px-2 py-0.5 rounded-full transition">
-                    <i class="fas fa-question-circle mr-1"></i>同事不會用？點我看說明
+                    <i class="fas fa-question-circle mr-1"></i>說明
                 </button>
             </label>
             <input type="password" v-model="apiKey" @change="saveApiKey" placeholder="輸入 _AIza_ 開頭的 API 金鑰..." class="w-full border-b border-gray-300 focus:border-teal-500 outline-none py-1 text-sm font-mono">
@@ -232,7 +234,7 @@
             <button @click="generateExam" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto">
                 <i class="fas fa-file-word mr-3 text-2xl"></i> 開始產生 WORD 考卷 (.doc)
             </button>
-            <p class="text-sm text-gray-500 mt-4 font-bold tracking-wide">💡 下載後打開即可看到精準的版面與公式。</p>
+            <p class="text-sm text-red-500 mt-4 font-bold tracking-wide">⚠️ 下載後打開若出現「檔案格式警告」，請放心點擊「是(Y)」，確保公式正常載入。</p>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
@@ -277,7 +279,7 @@ createApp({
             });
         },
         
-        // 🌟 優化版公式圖片轉換：使用 \dpi{110} 讓公式大小適中
+        // 🌟 終極圖片公式轉換引擎：將 LaTeX 轉換為 Codecogs 的高畫質圖片
         formatMath(text) {
             if (!text) return '';
             
@@ -291,17 +293,19 @@ createApp({
             let mathBlocks = [];
             let placeholderText = text;
             
-            // 獨立行公式
+            // 處理獨立行公式 $$ $$
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // 行內公式
+            
+            // 處理行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 mathBlocks.push(toImg(p1.trim()));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
 
+            // 處理換行，並補回公式圖片
             let result = placeholderText.replace(/\n/g, '<br>');
             mathBlocks.forEach((block, idx) => {
                 result = result.replace(`__MATH_BLOCK_${idx}__`, block);
@@ -417,7 +421,7 @@ createApp({
 
             try {
                 let contentsParts = [];
-                const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
+                const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (${t.difficulty})`).join(', ');
                 
                 // ⚠️ 嚴格套用您的指示：標準 LaTeX 語法，加入 Code Block 指示
                 const promptText = `請出一份數學考卷。必須回傳純 JSON 格式。
@@ -491,7 +495,7 @@ createApp({
                 <meta charset="utf-8">
                 <title>數學考卷</title>
                 <style>
-                    /* B4 尺寸與邊界設定 */
+                    /* 預設 B4 尺寸與邊界設定 */
                     @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 2cm; }
                     div.WordSection1 { page: WordSection1; }
                     body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
@@ -627,7 +631,7 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 打開若出現格式警告請選「是」，圖片公式與排版即會完美呈現！</span>`;
+                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 若打開出現格式警告請選「是」，圖片公式與排版即會完美呈現！</span>`;
 
             } catch (error) {
                 console.error(error);
