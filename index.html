@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V16.0 官方完美版</title>
+    <title>數學出題小幫手 - V17.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -110,7 +110,6 @@
                             <label class="cursor-pointer mr-1 hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>
                             <label class="cursor-pointer hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
                         </td>
-                        <!-- 總分框放大：使用 text-xl 對齊 18pt 視覺 -->
                         <td rowspan="2" class="border-t-2 border-b-2 border-l-2 border-r-2 border-black p-2 text-center align-top font-bold text-xl w-[20%] pt-4">(總 分)</td>
                     </tr>
                     <tr>
@@ -251,9 +250,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V16.0 -->
+    <!-- 🌟 落款升級為 V17.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V16.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V17.0 byKC</span>
     </footer>
 </div>
 
@@ -297,6 +296,9 @@ createApp({
             
             // 過濾掉可能干擾的標記 (將 Markdown 的粗體與 # 移除)
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
+
+            // 過濾掉連續三個以上的底線 (為了填充題不要有多餘的空格)
+            placeholderText = placeholderText.replace(/_{3,}/g, '');
 
             const toImg = (tex) => {
                 // 不使用 .replace(/\\\\/g, '\\')，因為這會把矩陣的換行 \\ 變成 \，導致 CodeCogs 崩潰。
@@ -462,7 +464,9 @@ createApp({
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外（例如：正確寫法為「$x > 5$ 或 $x < 2$」，絕對不能寫成「$x > 5 \\text{或} x < 2$」）。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。
-5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！`;
+5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
+6. 選擇題選項：選項陣列 \`options\` 務必提供四個選項，並【強制】加上 (A) (B) (C) (D) 等標號（例如：["(A) 1", "(B) 2"]）。
+7. 填充題的題目中，請直接陳述問題，【絕對不要】加入「_____」或「( )」等任何作答底線或空格。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -570,13 +574,25 @@ createApp({
                         
                         groupedQs[tName].forEach((q, idx) => {
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                            let qHtml = `<p style="margin: 8px 0; line-height: 1.6;">${numStr} ${this.formatMath(q.question)}</p>`;
+                            // 縮減填充題間距，使其排版緊湊
+                            let qHtml = `<p style="margin: ${tName === '計算題' ? '8px' : '4px'} 0; line-height: 1.6;">${numStr} ${this.formatMath(q.question)}</p>`;
+                            
                             if (q.options && q.options.length > 0) {
-                                qHtml += `<p style="margin-left: 30px; margin-bottom: 12px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
+                                // 🌟 雙重保證選擇題擁有 (A) (B) (C) (D) 選項
+                                const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
+                                const formattedOptions = q.options.map((opt, i) => {
+                                    let optText = this.formatMath(opt);
+                                    if (!optText.includes('(A)') && !optText.includes('(B)') && !optText.includes('(C)') && !optText.includes('(D)')) {
+                                        if (i < labels.length) optText = `${labels[i]} ${optText}`;
+                                    }
+                                    return optText;
+                                });
+                                qHtml += `<p style="margin-left: 25px; margin-bottom: 10px; margin-top: 2px;">${formattedOptions.join('　　　')}</p>`;
                             }
+                            
                             // 🌟 計算題保留空白，但「填充題」不再加入多餘的空行，以節省第二頁空間！
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
-                            else if (tName === '填充題') qHtml += `<br><br>`;
+                            
                             allQuestions.push({ isHeader: false, html: qHtml });
                         });
                     }
