@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V19.0 官方完美版</title>
+    <title>數學出題小幫手 - V20.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 選擇答案格純 ABCD ‧ 詳解包含答案</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 隨機打亂題序 ‧ 詳解包含答案</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V19.0 -->
+    <!-- 🌟 落款升級為 V20.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V19.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V20.0 byKC</span>
     </footer>
 </div>
 
@@ -455,7 +455,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 強制指令：包含選擇題答案格式設定
+                // ⚠️ 強制指令：要求隨機打亂，防呆確保 JSON 正確且無中文混入數學公式
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
@@ -469,7 +469,8 @@ createApp({
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項：選項陣列 \`options\` 務必提供四個選項，並【強制】加上 (A) (B) (C) (D) 等標號（例如：["(A) 1", "(B) 2"]）。
 7. 填充題出題要求：【絕對禁止】加入「_____」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
-8. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) 15"），以便詳解區顯示完整答案內容。`;
+8. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) 15"），以便詳解區顯示完整答案內容。
+9. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -562,6 +563,18 @@ createApp({
                         else groupedQs['填充題'].push(q); 
                     }
                 });
+
+                // 🌟 打亂題目順序，確保每次出題都不一樣，不跟原稿重複
+                const shuffleArray = (array) => {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                };
+                
+                shuffleArray(groupedQs['選擇題']);
+                shuffleArray(groupedQs['填充題']);
+                shuffleArray(groupedQs['計算題']);
 
                 let allQuestions = [];
                 let sectionNum = ['一', '二', '三'];
