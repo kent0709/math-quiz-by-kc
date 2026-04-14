@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- 引入 KaTeX 數學引擎：用於將 LaTeX 轉換為大小適中的圖片公式 -->
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
 
     <style>
@@ -26,6 +27,7 @@
 <body class="text-gray-800 pb-10">
 
 <div id="app" class="max-w-5xl mx-auto pt-10 px-4">
+    <!-- API 申請說明 Modal -->
     <div v-if="showApiTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
         <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
             <button @click="showApiTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
@@ -44,13 +46,15 @@
         </div>
     </div>
 
+    <!-- 大標題 -->
     <div class="text-center mb-8">
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整 ‧ 圖片公式優化 ‧ 神還原單行表頭版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式優化 ‧ 雙表頭完美對齊版</p>
     </div>
 
+    <!-- API Key 設定區 -->
     <div class="glass-card flex items-center bg-white border-l-4 border-amber-400">
         <i class="fas fa-key text-amber-500 text-xl mr-3"></i>
         <div class="flex-grow">
@@ -66,12 +70,14 @@
     </div>
 
     <div class="space-y-6">
+        <!-- 區塊 1：考卷表頭 (網頁視覺完美還原，統一間距) -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
                 考卷表頭預覽與設定
             </h2>
             <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border border-gray-200 flex justify-center shadow-inner">
+                <!-- 模擬真實考卷表頭 (對齊 Word 產出樣式) -->
                 <table class="w-full max-w-4xl border-collapse border-2 border-black bg-white exam-font text-black text-sm md:text-base">
                     <tr>
                         <td colspan="2" class="border border-black p-4 text-center">
@@ -84,8 +90,12 @@
                                 <input v-model="exam.name" class="w-32 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
                             </div>
                         </td>
-                        <td class="border border-black p-3 text-center font-bold w-[15%]">科目：數學</td>
-                        <td rowspan="3" class="border border-black p-3 text-center align-top font-bold text-lg w-[15%] border-l-4 border-b-4 border-t-4">(總 分)</td>
+                        <td rowspan="3" class="border border-black p-3 leading-loose w-[15%] align-middle">
+                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm mb-1"><input type="radio" v-model="exam.useCard" :value="true" class="hidden">{{ exam.useCard === true ? '■' : '□' }}使用答案卡</label>
+                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm mb-1"><input type="radio" v-model="exam.useCard" :value="false" class="hidden">{{ exam.useCard === false ? '■' : '□' }}不使用答案卡</label>
+                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm text-red-600"><input type="checkbox" v-model="exam.specialNeeds" class="hidden">{{ exam.specialNeeds ? '■' : '□' }}特殊生考卷</label>
+                        </td>
+                        <td class="border border-black p-2 text-center font-bold w-[15%]">科目：數學</td>
                     </tr>
                     <tr>
                         <td class="border border-black p-3 w-[35%]">
@@ -100,21 +110,18 @@
                             <label class="cursor-pointer mr-1 hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>
                             <label class="cursor-pointer hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
                         </td>
-                        <td rowspan="2" class="border border-black p-3 leading-loose w-[15%]">
-                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm"><input type="radio" v-model="exam.useCard" :value="true" class="hidden">{{ exam.useCard === true ? '■' : '□' }}使用答案卡</label>
-                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm"><input type="radio" v-model="exam.useCard" :value="false" class="hidden">{{ exam.useCard === false ? '■' : '□' }}不使用答案卡</label>
-                            <label class="cursor-pointer block hover:text-teal-700 font-bold text-sm text-red-600 mt-1"><input type="checkbox" v-model="exam.specialNeeds" class="hidden">{{ exam.specialNeeds ? '■' : '□' }}特殊生考卷</label>
-                        </td>
+                        <td rowspan="2" class="border border-black p-2 text-center align-top font-bold text-lg w-[15%] border-t-2 border-b-2 border-l-2 border-r-2">(總 分)</td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="border border-black p-4 font-bold tracking-widest text-base whitespace-nowrap">
-                            班級：＿＿＿＿　　學號：＿＿＿＿　　姓名：＿＿＿＿＿＿
+                        <td colspan="2" class="border border-black p-4 font-bold tracking-widest text-base">
+                            班級：＿＿＿＿＿　　學號：＿＿＿＿＿　　姓名：＿＿＿＿＿＿＿＿
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
 
+        <!-- 區塊 2：分區匯入素材與指定範圍 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">2</span>
@@ -122,6 +129,7 @@
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- 課本與習作 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center">
@@ -136,6 +144,7 @@
                     </div>
                 </div>
 
+                <!-- 舊考卷與補充 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center">
@@ -151,6 +160,7 @@
                 </div>
             </div>
             
+            <!-- 範圍指定 -->
             <div class="mb-6 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小
@@ -169,6 +179,7 @@
                 </div>
             </div>
 
+            <!-- 出題原則 -->
             <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
@@ -177,6 +188,7 @@
             </div>
         </div>
 
+        <!-- 區塊 3：題型與配分設定 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">3</span>
@@ -215,6 +227,7 @@
             </div>
         </div>
 
+        <!-- 區塊 4：生成與下載 -->
         <div class="mt-8 text-center bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
             <div class="flex justify-center gap-6 mb-6">
                 <label class="cursor-pointer font-bold flex items-center text-teal-800">
@@ -228,14 +241,15 @@
             <button @click="generateExam" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto">
                 <i class="fas fa-file-word mr-3 text-2xl"></i> 開始產生 WORD 考卷 (.doc)
             </button>
-            <p class="text-sm text-red-500 mt-4 font-bold tracking-wide">⚠️ 下載後打開若出現「檔案格式警告」，請放心點擊「是(Y)」即可載入排版與圖片公式。</p>
+            <p class="text-sm text-gray-500 mt-4 font-bold tracking-wide">💡 下載後打開即可看到精準排版，數學公式會以完美大小的圖片呈現。</p>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
     </div>
     
+    <!-- 🌟 落款升級為 V9.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.0 byKC</span>
     </footer>
 </div>
 
@@ -273,44 +287,50 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：防護網強制攔截 ## 亂碼
+        // 🌟 終極圖片公式轉換引擎：防護網攔截 ## 亂碼並設定完美解析度
         formatMath(text) {
             if (!text) return '';
             
-            // 強制過濾 AI 產生的 ## 亂碼，替換為中文的「或」
-            let placeholderText = text.replace(/##+/g, ' 或 ');
+            // 替換掉 AI 亂加的 markdown 標題符號
+            let placeholderText = text.replace(/^#+\s*/gm, '');
 
             const toImg = (tex) => {
                 let cleanTex = tex.replace(/\\\\/g, '\\');
                 let encoded = encodeURIComponent(cleanTex);
+                // dpi 設定為 100，完美配合 14pt 字型大小
                 return `<img src="https://latex.codecogs.com/png.image?\\dpi{100}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
             };
 
             let mathBlocks = [];
             
-            // 攔截獨立行公式 $$ $$
+            // 1. 攔截獨立行公式 $$ $$
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            
-            // 攔截 \[ \] 公式
+            // 2. 攔截 \[ \] 公式
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-
-            // 攔截 \( \) 公式
+            // 3. 攔截 \( \) 公式
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
                 mathBlocks.push(toImg(p1.trim()));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-
-            // 攔截行內公式 $ $
+            // 4. 攔截行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 mathBlocks.push(toImg(p1.trim()));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
+            // 5. 攔截 AI 錯誤使用的 ## ## 包裝公式
+            placeholderText = placeholderText.replace(/##([\s\S]+?)##/g, (match, p1) => {
+                mathBlocks.push(toImg(p1.trim()));
+                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
+            });
+
+            // 清除殘餘的 ## (強制防護)
+            placeholderText = placeholderText.replace(/##/g, ' ');
 
             // 處理換行，並補回公式圖片
             let result = placeholderText.replace(/\n/g, '<br>');
@@ -351,7 +371,7 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：強制單行縮減底線、防跑版設計)
+        // 🌟 表頭 2 (第二頁：扁平化純淨表格，絕對防跑版，對齊表頭 1)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 10px; border: 2px solid black;">
@@ -366,15 +386,15 @@ createApp({
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
-                    <td width="20%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
+                    <td width="15%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
                         科目：數學
                     </td>
                 </tr>
                 <tr>
-                    <td width="32.5%" style="padding: 8px 10px; font-size: 12pt; border: 1px solid black;">
+                    <td width="35%" style="padding: 8px 10px; font-size: 12pt; border: 1px solid black;">
                         科別：${this.exam.dept==='工科'?'■':'□'}工科、${this.exam.dept==='商科'?'■':'□'}商科、${this.exam.dept==='體育科'?'■':'□'}體育科
                     </td>
-                    <td width="32.5%" style="padding: 8px 10px; font-size: 12pt; border: 1px solid black;">
+                    <td width="35%" style="padding: 8px 10px; font-size: 12pt; border: 1px solid black;">
                         年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                     <td rowspan="2" align="center" valign="top" style="padding-top: 15px; font-size: 14pt; font-weight: bold; border: 2px solid black; height: 70px;">
@@ -382,7 +402,7 @@ createApp({
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="padding: 10px 5px; font-size: 13pt; border: 1px solid black; white-space: nowrap;">
+                    <td colspan="2" style="padding: 10px 10px; font-size: 13pt; border: 1px solid black; white-space: nowrap;">
                         班級：＿＿＿＿　學號：＿＿＿＿　姓名：＿＿＿＿＿＿
                     </td>
                 </tr>
@@ -404,16 +424,17 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 強制指示 AI 嚴格格式，警告禁止使用 ##
+                // ⚠️ 寫入您要求的所有格式規範指令
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes}
 【要求】：${this.examRules}
 【重要輸出格式警告】：
-1. 排版保留：請使用標準 Markdown 語法處理文字排版。
+請嚴格遵守以下格式，以利後續程式解析：
+1. 排版保留：請使用標準 Markdown 語法處理文字排版（如 ### 標題、** 粗體）。
 2. 表格規範：若有表格，請使用標準 Markdown 表格（| 表格 |），並且【表格的正上方與正下方，務必各保留一個空白行】。
-3. 數學公式：請一律使用標準 LaTeX 語法呈現，絕對禁止使用純文字排版！
-4. 【絕對禁止】：嚴禁在字串或數學式中使用「##」符號作為分隔或表示「或」！若要表達「或」，請直接寫中文字「或」。`;
+3. 數學公式：請一律使用標準 LaTeX 語法呈現（行內公式使用 $ $，獨立行公式使用 $$ $$）。絕對禁止使用純文字排版矩陣與方程式！
+4. 絕對禁止：嚴禁在 JSON 字串中單獨使用「##」符號！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -472,7 +493,7 @@ createApp({
                     throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
                 }
                 
-                // 🌟 Word 宣告 (B4 尺寸)
+                // 🌟 Word 宣告 (預設 B4 尺寸)
                 let docHTML = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
                       xmlns:w="urn:schemas-microsoft-com:office:word" 
