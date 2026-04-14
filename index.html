@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V12.0 官方完美版</title>
+    <title>數學出題小幫手 - V13.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -250,9 +250,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V12.0 -->
+    <!-- 🌟 落款升級為 V13.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V12.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V13.0 byKC</span>
     </footer>
 </div>
 
@@ -290,56 +290,67 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：強制防護 ## 亂碼並設定最佳解析度，排除中文破圖
+        // 🌟 終極圖片公式轉換引擎：智慧分離中英文，強制攔截 # 亂碼
         formatMath(text) {
             if (!text) return '';
             
-            // 過濾掉可能干擾的標記 (將 Markdown 的粗體與 ## 移除)
-            let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
+            // 1. 強制過濾 AI 產生的 Markdown 標記與 # 亂碼
+            let placeholderText = text.replace(/^#+\s*/gm, ''); // 移除標題的 #
+            placeholderText = placeholderText.replace(/#+/g, ' 或 '); // 將其餘的 # 視為「或」
+            placeholderText = placeholderText.replace(/\*\*/g, ''); // 移除粗體 **
 
+            // 2. 將純淨的 LaTeX 轉為圖片，若遇到中文則分離處理
             const toImg = (tex) => {
                 let cleanTex = tex.replace(/\\\\/g, '\\').trim();
                 
-                // 【防護網】: 如果公式內含有中文字，CodeCogs 產生器會崩潰，導致跑出亂碼或破圖
-                // 若偵測到中文，會直接抽出中文，或返回一般文字顯示以防程式當機
-                if (/[\u4e00-\u9fa5]/.test(cleanTex)) {
-                    // 移除 LaTeX 的 \text{} 語法，留下純文字顯示
-                    cleanTex = cleanTex.replace(/\\text\{([^}]+)\}/g, '$1');
-                    return ` ${cleanTex} `; 
-                }
+                // 移除 AI 偷偷加進公式裡的 \text{} 包裝
+                cleanTex = cleanTex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
+                
+                // 利用正則表達式，將中文字與全形標點符號單獨切開
+                let parts = cleanTex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
+                let html = '';
 
-                let encoded = encodeURIComponent(cleanTex);
-                // dpi=100 完美配合 14pt，垂直置中對齊文字
-                return `<img src="https://latex.codecogs.com/png.image?\\dpi{100}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
+                parts.forEach(part => {
+                    if (/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]/.test(part)) {
+                        // 中文或標點部分，直接用標準字體顯示，絕對不送入圖片產生器！
+                        html += `<span style="font-family: '標楷體', 'Times New Roman', serif; margin: 0 2px;">${part}</span>`;
+                    } else if (part.trim().length > 0) {
+                        // 純數學部分，送入 CodeCogs 產生圖片，dpi=100 完美契合 14pt 字體
+                        let mathPart = part.trim();
+                        let encoded = encodeURIComponent(mathPart);
+                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{100}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${mathPart}" />`;
+                    }
+                });
+                return html;
             };
 
             let mathBlocks = [];
             
-            // 獨立行公式 $$ $$
+            // 攔截獨立行公式 $$ $$
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // \[ \] 公式
+            // 攔截 \[ \] 公式
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // \( \) 公式
+            // 攔截 \( \) 公式
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
                 mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // 行內公式 $ $
+            // 攔截行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
 
-            // 強制清理可能殘餘的 ##
-            placeholderText = placeholderText.replace(/##/g, ' ');
-
+            // 將換行符號轉為 HTML 的 <br>
             let result = placeholderText.replace(/\n/g, '<br>');
+            
+            // 將轉換好的圖片與文字區塊塞回原位
             mathBlocks.forEach((block, idx) => {
                 result = result.replace(`__MATH_BLOCK_${idx}__`, block);
             });
@@ -448,8 +459,8 @@ createApp({
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
 1. 數學公式：真正的數學式、數字、變數請使用標準 LaTeX 語法並用 $ $ 包住（例如：$x^2+1=0$）。
-2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有中文請移到 $ $ 之外（例如：正確寫法為「半徑 $r=5$」，絕對不能寫成「$\\text{半徑} r=5$」或「$半徑 r=5$」）。
-3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「##」或「\\[ \\]」或「**」符號！若需表示或，請直接寫中文「或」。
+2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外（例如：正確寫法為「$x > 5$ 或 $x < 2$」，絕對不能寫成「$x > 5 \\text{或} x < 2$」）。
+3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}）。`;
 
                 contentsParts.push({ text: promptText });
