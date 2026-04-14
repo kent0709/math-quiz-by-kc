@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V14.0 官方完美版</title>
+    <title>數學出題小幫手 - V15.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V14.0 -->
+    <!-- 🌟 落款升級為 V15.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V14.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V15.0 byKC</span>
     </footer>
 </div>
 
@@ -569,6 +569,7 @@ createApp({
                             }
                             // 🌟 計算題保留空白，但「填充題」不再加入多餘的空行，以節省第二頁空間！
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
+                            else if (tName === '填充題') qHtml += `<br><br>`;
                             allQuestions.push({ isHeader: false, html: qHtml });
                         });
                     }
@@ -607,8 +608,11 @@ createApp({
                     // --- 【第二頁最下方：作答格子】 ---
                     docHTML += `<br><p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 15px;">---------------------------------------作答區---------------------------------------</p>`;
 
+                    let ansSectionNum = ['一', '二', '三'];
+                    let ansSectionIdx = 0;
+
                     if (groupedQs['選擇題'].length > 0) {
-                        docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">單選題答題區（每題 ${getScore('選擇題')} 分）</p>`;
+                        docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">${ansSectionNum[ansSectionIdx++]}、單選題（每題 ${getScore('選擇題')} 分）</p>`;
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin-bottom: 10px;">`;
                         let count = groupedQs['選擇題'].length;
                         for (let i = 0; i < count; i += 5) {
@@ -622,7 +626,7 @@ createApp({
                     }
 
                     if (groupedQs['填充題'].length > 0) {
-                        docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">填充題答題區（每格 ${getScore('填充題')} 分）</p>`;
+                        docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">${ansSectionNum[ansSectionIdx++]}、填充題（每格 ${getScore('填充題')} 分）</p>`;
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center;">`;
                         let count = groupedQs['填充題'].length;
                         for (let i = 0; i < count; i += 4) {
@@ -696,7 +700,7 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 若打開出現格式警告請選「是」，排版與數學圖片即會完美呈現！</span>`;
+                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 (開啟檔案若有警告請點選「是」，公式與排版即會完美呈現！)</span>`;
 
             } catch (error) {
                 console.error(error);
