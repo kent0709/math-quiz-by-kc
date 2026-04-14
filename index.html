@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V13.0 官方完美版</title>
+    <title>數學出題小幫手 - V14.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式優化 ‧ 官方表頭完美對齊版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">架構完整保留 ‧ 圖片公式修復 ‧ 表頭完美對齊版</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -110,7 +110,8 @@
                             <label class="cursor-pointer mr-1 hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>
                             <label class="cursor-pointer hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
                         </td>
-                        <td rowspan="2" class="border-t-2 border-b-2 border-l-2 border-r-2 border-black p-2 text-center align-top font-bold text-xl w-[20%]">(總 分)</td>
+                        <!-- 總分框放大：使用 text-xl 對齊 18pt 視覺 -->
+                        <td rowspan="2" class="border-t-2 border-b-2 border-l-2 border-r-2 border-black p-2 text-center align-top font-bold text-xl w-[20%] pt-4">(總 分)</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="border border-black p-4 font-bold tracking-widest text-base whitespace-nowrap">
@@ -250,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V13.0 -->
+    <!-- 🌟 落款升級為 V14.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V13.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V14.0 byKC</span>
     </footer>
 </div>
 
@@ -290,18 +291,17 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：智慧分離中英文，強制攔截 # 亂碼
+        // 🌟 終極圖片公式轉換引擎：不再誤殺反斜線，解決矩陣亂碼，完美對齊文字
         formatMath(text) {
             if (!text) return '';
             
-            // 1. 強制過濾 AI 產生的 Markdown 標記與 # 亂碼
-            let placeholderText = text.replace(/^#+\s*/gm, ''); // 移除標題的 #
-            placeholderText = placeholderText.replace(/#+/g, ' 或 '); // 將其餘的 # 視為「或」
-            placeholderText = placeholderText.replace(/\*\*/g, ''); // 移除粗體 **
+            // 過濾掉可能干擾的標記 (將 Markdown 的粗體與 # 移除)
+            let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 2. 將純淨的 LaTeX 轉為圖片，若遇到中文則分離處理
             const toImg = (tex) => {
-                let cleanTex = tex.replace(/\\\\/g, '\\').trim();
+                // 不使用 .replace(/\\\\/g, '\\')，因為這會把矩陣的換行 \\ 變成 \，導致 CodeCogs 崩潰。
+                // JSON.parse 已經幫我們把 "\\\\" 變成 "\\" 了。
+                let cleanTex = tex.trim();
                 
                 // 移除 AI 偷偷加進公式裡的 \text{} 包裝
                 cleanTex = cleanTex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
@@ -358,22 +358,22 @@ createApp({
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版，官方 540961507 比例完美對齊)
+        // 🌟 表頭 1 (第一頁：無姓名版，官方比例完美對齊)
         getHeaderPage1() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
                 <tr>
-                    <td colspan="2" align="center" style="padding: 12px; border: 1px solid black;">
+                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black;">
                         <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="2" width="15%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
+                    <td rowspan="2" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
-                    <td width="20%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
+                    <td width="17%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
                         科目：數學
                     </td>
                 </tr>
@@ -395,22 +395,22 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名版，附官方警告標語，總分框放大)
+        // 🌟 表頭 2 (第二頁：有姓名版，總分框明顯放大)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
                 <tr>
-                    <td colspan="2" align="center" style="padding: 12px; border: 1px solid black;">
+                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black;">
                         <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="3" width="15%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
+                    <td rowspan="3" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
                     </td>
-                    <td width="20%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
+                    <td width="17%" align="center" style="padding: 5px; font-size: 12pt; font-weight: bold; border: 1px solid black;">
                         科目：數學
                     </td>
                 </tr>
@@ -421,7 +421,7 @@ createApp({
                     <td width="32.5%" style="font-size: 12pt; padding: 8px 10px; border: 1px solid black;">
                         年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
-                    <td rowspan="2" align="center" valign="top" style="padding-top: 15px; font-size: 14pt; font-weight: bold; border: 2px solid black; height: 75px;">
+                    <td rowspan="2" align="center" valign="top" style="padding-top: 20px; font-size: 18pt; font-weight: bold; border: 2px solid black; height: 80px;">
                         (總　分)
                     </td>
                 </tr>
@@ -461,7 +461,7 @@ createApp({
 1. 數學公式：真正的數學式、數字、變數請使用標準 LaTeX 語法並用 $ $ 包住（例如：$x^2+1=0$）。
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外（例如：正確寫法為「$x > 5$ 或 $x < 2$」，絕對不能寫成「$x > 5 \\text{或} x < 2$」）。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}）。`;
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -567,8 +567,8 @@ createApp({
                             if (q.options && q.options.length > 0) {
                                 qHtml += `<p style="margin-left: 30px; margin-bottom: 12px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
                             }
+                            // 🌟 計算題保留空白，但「填充題」不再加入多餘的空行，以節省第二頁空間！
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
-                            else if (tName === '填充題') qHtml += `<br><br>`;
                             allQuestions.push({ isHeader: false, html: qHtml });
                         });
                     }
@@ -641,6 +641,8 @@ createApp({
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
                     docHTML += this.getHeaderPage2(); // 解答卷也要有表頭
+                    
+                    // 🌟 詳解格式：表頭加上答案格(內含答案)，再寫每一題的詳解
                     docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
                     
                     if (groupedQs['選擇題'].length > 0) {
