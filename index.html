@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V15.0 官方完美版</title>
+    <title>數學出題小幫手 - V16.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V15.0 -->
+    <!-- 🌟 落款升級為 V16.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V15.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V16.0 byKC</span>
     </footer>
 </div>
 
@@ -454,14 +454,15 @@ createApp({
                 // ⚠️ 強制指令：防呆確保 JSON 正確且無中文混入數學公式
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes}
+【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
 【要求】：${this.examRules}
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
 1. 數學公式：真正的數學式、數字、變數請使用標準 LaTeX 語法並用 $ $ 包住（例如：$x^2+1=0$）。
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外（例如：正確寫法為「$x > 5$ 或 $x < 2$」，絕對不能寫成「$x > 5 \\text{或} x < 2$」）。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。`;
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。
+5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -541,12 +542,18 @@ createApp({
                 
                 const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
                 quizData.questions.forEach(q => {
-                    let t = q.type;
-                    if(t.includes('選擇') || t.includes('單選')) t = '選擇題';
-                    if(t.includes('填充')) t = '填充題';
-                    if(t.includes('計算') || t.includes('問答')) t = '計算題';
-                    if(groupedQs[t]) groupedQs[t].push(q);
-                    else groupedQs['選擇題'].push(q); // 防呆
+                    let t = q.type || '';
+                    if(t.includes('選擇') || t.includes('單選')) {
+                        groupedQs['選擇題'].push(q);
+                    } else if(t.includes('填')) {
+                        groupedQs['填充題'].push(q);
+                    } else if(t.includes('算') || t.includes('問答')) {
+                        groupedQs['計算題'].push(q);
+                    } else {
+                        // 防呆：如果 AI 亂填 type，就用有沒有 options 來判斷
+                        if(q.options && q.options.length > 0) groupedQs['選擇題'].push(q);
+                        else groupedQs['填充題'].push(q); 
+                    }
                 });
 
                 let allQuestions = [];
