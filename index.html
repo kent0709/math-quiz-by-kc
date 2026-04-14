@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.0 官方完美版</title>
+    <title>數學出題小幫手 - V12.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -250,9 +250,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.0 -->
+    <!-- 🌟 落款升級為 V12.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V11.0 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V12.0 byKC</span>
     </footer>
 </div>
 
@@ -290,15 +290,24 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：強制防護 ## 亂碼並設定最佳解析度
+        // 🌟 終極圖片公式轉換引擎：強制防護 ## 亂碼並設定最佳解析度，排除中文破圖
         formatMath(text) {
             if (!text) return '';
             
-            // 過濾掉可能干擾的標記
-            let placeholderText = text.replace(/##+/g, ' 或 ').replace(/^#+\s*/gm, '');
+            // 過濾掉可能干擾的標記 (將 Markdown 的粗體與 ## 移除)
+            let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
             const toImg = (tex) => {
-                let cleanTex = tex.replace(/\\\\/g, '\\');
+                let cleanTex = tex.replace(/\\\\/g, '\\').trim();
+                
+                // 【防護網】: 如果公式內含有中文字，CodeCogs 產生器會崩潰，導致跑出亂碼或破圖
+                // 若偵測到中文，會直接抽出中文，或返回一般文字顯示以防程式當機
+                if (/[\u4e00-\u9fa5]/.test(cleanTex)) {
+                    // 移除 LaTeX 的 \text{} 語法，留下純文字顯示
+                    cleanTex = cleanTex.replace(/\\text\{([^}]+)\}/g, '$1');
+                    return ` ${cleanTex} `; 
+                }
+
                 let encoded = encodeURIComponent(cleanTex);
                 // dpi=100 完美配合 14pt，垂直置中對齊文字
                 return `<img src="https://latex.codecogs.com/png.image?\\dpi{100}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${cleanTex}" />`;
@@ -308,24 +317,27 @@ createApp({
             
             // 獨立行公式 $$ $$
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
-                mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
+                mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
             // \[ \] 公式
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
-                mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1.trim())}</div>`);
+                mathBlocks.push(`<div style="text-align: center; margin: 10px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
             // \( \) 公式
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
-                mathBlocks.push(toImg(p1.trim()));
+                mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
             // 行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
-                mathBlocks.push(toImg(p1.trim()));
+                mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
+
+            // 強制清理可能殘餘的 ##
+            placeholderText = placeholderText.replace(/##/g, ' ');
 
             let result = placeholderText.replace(/\n/g, '<br>');
             mathBlocks.forEach((block, idx) => {
@@ -428,17 +440,17 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 強制指令，保證無 ## 亂碼與純文字數學
+                // ⚠️ 強制指令：防呆確保 JSON 正確且無中文混入數學公式
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes}
 【要求】：${this.examRules}
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. 排版保留：請使用標準 Markdown 語法處理文字排版。
-2. 表格規範：若有表格，請使用標準 Markdown 表格（| 表格 |），並且【表格的正上方與正下方，務必各保留一個空白行】。
-3. 數學公式：請一律使用標準 LaTeX 語法呈現（行內公式使用 $ $，獨立行公式使用 $$ $$）。絕對禁止使用純文字排版矩陣與方程式！
-4. 絕對禁止：嚴禁在字串或數學式中使用「##」符號！`;
+1. 數學公式：真正的數學式、數字、變數請使用標準 LaTeX 語法並用 $ $ 包住（例如：$x^2+1=0$）。
+2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有中文請移到 $ $ 之外（例如：正確寫法為「半徑 $r=5$」，絕對不能寫成「$\\text{半徑} r=5$」或「$半徑 r=5$」）。
+3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「##」或「\\[ \\]」或「**」符號！若需表示或，請直接寫中文「或」。
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}）。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -540,12 +552,12 @@ createApp({
                         
                         groupedQs[tName].forEach((q, idx) => {
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                            let qHtml = `<p style="margin: 5px 0; line-height: 1.6;">${numStr} ${this.formatMath(q.question)}</p>`;
+                            let qHtml = `<p style="margin: 8px 0; line-height: 1.6;">${numStr} ${this.formatMath(q.question)}</p>`;
                             if (q.options && q.options.length > 0) {
-                                qHtml += `<p style="margin-left: 30px; margin-bottom: 8px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
+                                qHtml += `<p style="margin-left: 30px; margin-bottom: 12px;">${q.options.map(opt => this.formatMath(opt)).join('　　')}</p>`;
                             }
-                            // 計算題保留空白，其餘緊密排列以節省空間
-                            if (tName === '計算題') qHtml += `<br><br>`;
+                            if (tName === '計算題') qHtml += `<br><br><br><br>`;
+                            else if (tName === '填充題') qHtml += `<br><br>`;
                             allQuestions.push({ isHeader: false, html: qHtml });
                         });
                     }
