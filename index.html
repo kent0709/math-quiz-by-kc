@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V24.0 官方完美版</title>
+    <title>數學出題小幫手 - V25.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V24.0 教學版 -->
+    <!-- 🌟 落款升級為 V25.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V24.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V25.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -578,7 +578,8 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
-                            let qHtml = `<p style="margin: 2px 0; line-height: 1.5;">${numStr} ${this.formatMath(safeQuestion)}</p>`;
+                            // 🌟 【完美凸排對齊】加入 margin-left 與 text-indent，讓第二行對齊題號右側
+                            let qHtml = `<p style="margin: 2px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -589,7 +590,8 @@ createApp({
                                     }
                                     return optText;
                                 });
-                                qHtml += `<p style="margin: 2px 0 6px 30px; line-height: 1.5;">${formattedOptions.join('　　　')}</p>`;
+                                // 🌟 選項跟著凸排縮排，對齊題目文字
+                                qHtml += `<p style="margin: 2px 0 6px 40px; line-height: 1.5;">${formattedOptions.join('　　　')}</p>`;
                             }
                             
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
