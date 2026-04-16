@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V22.0 官方完美版</title>
+    <title>數學出題小幫手 - V23.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -81,13 +81,13 @@
                 <table class="w-full max-w-4xl border-collapse border-2 border-black bg-white exam-font text-black text-sm md:text-base">
                     <tr>
                         <td colspan="2" class="border border-black p-4 text-center w-[65%]">
-                            <div class="text-xl md:text-2xl font-bold text-red-600 tracking-widest flex justify-center items-center gap-1 flex-wrap">
+                            <div class="text-xl md:text-2xl font-bold text-red-600 tracking-wider flex justify-center items-center gap-1 flex-wrap whitespace-nowrap">
                                 <input v-model="exam.school" class="w-24 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
                                 <input v-model="exam.year" type="number" class="w-16 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
                                 <span class="text-red-600">學年第</span>
                                 <input v-model="exam.semester" type="number" class="w-12 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
                                 <span class="text-red-600">學期</span>
-                                <input v-model="exam.name" class="w-32 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
+                                <input v-model="exam.name" class="w-36 bg-transparent text-center outline-none text-red-600 border-b border-dashed border-red-200 hover:bg-red-50">
                             </div>
                         </td>
                         <td rowspan="3" class="border border-black p-3 leading-loose w-[15%] align-middle">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V22.0 教學版 -->
+    <!-- 🌟 落款升級為 V23.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V22.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V23.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -291,35 +291,27 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：不再誤殺反斜線，解決矩陣亂碼，極致消除作答空格
+        // 🌟 終極圖片公式轉換引擎
         formatMath(text) {
             if (!text) return '';
             
-            // 過濾掉可能干擾的標記 (將 Markdown 的粗體與 # 移除)
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 【極致防溢出過濾】過濾掉所有底線、空括號，確保不會有多餘空格佔用高度
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
 
             const toImg = (tex) => {
-                // 不使用 .replace(/\\\\/g, '\\')，因為這會把矩陣的換行 \\ 變成 \，導致 CodeCogs 崩潰。
                 let cleanTex = tex.trim();
-                
-                // 移除 AI 偷偷加進公式裡的 \text{} 包裝
                 cleanTex = cleanTex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
                 
-                // 利用正則表達式，將中文字與全形標點符號單獨切開
                 let parts = cleanTex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
                 let html = '';
 
                 parts.forEach(part => {
                     if (/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]/.test(part)) {
-                        // 中文或標點部分，直接用標準字體顯示，絕對不送入圖片產生器！
                         html += `<span style="font-family: '標楷體', 'Times New Roman', serif; margin: 0 2px;">${part}</span>`;
                     } else if (part.trim().length > 0) {
-                        // 純數學部分，送入 CodeCogs 產生圖片，dpi=100 完美契合 14pt 字體
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
                         html += `<img src="https://latex.codecogs.com/png.image?\\dpi{100}\\bg{white} ${encoded}" style="vertical-align: middle; margin: 0 2px;" alt="${mathPart}" />`;
@@ -330,31 +322,25 @@ createApp({
 
             let mathBlocks = [];
             
-            // 攔截獨立行公式 $$ $$，並極致縮減上下 margin
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 2px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // 攔截 \[ \] 公式，並極致縮減上下 margin
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
                 mathBlocks.push(`<div style="text-align: center; margin: 2px 0;">${toImg(p1)}</div>`);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // 攔截 \( \) 公式
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
                 mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
-            // 攔截行內公式 $ $
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
                 mathBlocks.push(toImg(p1));
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
 
-            // 【極致防溢出過濾】強制將多個連續空行壓縮成單行 <br>，徹底解決題目過長問題
             let result = placeholderText.trim().replace(/\n+/g, '<br>');
             
-            // 將轉換好的圖片與文字區塊塞回原位
             mathBlocks.forEach((block, idx) => {
                 result = result.replace(`__MATH_BLOCK_${idx}__`, block);
             });
@@ -362,13 +348,13 @@ createApp({
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版，官方比例完美對齊)
+        // 🌟 表頭 1 (第一頁：無姓名版，強制不換行防止標題跑版)
         getHeaderPage1() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
                 <tr>
-                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black;">
-                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black; white-space: nowrap;">
+                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 1px;">
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
@@ -399,13 +385,13 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名版，總分框明顯放大)
+        // 🌟 表頭 2 (第二頁：有姓名版，強制不換行防止標題跑版)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
                 <tr>
-                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black;">
-                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 2px;">
+                    <td colspan="2" align="center" style="padding: 15px 10px; border: 1px solid black; white-space: nowrap;">
+                        <span style="font-size: 20pt; font-weight: bold; color: red; letter-spacing: 1px;">
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
@@ -455,7 +441,6 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 強制指令：要求隨機打亂，防呆確保 JSON 正確且無中文混入數學公式
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
@@ -530,7 +515,6 @@ createApp({
                     throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
                 }
                 
-                // 🌟 Word 宣告 (預設 B4 尺寸)
                 let docHTML = `
                 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
                       xmlns:w="urn:schemas-microsoft-com:office:word" 
@@ -539,7 +523,6 @@ createApp({
                 <meta charset="utf-8">
                 <title>數學考卷</title>
                 <style>
-                    /* 預設 B4 尺寸與邊界設定 */
                     @page WordSection1 { size: 25.7cm 36.4cm; margin: 1cm 1.5cm; }
                     div.WordSection1 { page: WordSection1; }
                     body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
@@ -559,13 +542,11 @@ createApp({
                     } else if(t.includes('算') || t.includes('問答')) {
                         groupedQs['計算題'].push(q);
                     } else {
-                        // 防呆：如果 AI 亂填 type，就用有沒有 options 來判斷
                         if(q.options && q.options.length > 0) groupedQs['選擇題'].push(q);
                         else groupedQs['填充題'].push(q); 
                     }
                 });
 
-                // 🌟 打亂題目順序，確保每次出題都不一樣，不跟原稿重複
                 const shuffleArray = (array) => {
                     for (let i = array.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
@@ -591,25 +572,11 @@ createApp({
                         
                         groupedQs[tName].forEach((q, idx) => {
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-
-                            // 【選擇題防呆】如果AI忘記給選項，或把選項塞在題目裡
-                            if (tName === '選擇題' && (!q.options || q.options.length === 0)) {
-                                if (q.question.includes('(A)') && q.question.includes('(B)')) {
-                                    let parts = q.question.split(/(?=\([A-E]\))/);
-                                    q.question = parts[0].trim();
-                                    q.options = parts.slice(1).map(p => p.trim());
-                                } else {
-                                    q.options = ["(A) 選項待補", "(B) 選項待補", "(C) 選項待補", "(D) 選項待補"];
-                                }
-                            }
                             
-                            // 【極致防溢出過濾】強制將題目中的換行與空格拔除
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
-                            // 將 margin 設為超緊湊的 2px 0，拒絕影響答案區
                             let qHtml = `<p style="margin: 2px 0; line-height: 1.5;">${numStr} ${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
-                                // 🌟 雙重保證選擇題擁有 (A) (B) (C) (D) 選項
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                                 const formattedOptions = q.options.map((opt, i) => {
                                     let optText = this.formatMath(opt.trim());
@@ -621,7 +588,6 @@ createApp({
                                 qHtml += `<p style="margin: 2px 0 6px 30px; line-height: 1.5;">${formattedOptions.join('　　　')}</p>`;
                             }
                             
-                            // 🌟 計算題保留空白，但「填充題」與「選擇題」不再加入多餘的空行！
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
                             
                             allQuestions.push({ isHeader: false, html: qHtml });
@@ -630,9 +596,6 @@ createApp({
                 });
 
                 if (this.exportOptions.examPaper) {
-                    // ==========================================
-                    // 完美切頁邏輯 (對半切)
-                    // ==========================================
                     let totalQs = allQuestions.filter(q => !q.isHeader).length;
                     let midPoint = Math.ceil(totalQs / 2);
                     let part1HTML = "";
@@ -648,18 +611,14 @@ createApp({
                         }
                     });
 
-                    // --- 【第一頁】 ---
                     docHTML += this.getHeaderPage1();
                     docHTML += part1HTML;
 
-                    // 🌟 【強制換頁 Ctrl+Enter】
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
 
-                    // --- 【第二頁】 ---
                     docHTML += this.getHeaderPage2();
                     docHTML += part2HTML;
                     
-                    // --- 【第二頁最下方：作答格子】 ---
                     docHTML += `<br><p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 15px;">---------------------------------------作答區---------------------------------------</p>`;
 
                     let ansSectionNum = ['一', '二', '三'];
@@ -694,13 +653,11 @@ createApp({
                     }
                 }
 
-                // --- 【第三頁：解答區與詳解】 ---
                 if (this.exportOptions.correctAnswers) {
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
-                    docHTML += this.getHeaderPage2(); // 解答卷也要有表頭
+                    docHTML += this.getHeaderPage2();
                     
-                    // 🌟 詳解格式：表頭加上答案格(內含答案)，再寫每一題的詳解
                     docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
                     
                     if (groupedQs['選擇題'].length > 0) {
@@ -712,7 +669,6 @@ createApp({
                             docHTML += `</tr><tr>`;
                             for (let j = 0; j < 5; j++) { 
                                 if (i + j < count) {
-                                    // 🌟 教師版解答表格內：選擇題「只要有 ABCD」就好
                                     let rawAns = groupedQs['選擇題'][i+j].answer;
                                     let matchAns = rawAns.match(/[A-D]/i);
                                     let shortAns = matchAns ? matchAns[0].toUpperCase() : rawAns;
@@ -739,13 +695,11 @@ createApp({
                         docHTML += `</table><hr style="margin-bottom: 15px;">`;
                     }
 
-                    // 🌟 詳解區才要有完整答案內容
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         if (groupedQs[tName].length > 0) {
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                             groupedQs[tName].forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                // 詳解區包含：【答案】完整內容 + 【詳解】計算過程
                                 docHTML += `<p style="line-height: 1.8; margin-bottom: 25px;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
                         }
