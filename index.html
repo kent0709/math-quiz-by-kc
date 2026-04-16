@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V29.0 官方完美版</title>
+    <title>數學出題小幫手 - V30.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 高清黃金比例</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 高清完美對齊</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -110,8 +110,8 @@
                             <label class="cursor-pointer mr-1 hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>
                             <label class="cursor-pointer hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
                         </td>
-                        <!-- 總分框放大：使用 text-xl 對齊 18pt 視覺 -->
-                        <td rowspan="2" class="border-t-2 border-b-2 border-l-2 border-r-2 border-black p-2 text-center align-top font-bold text-xl w-[20%] pt-4">(總 分)</td>
+                        <!-- 總分框縮小字體並置頂，留下寫分數的空間 -->
+                        <td rowspan="2" class="border-t-2 border-b-2 border-l-2 border-r-2 border-black p-2 text-center align-top font-bold text-sm text-gray-700 w-[20%] pt-2">(總 分)</td>
                     </tr>
                     <tr>
                         <td colspan="2" class="border border-black p-4 font-bold tracking-widest text-base whitespace-nowrap">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V29.0 教學版 -->
+    <!-- 🌟 落款升級為 V30.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V29.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V30.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -291,7 +291,7 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)、完美光學基線置中(-5px)
+        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)、加深光學基線置中(-8px)
         formatMath(text) {
             if (!text) return '';
             
@@ -322,8 +322,8 @@ createApp({
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
-                        // 🌟 【光學置中修復】將 vertical-align 設定為 -5px，完美對齊 14pt 中文字基線
-                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: -5px;" alt="${mathPart}" />`;
+                        // 🌟 【光學置中修復】將 vertical-align 設定為 -8px，更完美對齊 14pt 中文字的中心線
+                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: -8px;" alt="${mathPart}" />`;
                     }
                 });
                 return html;
@@ -394,7 +394,7 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名版，強制不換行防止標題跑版)
+        // 🌟 表頭 2 (第二頁：有姓名版，總分框字體縮小且靠上，留下寫分數空間)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
@@ -420,7 +420,8 @@ createApp({
                     <td width="32.5%" style="font-size: 12pt; padding: 8px 10px; border: 1px solid black;">
                         年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
-                    <td rowspan="2" align="center" valign="top" style="padding-top: 20px; font-size: 18pt; font-weight: bold; border: 2px solid black; height: 80px;">
+                    <!-- 🌟 將總分字體縮小為 11pt，且緊靠上方，為寫成績留出巨大空間 -->
+                    <td rowspan="2" align="center" valign="top" style="padding-top: 8px; font-size: 11pt; font-weight: bold; color: #333; border: 2px solid black; height: 80px;">
                         (總　分)
                     </td>
                 </tr>
