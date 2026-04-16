@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V23.0 官方完美版</title>
+    <title>數學出題小幫手 - V24.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 選擇題強化防呆</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 數學公式防呆</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V23.0 教學版 -->
+    <!-- 🌟 落款升級為 V24.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V23.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V24.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -300,6 +300,9 @@ createApp({
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
+
+            // 【精準修復】解決 AI 產生的多餘雙重集合大括號 \{ \{ 變成 \{
+            placeholderText = placeholderText.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
 
             const toImg = (tex) => {
                 let cleanTex = tex.trim();
@@ -456,7 +459,8 @@ createApp({
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
 8. 填充題出題要求：【絕對禁止】加入「_____」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) 15"），以便詳解區顯示完整答案內容。
-10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！`;
+10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
+11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。`;
 
                 contentsParts.push({ text: promptText });
                 
