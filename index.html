@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V46.0 官方完美版</title>
+    <title>數學出題小幫手 - V47.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -253,9 +253,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V46.0 教學版 -->
+    <!-- 🌟 落款升級為 V47.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V46.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V47.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -293,92 +293,53 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：無縫貼合、分數縮小(解決行距)、保護亂碼、還原完美單邊箭頭
+        // 🌟 終極公式引擎：防禦矩陣破圖、復原單邊箭頭、分子分母正常顯示
         formatMath(text) {
             if (!text) return '';
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 🌟 【終極清道夫】徹底消滅 AI 產生的作答底線與轉義底線 \_\_\_
+            // 🌟 步驟 1：【數學公式保護罩】
+            // 先把所有的數學公式抽離並保護起來，避免稍後清理換行符號時，把矩陣的 LaTeX 語法給破壞了！
+            let mathBlocks = [];
+            const saveMath = (tex, isBlock) => {
+                let cleanTex = tex.trim();
+                // 修復大括號
+                cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
+                // 🌟 【單邊長箭頭回歸】台灣高中專用向量符號，保證超漂亮！
+                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
+
+                mathBlocks.push({ tex: cleanTex, isBlock: isBlock });
+                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
+            };
+
+            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
+            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
+            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
+
+            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式很安全，只處理純文字)
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
-
-            // 🌟 【終極清道夫】徹底消滅 AI 產生的多餘 Markdown 分隔線 --- 或 \-\-\-
+            // 刪除多餘 Markdown 橫線
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
             placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
-            // 【無縫貼合引擎】移除中文字與 $ 公式之間的多餘空格
-            placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(\$|\\\[|\\\()/g, '$1$2');
-            placeholderText = placeholderText.replace(/(\$|\\\]|\\\))\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
-
-            // 【精準修復】解決 AI 產生的多餘雙重集合大括號 \{ \{ 變成 \{
-            placeholderText = placeholderText.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
-
-            // 🌟 【完美單邊箭頭回歸】將 \vec 或 \overrightarrow 轉換為台灣高中專用的單邊長箭頭 \overset{\rightharpoonup}{}
-            placeholderText = placeholderText.replace(/\\overrightharpoon\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
-            placeholderText = placeholderText.replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
-            placeholderText = placeholderText.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
-            placeholderText = placeholderText.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
-            placeholderText = placeholderText.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
-
-            let mathBlocks = [];
-            
-            const toImg = (tex) => {
-                let cleanTex = tex.trim();
-                cleanTex = cleanTex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
-                
-                let parts = cleanTex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
-                let html = '';
-
-                parts.forEach(part => {
-                    if (/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]/.test(part)) {
-                        // 移除 margin，讓中文與公式無縫貼合
-                        html += `<span style="font-family: '標楷體', 'Times New Roman', serif;">${part}</span>`;
-                    } else if (part.trim().length > 0) {
-                        let mathPart = part.trim();
-                        // 🌟 【分數行距縮小術】強制加入 \textstyle，迫使 \frac 分數變小，完美融入 25pt 行距不撐開！
-                        let encoded = encodeURIComponent('\\textstyle ' + mathPart);
-                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: -8px;" alt="${mathPart}" />`;
-                    }
-                });
-                return html;
-            };
-
-            // 🌟 1. 【公式絕對防護盾】優先抽離所有數學公式！保護絕對值 | 與矩陣不被表格引擎吃掉！
-            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (match, p1) => {
-                mathBlocks.push(`<div style="text-align: center; margin: 2px 0;">${toImg(p1)}</div>`);
-                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
-            });
-            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (match, p1) => {
-                mathBlocks.push(`<div style="text-align: center; margin: 2px 0;">${toImg(p1)}</div>`);
-                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
-            });
-            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (match, p1) => {
-                mathBlocks.push(toImg(p1));
-                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
-            });
-            placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (match, p1) => {
-                mathBlocks.push(toImg(p1));
-                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
-            });
-
-            // 🌟 2. 智慧 Markdown 表格轉換引擎 (此時公式已被保護，安全的 | 才會被判定為表格)
+            // 智慧表格轉換
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
                 let out = [];
                 let inTable = false;
                 let tableHtml = "";
-                
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i].trim();
-                    
-                    // 🌟 【雜訊清道夫】徹底刪除 AI 亂加的純分隔線 (如 --- 或 |---|)
-                    if (line.match(/^\|?[\s\-\:]+\|?$/) && line.includes('-')) {
-                        continue; 
-                    }
-                    
+                    if (line.match(/^\|?[\s\-\:]+\|?$/) && line.includes('-')) continue; 
                     if (line.startsWith('|') && line.endsWith('|') && line.includes('|', 1)) {
                         if (!inTable) {
                             inTable = true;
@@ -393,30 +354,52 @@ createApp({
                             out.push(tableHtml);
                             tableHtml = "";
                         }
-                        out.push(lines[i]); // 保留原始非表格行
+                        out.push(lines[i]);
                     }
                 }
-                if (inTable) {
-                    tableHtml += '</table>';
-                    out.push(tableHtml);
-                }
+                if (inTable) { tableHtml += '</table>'; out.push(tableHtml); }
                 return out.join('\n');
             };
-
             placeholderText = parseMarkdownTables(placeholderText);
 
-            // 🌟 3. 處理換行 (安全地將 \n 和 \\n 轉換為 <br>，確保不印出亂碼)
-            let result = placeholderText.trim().replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
-            
-            // 4. 將受保護的數學圖片塞回原位
+            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br> (此時不用擔心破壞公式了)
+            placeholderText = placeholderText.replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
+
+            // 移除中文字與 $ 公式之間的多餘空格
+            placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(__MATH_BLOCK_\d+__)/g, '$1$2');
+            placeholderText = placeholderText.replace(/(__MATH_BLOCK_\d+__)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
+
+            // 🌟 步驟 3：【公式轉譯與歸位】
+            const renderMath = (tex) => {
+                tex = tex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
+                let parts = tex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
+                let html = '';
+                parts.forEach(part => {
+                    if (/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]/.test(part)) {
+                        html += `<span style="font-family: '標楷體', 'Times New Roman', serif;">${part}</span>`;
+                    } else if (part.trim().length > 0) {
+                        let mathPart = part.trim();
+                        // 🌟 【分數恢復術】移除會把分數壓扁的 \textstyle，讓分子分母清楚顯示。並加入 -2px 負邊距，避免撐爆 25pt 行距！
+                        let encoded = encodeURIComponent(mathPart);
+                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: -8px; margin: -2px 0;" alt="${mathPart}" />`;
+                    }
+                });
+                return html;
+            };
+
+            let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
-                result = result.replace(`__MATH_BLOCK_${idx}__`, block);
+                let imgHtml = renderMath(block.tex);
+                if (block.isBlock) {
+                    imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
+                }
+                result = result.replace(`__MATH_BLOCK_${idx}__`, imgHtml);
             });
 
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版，強制不換行防止標題跑版)
+        // 🌟 表頭 1 (第一頁：無姓名版)
         getHeaderPage1() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
@@ -454,7 +437,7 @@ createApp({
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名版，總分框字體縮小且靠上，留下寫分數空間)
+        // 🌟 表頭 2 (第二頁：有姓名版)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
@@ -538,8 +521,9 @@ createApp({
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
 17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\\\overset{\\\\rightharpoonup}{a} 或 \\\\overset{\\\\rightharpoonup}{AB}，【絕對禁止】使用短箭頭 \\\\vec{a} 或 雙邊長箭頭 \\\\overrightarrow{a}。
-18. ⚠️ 矩陣與分式嚴格規範 ⚠️：所有的矩陣【絕對必須】使用 LaTeX 語法（如 \\\\begin{pmatrix}...\\\\end{pmatrix}）並包覆在 $ $ 內。絕對禁止使用純文字空白與換行來排版矩陣！
-19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。`;
+18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\\\begin{bmatrix}...\\\\end{bmatrix} 或 \\\\begin{cases}...\\\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
+19. ⚠️ 換行與排版 ⚠️：題目若需換行，請直接使用 HTML 的 <br> 標籤。絕對禁止輸出 \\n 或 \\\\n 等純文字換行代碼！
+20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\\\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -666,9 +650,6 @@ createApp({
                             if (tName === '選擇題') {
                                 if (!q.options) q.options = [];
                                 
-                                // 選項陣列內部不允許出現 <br> 換行，一律轉為空白確保同行顯示
-                                q.options = q.options.map(opt => opt.replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
-                                
                                 // 情況1：AI 把選項全部塞在一個字串裡 ["(A) 1 (B) 2 (C) 3 (D) 4"]
                                 if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                                     let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
@@ -693,9 +674,8 @@ createApp({
 
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
-                            let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
                             // 🌟 【完美凸排對齊 ＆ 行距 25pt】加入 margin-left 與 text-indent，讓第二行對齊題號右側
-                            let qHtml = `<p style="margin: 5px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                            let qHtml = `<p style="margin: 5px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -710,7 +690,7 @@ createApp({
                                 qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 25pt;">${formattedOptions.join('　　　')}</p>`;
                             } else {
                                 // 若無選項(填充題)，在題目後加上較大下邊距分隔
-                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
                             }
                             
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
