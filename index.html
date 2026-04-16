@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V30.0 官方完美版</title>
+    <title>數學出題小幫手 - V31.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 高清完美對齊</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 數據強制更新</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V30.0 教學版 -->
+    <!-- 🌟 落款升級為 V31.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V30.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V31.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -267,7 +267,7 @@ createApp({
             showApiTutorial: false,
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
-            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據可改\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。`,
+            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。`,
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
                 { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
@@ -451,6 +451,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
+                // ⚠️ 終極指令：強化數據修改與防呆要求
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
@@ -467,7 +468,8 @@ createApp({
 8. 填充題出題要求：【絕對禁止】加入「_____」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
-11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。`;
+11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
+12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -611,6 +613,7 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
+                            // 🌟 【完美凸排對齊】加入 margin-left 與 text-indent，讓第二行對齊題號右側
                             let qHtml = `<p style="margin: 2px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
@@ -622,6 +625,7 @@ createApp({
                                     }
                                     return optText;
                                 });
+                                // 🌟 選項跟著凸排縮排，對齊題目文字
                                 qHtml += `<p style="margin: 2px 0 6px 40px; line-height: 1.5;">${formattedOptions.join('　　　')}</p>`;
                             }
                             
