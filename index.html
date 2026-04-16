@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V28.0 官方完美版</title>
+    <title>數學出題小幫手 - V29.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V28.0 教學版 -->
+    <!-- 🌟 落款升級為 V29.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V28.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V29.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -291,7 +291,7 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)
+        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)、完美光學基線置中(-5px)
         formatMath(text) {
             if (!text) return '';
             
@@ -322,8 +322,8 @@ createApp({
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
-                        // 將 DPI 設為 125，這是 14pt 字體下最協調的高畫質與大小比例
-                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
+                        // 🌟 【光學置中修復】將 vertical-align 設定為 -5px，完美對齊 14pt 中文字基線
+                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: -5px;" alt="${mathPart}" />`;
                     }
                 });
                 return html;
