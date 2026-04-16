@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V32.0 官方完美版</title>
+    <title>數學出題小幫手 - V33.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 強制題數與無英文防呆</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 強制題數與智慧表格</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V32.0 教學版 -->
+    <!-- 🌟 落款升級為 V33.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V32.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V33.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -307,6 +307,44 @@ createApp({
 
             // 【精準修復】解決 AI 產生的多餘雙重集合大括號 \{ \{ 變成 \{
             placeholderText = placeholderText.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
+
+            // 🌟 【新增：智慧 Markdown 表格轉換引擎】將亂碼表格轉換為標準 HTML 表格
+            let parseMarkdownTables = (textStr) => {
+                let lines = textStr.split('\n');
+                let out = [];
+                let inTable = false;
+                let tableHtml = "";
+                
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    // 偵測是否為 Markdown 表格列 (開頭結尾為 | 且至少有分隔符)
+                    if (line.startsWith('|') && line.endsWith('|') && line.split('|').length > 2) {
+                        if (!inTable) {
+                            inTable = true;
+                            tableHtml = '<table width="80%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin: 15px auto; font-family: \'標楷體\', \'Times New Roman\', serif;">';
+                        }
+                        if (line.match(/^\|[-: |]+\|$/)) continue; // 跳過分隔線
+                        
+                        let cells = line.split('|').slice(1, -1);
+                        tableHtml += '<tr>' + cells.map(c => `<td style="border: 1px solid black; padding: 8px;">${c.trim()}</td>`).join('') + '</tr>';
+                    } else {
+                        if (inTable) {
+                            inTable = false;
+                            tableHtml += '</table>';
+                            out.push(tableHtml);
+                            tableHtml = "";
+                        }
+                        out.push(lines[i]); // 保留原始非表格行
+                    }
+                }
+                if (inTable) {
+                    tableHtml += '</table>';
+                    out.push(tableHtml);
+                }
+                return out.join('\n');
+            };
+
+            placeholderText = parseMarkdownTables(placeholderText);
 
             const toImg = (tex) => {
                 let cleanTex = tex.trim();
@@ -471,7 +509,8 @@ createApp({
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
 12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
 13. ⚠️ 嚴禁自我對話與英文碎碎念 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或英文（例如 "Let's re-design...", "Modified" 等）。詳解只能有純粹的數學計算過程與純中文解說！
-14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！`;
+14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
+15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。`;
 
                 contentsParts.push({ text: promptText });
                 
