@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V37.0 官方完美版</title>
+    <title>數學出題小幫手 - V38.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 自然流暢換頁 ‧ 雜訊完美清除</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 自然流暢換頁 ‧ 公式完美保護</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V37.0 教學版 -->
+    <!-- 🌟 落款升級為 V38.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V37.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V38.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -501,21 +501,21 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 終極指令：封殺 AI 的英文碎碎念，並嚴格規定題數產出
+                // ⚠️ 終極指令：封殺 AI 的英文碎碎念，並嚴格規定題數產出，強力約束數學公式包覆
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
 【要求】：${this.examRules}
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. ⚠️數學公式全面包覆⚠️：真正的數學式、所有數字、變數、向量（如 \\vec{a}）、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後包住！
-   ❌ 錯誤示範：已知點 A(1, 2) 在直線 2x+y=5 上。
-   ✅ 正確示範：已知點 $A(1, 2)$ 在直線 $2x+y=5$ 上。
+1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量（如 \\vec{a}）、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！
+   ❌ 錯誤示範：當角度 \\theta 由 20^circ 增加到 70^circ。已知點 A(1, 2)。
+   ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
-6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號（例如：["(A) $1$", "(B) $2$", "(C) $3$", "(D) $4$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
+6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A) $1$", "(B) $2$", "(C) $\\sqrt{3}$", "(D) $\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
 8. 填充題出題要求：【絕對禁止】加入「_____」或「\\_\\_\\_」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
@@ -740,8 +740,8 @@ createApp({
                     }
                     docHTML += `</div>`;
                     
-                    // 🌟 縮短分隔線，避免變成兩行
-                    docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">------------------------- 以下為題目區 -------------------------</p>`;
+                    // 🌟 替換為指定的完美長度分隔線
+                    docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">------------------------------------- 以下為題目區 ------------------------------------</p>`;
 
                     // 🌟 3. 自然輸出所有題目，不強制切斷！讓 Word 自動換頁
                     allQuestions.forEach(q => {
