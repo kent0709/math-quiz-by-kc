@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V38.0 官方完美版</title>
+    <title>數學出題小幫手 - V39.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -119,8 +119,9 @@
                         </td>
                     </tr>
                 </table>
+                <!-- 🌟 精簡版注意事項文字 -->
                 <div class="w-full max-w-4xl text-left mt-2 text-xs font-bold text-gray-500">
-                    依據三重商工校內考試試場規則規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
+                    依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
                 </div>
             </div>
         </div>
@@ -251,9 +252,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V38.0 教學版 -->
+    <!-- 🌟 落款升級為 V39.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V38.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V39.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -438,8 +439,9 @@ createApp({
                     </td>
                 </tr>
             </table>
+            <!-- 🌟 精簡版規定文字 -->
             <div style="font-family: '標楷體', 'Times New Roman', serif; font-size: 10pt; margin-bottom: 15px; text-align: left; line-height: 1.2;">
-                依據三重商工校內考試試場規則規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
+                依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
             </div>
             `;
         },
@@ -481,8 +483,9 @@ createApp({
                     </td>
                 </tr>
             </table>
+            <!-- 🌟 精簡版規定文字 -->
             <div style="font-family: '標楷體', 'Times New Roman', serif; font-size: 10pt; margin-bottom: 15px; text-align: left; line-height: 1.2;">
-                依據三重商工校內考試試場規則規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
+                依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
             </div>
             `;
         },
@@ -700,7 +703,23 @@ createApp({
                 });
 
                 if (this.exportOptions.examPaper) {
-                    // --- 【考卷部分】 ---
+                    let totalQs = allQuestions.filter(q => !q.isHeader).length;
+                    // 🌟 第一頁因為放置了表頭和兩大答題區，空間明顯減少，故改分配約 40% 的題目
+                    let midPoint = Math.floor(totalQs * 0.4);
+                    let part1HTML = "";
+                    let part2HTML = "";
+                    let qCount = 0;
+
+                    allQuestions.forEach(q => {
+                        if (!q.isHeader) qCount++;
+                        if (qCount <= midPoint || (q.isHeader && qCount < midPoint)) {
+                            part1HTML += q.html;
+                        } else {
+                            part2HTML += q.html;
+                        }
+                    });
+
+                    // --- 【第一頁】 ---
                     // 🌟 1. 將有姓名的官方表頭放在第一頁
                     docHTML += this.getHeaderPage2();
                     
@@ -750,12 +769,11 @@ createApp({
                 }
 
                 if (this.exportOptions.correctAnswers) {
-                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
+                    // 🌟 確保換頁前加上空行，讓 Word 100% 讀取到分頁符號
+                    docHTML += `<p style="margin:0;">&nbsp;</p><br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     
                     // 🌟 5. 作答區(解答卷)再開始有表頭
                     docHTML += this.getHeaderPage2();
-                    
-                    docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
                     
                     const finalMCQs = groupedQs['選擇題'].slice(0, this.questionTypes.find(x => x.name === '選擇題')?.count || 0);
                     if (finalMCQs.length > 0) {
@@ -791,8 +809,11 @@ createApp({
                             for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer)}</td>`; else docHTML += `<td style="border: 1px solid blue;"></td>`; }
                             docHTML += `</tr>`;
                         }
-                        docHTML += `</table><hr style="margin-bottom: 15px;">`;
+                        docHTML += `</table>`;
                     }
+
+                    // 🌟 將「教師版解答與解析」移到答案表格的下方
+                    docHTML += `<h2 style="text-align: center; color: red; margin-top: 20px; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
 
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         const finalQs = groupedQs[tName].slice(0, this.questionTypes.find(x => x.name === tName)?.count || 0);
