@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V48.0 官方完美版</title>
+    <title>數學出題小幫手 - V49.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 25pt 行距完美鎖定 ‧ 無亂碼純淨排版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 矩陣全顯示 ‧ 完美單邊向量箭頭</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -253,9 +253,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V48.0 教學版 -->
+    <!-- 🌟 落款升級為 V49.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V48.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V49.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -293,14 +293,14 @@ createApp({
             });
         },
         
-        // 🌟 終極公式引擎：防禦矩陣破圖、復原單邊箭頭、分子分母正常顯示
+        // 🌟 終極公式引擎：防禦矩陣破圖、復原單邊箭頭、分子分母自然呈現不裁切
         formatMath(text) {
             if (!text) return '';
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 🌟 步驟 1：【數學公式保護罩】
-            // 採用全新安全標籤 [MATH-BLOCK-idx]，避免被底線清除器誤刪而導致矩陣破圖！
+            // 🌟 步驟 1：【數學公式防彈保護罩】
+            // 改用絕對沒有底線與括號衝突的安全標籤 @@MATHBLOCK@@，避免被後續清道夫誤殺！
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
@@ -314,7 +314,7 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
 
                 mathBlocks.push({ tex: cleanTex, isBlock: isBlock });
-                return `[MATH-BLOCK-${mathBlocks.length - 1}]`;
+                return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
             // 優先把所有的數學公式抽離並保護起來
@@ -323,7 +323,7 @@ createApp({
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時矩陣/聯立公式很安全，只處理純文字)
+            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
@@ -363,12 +363,12 @@ createApp({
             };
             placeholderText = parseMarkdownTables(placeholderText);
 
-            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br> (此時不會破壞公式內部的換行)
+            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br>
             placeholderText = placeholderText.replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
 
             // 移除中文字與 $ 公式之間的多餘空格
-            placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(\[MATH-BLOCK-\d+\])/g, '$1$2');
-            placeholderText = placeholderText.replace(/(\[MATH-BLOCK-\d+\])\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
+            placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
+            placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
             // 🌟 步驟 3：【公式轉譯與歸位】
             const renderMath = (tex) => {
@@ -380,8 +380,8 @@ createApp({
                         html += `<span style="font-family: '標楷體', 'Times New Roman', serif;">${part}</span>`;
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
-                        // 🌟 【分數完美呈現】讓分子分母自然顯示大字體，靠外層的 mso-line-height-rule 鎖定行距
                         let encoded = encodeURIComponent(mathPart);
+                        // 移除強制縮小與裁切，讓分數和矩陣自由顯示，vertical-align 確保垂直對齊文字
                         html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
                     }
                 });
@@ -394,7 +394,7 @@ createApp({
                 if (block.isBlock) {
                     imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
                 }
-                result = result.replace(`[MATH-BLOCK-${idx}]`, imgHtml);
+                result = result.replace(`@@MATHBLOCK${idx}@@`, imgHtml);
             });
 
             return result;
@@ -679,8 +679,8 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
-                            // 🌟 【行距 25pt + mso-line-height-rule: exactly 鎖定法】這樣分數再大也不會把行距撐破！
-                            let qHtml = `<p style="margin: 5px 0; line-height: 25pt; mso-line-height-rule: exactly; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                            // 🌟 【解除高度裁切限制】拔除 mso-line-height-rule: exactly，讓矩陣跟分數自由顯示！
+                            let qHtml = `<p style="margin: 5px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -691,11 +691,11 @@ createApp({
                                     }
                                     return optText;
                                 });
-                                // 🌟 選項行距同樣鎖定 25pt
-                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 25pt; mso-line-height-rule: exactly;">${formattedOptions.join('　　　')}</p>`;
+                                // 🌟 拔除 mso-line-height-rule: exactly
+                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 25pt;">${formattedOptions.join('　　　')}</p>`;
                             } else {
                                 // 若無選項(填充題)，在題目後加上較大下邊距分隔
-                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 25pt; mso-line-height-rule: exactly; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             }
                             
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
@@ -825,8 +825,8 @@ createApp({
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                             finalQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                // 🌟 詳解區也同步套用 25pt 舒適行距與鎖定規則
-                                docHTML += `<p style="line-height: 25pt; mso-line-height-rule: exactly; margin-bottom: 25px;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
+                                // 🌟 拔除 mso-line-height-rule: exactly，讓詳解區的矩陣也可以完美顯示
+                                docHTML += `<p style="line-height: 25pt; margin-bottom: 25px;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
                         }
                     });
