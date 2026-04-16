@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V36.0 官方完美版</title>
+    <title>數學出題小幫手 - V37.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 第二頁純淨無表頭 ‧ 雜訊完美清除</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 自然流暢換頁 ‧ 雜訊完美清除</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V36.0 教學版 -->
+    <!-- 🌟 落款升級為 V37.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V36.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V37.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -700,23 +700,7 @@ createApp({
                 });
 
                 if (this.exportOptions.examPaper) {
-                    let totalQs = allQuestions.filter(q => !q.isHeader).length;
-                    // 🌟 第一頁因為放置了表頭和兩大答題區，空間明顯減少，故改分配約 40% 的題目
-                    let midPoint = Math.floor(totalQs * 0.4);
-                    let part1HTML = "";
-                    let part2HTML = "";
-                    let qCount = 0;
-
-                    allQuestions.forEach(q => {
-                        if (!q.isHeader) qCount++;
-                        if (qCount <= midPoint || (q.isHeader && qCount < midPoint)) {
-                            part1HTML += q.html;
-                        } else {
-                            part2HTML += q.html;
-                        }
-                    });
-
-                    // --- 【第一頁】 ---
+                    // --- 【考卷部分】 ---
                     // 🌟 1. 將有姓名的官方表頭放在第一頁
                     docHTML += this.getHeaderPage2();
                     
@@ -756,17 +740,13 @@ createApp({
                     }
                     docHTML += `</div>`;
                     
-                    docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">--------------------------------------- 以下為題目區 ---------------------------------------</p>`;
+                    // 🌟 縮短分隔線，避免變成兩行
+                    docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">------------------------- 以下為題目區 -------------------------</p>`;
 
-                    // 🌟 3. 然後再開始印題目 (第一頁題目)
-                    docHTML += part1HTML;
-
-                    // 🌟 【強制換頁 Ctrl+Enter】
-                    docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
-
-                    // --- 【第二頁】 ---
-                    // 🌟 4. 第二頁就不要出現表頭了!!! 直接印剩下的題目
-                    docHTML += part2HTML;
+                    // 🌟 3. 自然輸出所有題目，不強制切斷！讓 Word 自動換頁
+                    allQuestions.forEach(q => {
+                        docHTML += q.html;
+                    });
                 }
 
                 if (this.exportOptions.correctAnswers) {
