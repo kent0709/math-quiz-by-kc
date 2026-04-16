@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V40.0 官方完美版</title>
+    <title>數學出題小幫手 - V41.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 保證自動換頁 ‧ 公式完美保護</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 保證自動換頁 ‧ 換頁防護升級</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -252,9 +252,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V40.0 教學版 -->
+    <!-- 🌟 落款升級為 V41.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V40.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V41.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -769,9 +769,9 @@ createApp({
                 }
 
                 if (this.exportOptions.correctAnswers) {
-                    // 🌟 強制換頁 (Ctrl+Enter)：移除空 p 標籤並使用 div 包覆設定 page-break-before，保證 100% 換頁成功！
+                    // 🌟 強制換頁 (Ctrl+Enter)：採用標準 Word 換頁符號並加上隱形緩衝段落，保證 100% 換頁成功！
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
-                    docHTML += `<div style="page-break-before: always;">`;
+                    docHTML += `<p style="margin: 0; padding: 0; height: 0; line-height: 0; font-size: 0;">&nbsp;</p>`;
                     
                     // 🌟 5. 作答區(解答卷)再開始有表頭
                     docHTML += this.getHeaderPage2();
@@ -826,8 +826,6 @@ createApp({
                             });
                         }
                     });
-                    
-                    docHTML += `</div>`; // 結束換頁 div
                 }
 
                 docHTML += `</div></body></html>`;
