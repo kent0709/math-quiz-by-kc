@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V35.0 官方完美版</title>
+    <title>數學出題小幫手 - V36.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 第二頁純淨無表頭 ‧ 公式強防護</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】作答區置頂 ‧ 第二頁純淨無表頭 ‧ 雜訊完美清除</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V35.0 教學版 -->
+    <!-- 🌟 落款升級為 V36.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V35.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V36.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -291,15 +291,21 @@ createApp({
             });
         },
         
-        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)、絕對防護表格衝突
+        // 🌟 終極圖片公式轉換引擎：無縫貼合文字、黃金比例畫質(125 DPI)、絕對防護表格與亂碼衝突
         formatMath(text) {
             if (!text) return '';
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
+            // 🌟 【終極清道夫】徹底消滅 AI 產生的作答底線與轉義底線 \_\_\_
+            placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
+
+            // 🌟 【終極清道夫】徹底消滅 AI 產生的多餘 Markdown 分隔線 --- 或 \-\-\-
+            placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
+            placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
             // 【無縫貼合引擎】移除中文字與 $ 公式之間的多餘空格
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(\$|\\\[|\\\()/g, '$1$2');
@@ -511,14 +517,15 @@ createApp({
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號（例如：["(A) $1$", "(B) $2$", "(C) $3$", "(D) $4$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
-8. 填充題出題要求：【絕對禁止】加入「_____」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
+8. 填充題出題要求：【絕對禁止】加入「_____」或「\\_\\_\\_」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
 12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
 13. ⚠️ 嚴禁自我對話與英文碎碎念 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或英文（例如 "Let's re-design...", "Modified" 等）。詳解只能有純粹的數學計算過程與純中文解說！
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
-15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。`;
+15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
+16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。`;
 
                 contentsParts.push({ text: promptText });
                 
