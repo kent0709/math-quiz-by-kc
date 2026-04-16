@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V31.0 官方完美版</title>
+    <title>數學出題小幫手 - V32.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 自動出題 ‧ 數據強制更新</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】官方排版 ‧ 強制題數與無英文防呆</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V31.0 教學版 -->
+    <!-- 🌟 落款升級為 V32.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V31.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V32.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -451,10 +451,10 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 終極指令：強化數據修改與防呆要求
+                // ⚠️ 終極指令：封殺 AI 的英文碎碎念，並嚴格規定題數產出
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
+【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
 【要求】：${this.examRules}
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
@@ -469,7 +469,9 @@ createApp({
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
-12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！`;
+12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
+13. ⚠️ 嚴禁自我對話與英文碎碎念 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或英文（例如 "Let's re-design...", "Modified" 等）。詳解只能有純粹的數學計算過程與純中文解說！
+14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -576,14 +578,21 @@ createApp({
                 let sectionIdx = 0;
 
                 ['選擇題', '填充題', '計算題'].forEach(tName => {
-                    if (groupedQs[tName].length > 0) {
+                    // 取出該題型設定的數量，進行強制截斷防呆
+                    const typeConfig = this.questionTypes.find(x => x.name === tName);
+                    const limitCount = typeConfig ? parseInt(typeConfig.count) : 0;
+                    
+                    // 只取需要的題數，防 AI 產生過多題目
+                    const limitedQs = groupedQs[tName].slice(0, limitCount);
+
+                    if (limitedQs.length > 0) {
                         let score = getScore(tName);
-                        let total = score * groupedQs[tName].length;
+                        let total = score * limitedQs.length;
                         let unit = tName === '填充題' ? '格' : '題';
                         allQuestions.push({ isHeader: true, html: `<p style="font-size: 16pt; font-weight: bold; margin-top: 10px; margin-bottom: 8px;">${sectionNum[sectionIdx]}、${tName}（每${unit} ${score} 分，共 ${total} 分）</p>` });
                         sectionIdx++;
                         
-                        groupedQs[tName].forEach((q, idx) => {
+                        limitedQs.forEach((q, idx) => {
                             // 🌟 【智慧選項攔截器】AI 如果偷懶不給選項，強制補齊防呆
                             if (tName === '選擇題') {
                                 if (!q.options) q.options = [];
@@ -665,10 +674,12 @@ createApp({
                     let ansSectionNum = ['一', '二', '三'];
                     let ansSectionIdx = 0;
 
-                    if (groupedQs['選擇題'].length > 0) {
+                    // 這裡的格子產生也必須根據真實印出的題數
+                    const finalMCQs = groupedQs['選擇題'].slice(0, this.questionTypes.find(x => x.name === '選擇題')?.count || 0);
+                    if (finalMCQs.length > 0) {
                         docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">${ansSectionNum[ansSectionIdx++]}、單選題（每題 ${getScore('選擇題')} 分）</p>`;
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin-bottom: 10px;">`;
-                        let count = groupedQs['選擇題'].length;
+                        let count = finalMCQs.length;
                         for (let i = 0; i < count; i += 5) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td width="20%" style="font-size:14pt; height:35px;">${i + j + 1}.</td>`; else docHTML += `<td width="20%"></td>`; }
@@ -679,10 +690,11 @@ createApp({
                         docHTML += `</table>`;
                     }
 
-                    if (groupedQs['填充題'].length > 0) {
+                    const finalFillQs = groupedQs['填充題'].slice(0, this.questionTypes.find(x => x.name === '填充題')?.count || 0);
+                    if (finalFillQs.length > 0) {
                         docHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 5px 0;">${ansSectionNum[ansSectionIdx++]}、填充題（每格 ${getScore('填充題')} 分）</p>`;
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid black; text-align: center;">`;
-                        let count = groupedQs['填充題'].length;
+                        let count = finalFillQs.length;
                         for (let i = 0; i < count; i += 4) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td width="25%" style="font-size:14pt; height:35px;">(${i + j + 1})</td>`; else docHTML += `<td width="25%"></td>`; }
@@ -701,16 +713,17 @@ createApp({
                     
                     docHTML += `<h2 style="text-align: center; color: red; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
                     
-                    if (groupedQs['選擇題'].length > 0) {
+                    const finalMCQs = groupedQs['選擇題'].slice(0, this.questionTypes.find(x => x.name === '選擇題')?.count || 0);
+                    if (finalMCQs.length > 0) {
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid blue; text-align: center; margin-bottom: 15px;">`;
-                        let count = groupedQs['選擇題'].length;
+                        let count = finalMCQs.length;
                         for (let i = 0; i < count; i += 5) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < 5; j++) { if (i + j < count) docHTML += `<td width="20%" style="font-size:14pt; height:35px; border: 1px solid blue;">${i + j + 1}.</td>`; else docHTML += `<td width="20%" style="border: 1px solid blue;"></td>`; }
                             docHTML += `</tr><tr>`;
                             for (let j = 0; j < 5; j++) { 
                                 if (i + j < count) {
-                                    let rawAns = groupedQs['選擇題'][i+j].answer;
+                                    let rawAns = finalMCQs[i+j].answer;
                                     let matchAns = rawAns.match(/[A-D]/i);
                                     let shortAns = matchAns ? matchAns[0].toUpperCase() : rawAns;
                                     docHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${shortAns}</td>`; 
@@ -723,23 +736,25 @@ createApp({
                         docHTML += `</table>`;
                     }
 
-                    if (groupedQs['填充題'].length > 0) {
+                    const finalFillQs = groupedQs['填充題'].slice(0, this.questionTypes.find(x => x.name === '填充題')?.count || 0);
+                    if (finalFillQs.length > 0) {
                         docHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid blue; text-align: center; margin-bottom: 15px;">`;
-                        let count = groupedQs['填充題'].length;
+                        let count = finalFillQs.length;
                         for (let i = 0; i < count; i += 4) {
                             docHTML += `<tr>`;
                             for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td width="25%" style="font-size:14pt; height:35px; border: 1px solid blue;">(${i + j + 1})</td>`; else docHTML += `<td width="25%" style="border: 1px solid blue;"></td>`; }
                             docHTML += `</tr><tr>`;
-                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(groupedQs['填充題'][i+j].answer)}</td>`; else docHTML += `<td style="border: 1px solid blue;"></td>`; }
+                            for (let j = 0; j < 4; j++) { if (i + j < count) docHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer)}</td>`; else docHTML += `<td style="border: 1px solid blue;"></td>`; }
                             docHTML += `</tr>`;
                         }
                         docHTML += `</table><hr style="margin-bottom: 15px;">`;
                     }
 
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
-                        if (groupedQs[tName].length > 0) {
+                        const finalQs = groupedQs[tName].slice(0, this.questionTypes.find(x => x.name === tName)?.count || 0);
+                        if (finalQs.length > 0) {
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
-                            groupedQs[tName].forEach((q, idx) => {
+                            finalQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                                 docHTML += `<p style="line-height: 1.8; margin-bottom: 25px;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
