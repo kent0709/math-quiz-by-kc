@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V25.0 官方完美版</title>
+    <title>數學出題小幫手 - V26.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -251,9 +251,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V25.0 教學版 -->
+    <!-- 🌟 落款升級為 V26.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V25.0 教學版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V26.0 教學版 byKC</span>
     </footer>
 </div>
 
@@ -444,21 +444,24 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
+                // ⚠️ 強制指令：防呆確保 JSON 正確且無中文混入數學公式，並強制所有公式加 $ $
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (請務必「精準」依照此數量的題型出題，不可多也不可少！)
 【要求】：${this.examRules}
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. 數學公式：真正的數學式、數字、變數請使用標準 LaTeX 語法並用 $ $ 包住（例如：$x^2+1=0$）。
+1. ⚠️數學公式必須包覆⚠️：真正的數學式、所有數字、變數、向量（如 \\vec{a}）、根號（如 \\sqrt{3}）、角度（如 90^{\\circ}）、幾何符號（如 \\triangle ABC）等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後包住！
+   ❌ 錯誤示範：已知向量 \\vec{a}，選項為 (A) \\sqrt{3}
+   ✅ 正確示範：已知向量 $\\vec{a}$，選項為 (A) $\\sqrt{3}$
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，矩陣換行必須是 \\\\\\\\）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
-6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號（例如：["(A) 1", "(B) 2", "(C) 3", "(D) 4"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
+6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A) $1$", "(B) $2$", "(C) $\\sqrt{3}$", "(D) $\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
 8. 填充題出題要求：【絕對禁止】加入「_____」或「( )」等任何作答空格，請直接陳述問題，並且【絕對禁止】換行（不可使用 \\n）。
-9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) 15"），以便詳解區顯示完整答案內容。
+9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。`;
 
