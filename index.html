@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V50.0 官方完美版</title>
+    <title>數學出題小幫手 - V51.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 印刷樣式完美置中 ‧ 解除裁切限制</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 印刷樣式完美置中 ‧ 終極無損排版</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -253,9 +253,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V50.0 教學版 -->
+    <!-- 🌟 落款升級為 V51.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V50.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V51.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -312,6 +312,13 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
+
+                // 🌟 【智能分數排版】如果是行內公式套用 textstyle 縮小，如果是獨立區塊套用 displaystyle 放大
+                if (!isBlock && !cleanTex.includes('\\textstyle') && !cleanTex.includes('\\displaystyle')) {
+                    cleanTex = '\\textstyle ' + cleanTex;
+                } else if (isBlock && !cleanTex.includes('\\displaystyle') && !cleanTex.includes('\\textstyle')) {
+                    cleanTex = '\\displaystyle ' + cleanTex;
+                }
 
                 mathBlocks.push({ tex: cleanTex, isBlock: isBlock });
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
@@ -381,7 +388,7 @@ createApp({
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
-                        // 移除強制縮小，讓分數和矩陣自由顯示！並設定 vertical-align 讓文字與圖片對齊
+                        // 🌟 完美置中與不裁切設定：圖片垂直對齊中間，靠外部 p 標籤支撐行距
                         html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
                     }
                 });
@@ -504,8 +511,8 @@ createApp({
 【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
 1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！
-   ❌ 錯誤示範：當角度 \\theta 由 20^circ 增加到 70^circ。已知點 A(1, 2)。
-   ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
+   ❌ 致命錯誤示範：已知 \\overset{\\rightharpoonup}{u} = (x,y,3) 同時垂直於 \\overset{\\rightharpoonup}{a}。
+   ✅ 正確滿分示範：已知 $\\overset{\\rightharpoonup}{u} = (x,y,3)$ 同時垂直於 $\\overset{\\rightharpoonup}{a}$。
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
@@ -521,10 +528,10 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\\\overset{\\\\rightharpoonup}{a} 或 \\\\overset{\\\\rightharpoonup}{AB}，【絕對禁止】使用短箭頭 \\\\vec{a} 或 雙邊長箭頭 \\\\overrightarrow{a}。
-18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\\\begin{bmatrix}...\\\\end{bmatrix} 或 \\\\begin{cases}...\\\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
+18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\begin{bmatrix}...\\end{bmatrix} 或 \\begin{cases}...\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
-20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\\\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
+20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
 21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數與矩陣的括號 { } 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！`;
 
                 contentsParts.push({ text: promptText });
@@ -680,7 +687,7 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
-                            // 🌟 【解除高度裁切限制 ＋ 文字對齊置中】拔除 exact line-height，加入 text-valign: center; 完美對應 Word 印刷樣式置中！
+                            // 🌟 【完美置中 ＆ 自然行距不裁切】拔除 exact line-height，加入 text-valign: center; 完美對應 Word 印刷樣式置中！
                             let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
