@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V5.6 官方完美版</title>
+    <title>數學出題小幫手 - V5.7 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -268,9 +268,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V5.6 byKC -->
+    <!-- 🌟 落款升級為 V5.7 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.6 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.7 byKC</span>
     </footer>
 </div>
 
@@ -282,7 +282,7 @@ createApp({
         return {
             apiKey: localStorage.getItem('gemini_api_key') || '',
             showApiTutorial: false,
-            showImageTutorial: false, // 🌟 綁定圖形題說明 Modal
+            showImageTutorial: false,
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
             examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。`,
@@ -325,7 +325,6 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
 
-                // 🌟 【極限與西格瑪強制上下標】強制將 \lim_ 與 \sum_ 轉換為 \lim\limits_ 與 \sum\limits_ 讓條件顯示在正上下方
                 cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
                 cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
                 cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
@@ -534,9 +533,11 @@ createApp({
 18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\begin{bmatrix}...\\end{bmatrix} 或 \\begin{cases}...\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
-21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數與矩陣的括號 { } 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
+21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數、矩陣的括號 \`{ }\` 以及 \`\\left( \\right)\` 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
 22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
-23. ⚠️ 圖片與圖形防呆（極度重要） ⚠️：系統無法複製或繪製出原題目的圖片！當你看到原題包含幾何圖形、棋盤格等圖片時，請你【務必用純文字詳盡描述該圖形的特徵】（例如：「有一個 4x5 的方格棋盤街道，點 A 在左上，點 B 在右下...」），確保學生單看文字就能作答。若該圖形過於複雜絕對無法用文字描述，請【直接捨棄該題，改出其他不需要圖片的題目】來湊齊題數！【絕對禁止】在新題目中保留「如圖」、「如右圖」卻沒有附圖的幽靈文字！`;
+23. ⚠️ 圖片與圖形防呆（極度重要） ⚠️：系統無法複製或繪製出原題目的圖片！當你看到原題包含幾何圖形、棋盤格等圖片時，請你【務必用純文字詳盡描述該圖形的特徵】（例如：「有一個 4x5 的方格棋盤街道，點 A 在左上，點 B 在右下...」），確保學生單看文字就能作答。若該圖形過於複雜絕對無法用文字描述，請【直接捨棄該題，改出其他不需要圖片的題目】來湊齊題數！【絕對禁止】在新題目中保留「如圖」、「如右圖」卻沒有附圖的幽靈文字！
+24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有冗長的連等式（如多項式展開、長積分過程），【絕對禁止】把整串連等式塞在同一個 \`$ $\` 裡面！這會導致圖片過長被切掉。請務必在每個等號處斷開公式，並加上 \`<br>\` 換行。正確示範：\`$\\int (3x+2)^2 dx$<br>$= \\int (9x^2+12x+4) dx$<br>$= 3x^3 + 6x^2 + 4x + C$\`
+25. ⚠️ 嚴禁中文混入指令（致命錯誤） ⚠️：【絕對致命禁止】把中文字放在 \`\\frac{}\`、\`\\sqrt{}\`、\`_{}\` 或任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 \`\\frac{事件數}{總數}\`，請改寫為純文字 \`事件數 / 總數\`，或用代號 \`\\frac{n(A)}{n(S)}\`。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -609,6 +610,7 @@ createApp({
                     div.WordSection1 { page: WordSection1; }
                     body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
                     p { margin: 0 0 10px 0; }
+                    img { max-width: 100%; height: auto; } /* 防爆版保險，避免公式圖片衝出邊界 */
                 </style>
                 </head><body><div class="WordSection1">`;
 
@@ -857,7 +859,6 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                // 🌟 移除了下載成功的冗長文字提示
                 status.innerHTML = `✅ 考卷生成成功！已下載檔案。`;
 
             } catch (error) {
