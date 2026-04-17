@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V49.0 官方完美版</title>
+    <title>數學出題小幫手 - V50.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 矩陣全顯示 ‧ 完美單邊向量箭頭</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 印刷樣式完美置中 ‧ 解除裁切限制</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -253,9 +253,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V49.0 教學版 -->
+    <!-- 🌟 落款升級為 V50.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V49.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V50.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -300,7 +300,7 @@ createApp({
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
             // 🌟 步驟 1：【數學公式防彈保護罩】
-            // 改用絕對沒有底線與括號衝突的安全標籤 @@MATHBLOCK@@，避免被後續清道夫誤殺！
+            // 採用絕對沒有底線與括號衝突的安全標籤 @@MATHBLOCK@@，避免被後續清道夫誤殺！
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
@@ -381,7 +381,7 @@ createApp({
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
-                        // 移除強制縮小與裁切，讓分數和矩陣自由顯示，vertical-align 確保垂直對齊文字
+                        // 移除強制縮小，讓分數和矩陣自由顯示！並設定 vertical-align 讓文字與圖片對齊
                         html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
                     }
                 });
@@ -410,7 +410,7 @@ createApp({
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="2" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 25pt; border: 1px solid black;">
+                    <td rowspan="2" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
@@ -448,7 +448,7 @@ createApp({
                             ${this.exam.school}　${this.exam.year} 學年第 ${this.exam.semester} 學期　${this.exam.name}
                         </span>
                     </td>
-                    <td rowspan="3" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 25pt; border: 1px solid black;">
+                    <td rowspan="3" width="18%" valign="middle" style="padding: 5px 10px; font-size: 12pt; line-height: 1.5; border: 1px solid black;">
                         ${this.exam.useCard ? '■' : '□'}使用答案卡<br>
                         ${!this.exam.useCard ? '■' : '□'}不使用答案卡<br>
                         ${this.exam.specialNeeds ? '■' : '□'}特殊生考卷
@@ -496,7 +496,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 終極指令：封殺 \n 亂碼、強制包裹所有公式、統一單邊向量長箭頭
+                // ⚠️ 終極指令：封殺 \n 亂碼、強制包裹所有公式、統一單邊向量長箭頭，並加入 LaTeX 語法防呆
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
@@ -524,7 +524,8 @@ createApp({
 17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\\\overset{\\\\rightharpoonup}{a} 或 \\\\overset{\\\\rightharpoonup}{AB}，【絕對禁止】使用短箭頭 \\\\vec{a} 或 雙邊長箭頭 \\\\overrightarrow{a}。
 18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\\\begin{bmatrix}...\\\\end{bmatrix} 或 \\\\begin{cases}...\\\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
-20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\\\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。`;
+20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\\\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
+21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數與矩陣的括號 { } 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -679,8 +680,8 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
-                            // 🌟 【解除高度裁切限制】拔除 mso-line-height-rule: exactly，讓矩陣跟分數自由顯示！
-                            let qHtml = `<p style="margin: 5px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                            // 🌟 【解除高度裁切限制 ＋ 文字對齊置中】拔除 exact line-height，加入 text-valign: center; 完美對應 Word 印刷樣式置中！
+                            let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -691,11 +692,11 @@ createApp({
                                     }
                                     return optText;
                                 });
-                                // 🌟 拔除 mso-line-height-rule: exactly
-                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 25pt;">${formattedOptions.join('　　　')}</p>`;
+                                // 🌟 選項行距同樣解除限制並置中
+                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                             } else {
                                 // 若無選項(填充題)，在題目後加上較大下邊距分隔
-                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 25pt; margin-left: 40px; text-indent: -40px;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             }
                             
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
@@ -825,8 +826,8 @@ createApp({
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                             finalQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                // 🌟 拔除 mso-line-height-rule: exactly，讓詳解區的矩陣也可以完美顯示
-                                docHTML += `<p style="line-height: 25pt; margin-bottom: 25px;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
+                                // 🌟 詳解區也同步解除裁切限制並設定置中對齊
+                                docHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; vertical-align: middle;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
                         }
                     });
