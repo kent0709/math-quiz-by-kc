@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V5.4 官方完美版</title>
+    <title>數學出題小幫手 - V5.5 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <!-- 🌟 圖形題說明 Modal (新增) -->
+    <!-- 🌟 圖形題說明 Modal -->
     <div v-if="showImageTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
         <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
             <button @click="showImageTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
@@ -69,7 +69,6 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <!-- 副標題依要求移除 -->
     </div>
 
     <!-- API Key 設定區 -->
@@ -88,14 +87,13 @@
     </div>
 
     <div class="space-y-6">
-        <!-- 區塊 1：考卷表頭 (網頁視覺完美還原官方格式) -->
+        <!-- 區塊 1：考卷表頭 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
                 考卷表頭預覽與設定
             </h2>
             <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col items-center shadow-inner">
-                <!-- 模擬真實考卷扁平化表頭 -->
                 <table class="w-full max-w-4xl border-collapse border-2 border-black bg-white exam-font text-black text-sm md:text-base">
                     <tr>
                         <td colspan="2" class="border border-black p-4 text-center w-[65%]">
@@ -128,7 +126,6 @@
                             <label class="cursor-pointer mr-1 hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高二" class="hidden">{{ exam.grade === '高二' ? '■' : '□' }}高二</label>
                             <label class="cursor-pointer hover:text-teal-700 font-bold whitespace-nowrap"><input type="radio" v-model="exam.grade" value="高三" class="hidden">{{ exam.grade === '高三' ? '■' : '□' }}高三</label>
                         </td>
-                        <!-- 總分框縮小字體並置頂，留下寫分數的空間 -->
                         <td rowspan="2" align="center" valign="top" style="padding-top: 8px; font-size: 11pt; font-weight: bold; color: #333; border: 2px solid black; height: 80px;">
                             (總　分)
                         </td>
@@ -147,7 +144,6 @@
 
         <!-- 區塊 2：分區匯入素材與指定範圍 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
-            <!-- 🌟 標題加上紅色的「圖形題說明」按鈕 -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-xl font-bold text-gray-800 flex items-center shrink-0">
                     <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">2</span>
@@ -159,7 +155,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 課本與習作 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center">
@@ -174,7 +169,6 @@
                     </div>
                 </div>
 
-                <!-- 舊考卷與補充 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center">
@@ -190,7 +184,6 @@
                 </div>
             </div>
             
-            <!-- 範圍指定 -->
             <div class="mb-6 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小
@@ -209,7 +202,6 @@
                 </div>
             </div>
 
-            <!-- 出題原則 -->
             <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
@@ -271,15 +263,14 @@
             <button @click="generateExam" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto">
                 <i class="fas fa-file-word mr-3 text-2xl"></i> 開始產生 WORD 考卷 (.doc)
             </button>
-            <p class="text-sm text-gray-500 mt-4 font-bold tracking-wide">💡 下載後打開即可看到精準排版，數學公式會以完美大小的圖片呈現。</p>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V5.4 byKC -->
+    <!-- 🌟 落款升級為 V5.5 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.4 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.5 byKC</span>
     </footer>
 </div>
 
@@ -318,29 +309,22 @@ createApp({
             });
         },
         
-        // 🌟 終極公式引擎：防禦矩陣破圖、復原單邊箭頭、分子分母自然呈現不裁切
         formatMath(text) {
             if (!text) return '';
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 🌟 步驟 1：【數學公式防彈保護罩】
-            // 採用絕對沒有底線與括號衝突的安全標籤 @@MATHBLOCK@@，避免被後續清道夫誤殺！
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
-                // 🌟 【防破圖機制】過濾掉干擾 CodeCogs 的 \text 等文字指令，避免含有中文字導致當機
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^}]+)\}/g, '$2');
-                // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
-                // 🌟 【單邊長箭頭滿血回歸】台灣高中專用向量符號，保證超漂亮！
                 cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
 
-                // 🌟 【智能分數排版】如果是行內公式套用 textstyle 縮小，如果是獨立區塊套用 displaystyle 放大
                 if (!isBlock && !cleanTex.includes('\\textstyle') && !cleanTex.includes('\\displaystyle')) {
                     cleanTex = '\\textstyle ' + cleanTex;
                 } else if (isBlock && !cleanTex.includes('\\displaystyle') && !cleanTex.includes('\\textstyle')) {
@@ -351,22 +335,18 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 優先把所有的數學公式抽離並保護起來
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
-            // 刪除多餘 Markdown 橫線
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
             placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
-            // 智慧表格轉換
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
                 let out = [];
@@ -397,14 +377,11 @@ createApp({
             };
             placeholderText = parseMarkdownTables(placeholderText);
 
-            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br>
             placeholderText = placeholderText.replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
 
-            // 移除中文字與 $ 公式之間的多餘空格
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
             placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
-            // 🌟 步驟 3：【公式轉譯與歸位】
             const renderMath = (tex) => {
                 let parts = tex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
                 let html = '';
@@ -414,7 +391,6 @@ createApp({
                     } else if (part.trim().length > 0) {
                         let mathPart = part.trim();
                         let encoded = encodeURIComponent(mathPart);
-                        // 🌟 完美置中與不裁切設定：圖片垂直對齊中間，靠外部 p 標籤支撐行距
                         html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
                     }
                 });
@@ -433,7 +409,6 @@ createApp({
             return result;
         },
 
-        // 🌟 表頭 1 (第一頁：無姓名版)
         getHeaderPage1() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
@@ -460,18 +435,15 @@ createApp({
                         年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
                     <td align="center" valign="top" style="font-size: 12pt; border: 1px solid black;">
-                        <!-- 第一頁無總分格，維持比例對齊 -->
                     </td>
                 </tr>
             </table>
-            <!-- 🌟 精簡版規定文字 -->
             <div style="font-family: '標楷體', 'Times New Roman', serif; font-size: 10pt; margin-bottom: 15px; text-align: left; line-height: 1.2;">
                 依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
             </div>
             `;
         },
 
-        // 🌟 表頭 2 (第二頁：有姓名版)
         getHeaderPage2() {
             return `
             <table width="100%" border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: '標楷體', 'Times New Roman', serif; margin-bottom: 5px; border: 2px solid black;">
@@ -497,7 +469,6 @@ createApp({
                     <td width="32.5%" style="font-size: 12pt; padding: 8px 10px; border: 1px solid black;">
                         年級：${this.exam.grade==='高一'?'■':'□'}高一、${this.exam.grade==='高二'?'■':'□'}高二、${this.exam.grade==='高三'?'■':'□'}高三
                     </td>
-                    <!-- 🌟 將總分字體縮小為 11pt，且緊靠上方，為寫成績留出巨大空間 -->
                     <td rowspan="2" align="center" valign="top" style="padding-top: 8px; font-size: 11pt; font-weight: bold; color: #333; border: 2px solid black; height: 80px;">
                         (總　分)
                     </td>
@@ -508,7 +479,6 @@ createApp({
                     </td>
                 </tr>
             </table>
-            <!-- 🌟 精簡版規定文字 -->
             <div style="font-family: '標楷體', 'Times New Roman', serif; font-size: 10pt; margin-bottom: 15px; text-align: left; line-height: 1.2;">
                 依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
             </div>
@@ -529,7 +499,6 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 終極指令：封殺 \n 亂碼、強制包裹所有公式、統一單邊向量長箭頭，並加入 LaTeX 語法防呆與圖像處理防呆
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
@@ -544,10 +513,10 @@ createApp({
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
-6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A) $1$", "(B) $2$", "(C) $\\sqrt{3}$", "(D) $\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
+6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A)$1$", "(B)$2$", "(C)$\\sqrt{3}$", "(D)$\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
 8. 填充題出題要求：【絕對禁止】在題目結尾或中間加入任何作答底線（如「_____」、「---」）、括號「(  )」。請務必直接把句子改成疑問句，並在句尾加上問號「？」。例如：「試求度數為_____」必須改成「試求度數為何？」
-9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
+9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C)$15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
 12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
@@ -669,11 +638,9 @@ createApp({
                 let sectionIdx = 0;
 
                 ['選擇題', '填充題', '計算題'].forEach(tName => {
-                    // 取出該題型設定的數量，進行強制截斷防呆
                     const typeConfig = this.questionTypes.find(x => x.name === tName);
                     const limitCount = typeConfig ? parseInt(typeConfig.count) : 0;
                     
-                    // 只取需要的題數，防 AI 產生過多題目
                     const limitedQs = groupedQs[tName].slice(0, limitCount);
 
                     if (limitedQs.length > 0) {
@@ -684,30 +651,25 @@ createApp({
                         sectionIdx++;
                         
                         limitedQs.forEach((q, idx) => {
-                            // 🌟 【智慧選項攔截器】AI 如果偷懶不給選項，強制補齊防呆
                             if (tName === '選擇題') {
                                 if (!q.options) q.options = [];
                                 
-                                // 🌟 將選項中的 \n 強制清除
                                 q.options = q.options.map(opt => opt.replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
                                 
-                                // 情況1：AI 把選項全部塞在一個字串裡 ["(A) 1 (B) 2 (C) 3 (D) 4"]
                                 if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                                     let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
                                     q.options = parts.map(p => p.trim()).filter(p => p);
                                 }
                                 
-                                // 情況2：AI 把選項全部塞在題目裡，options 留空
                                 if (q.options.length < 2 && (q.question.includes('(A)') || q.question.includes('A.')) && (q.question.includes('(B)') || q.question.includes('B.'))) {
                                     let parts = q.question.split(/(?=\([A-E]\)|[A-E]\.)/);
                                     q.question = parts[0].trim();
                                     q.options = parts.slice(1).map(p => p.trim()).filter(p => p);
                                 }
 
-                                // 移除選項原本可能帶有的標題，避免重複出現 (A) (A)
-                                q.options = q.options.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, ' '));
+                                // 🌟 移除選項原本可能帶有的標題，確保完全清空
+                                q.options = q.options.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, ''));
                                 
-                                // 情況3：AI 真的死都不給，自動補齊
                                 while (q.options.length < 4) {
                                     q.options.push(`選項待補`);
                                 }
@@ -715,40 +677,36 @@ createApp({
 
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
-                            // 🌟 【強制抹除填充題的作答線並補上問號】
                             let safeQuestion = q.question.replace(/\\underline\{.*?\}/g, '')
                                                          .replace(/[＿_]{2,}/g, '')
-                                                         .replace(/[-─—\-−–—―]{2,}/g, '') // 徹底消滅各種長度的破折號、橫線
-                                                         .replace(/[\.．]{3,}/g, '') // 處理點點點
+                                                         .replace(/[-─—\-−–—―]{2,}/g, '') 
+                                                         .replace(/[\.．]{3,}/g, '') 
                                                          .replace(/\(\s*\)/g, '')
                                                          .replace(/（\s*）/g, '')
                                                          .trim();
 
                             if (tName === '填充題') {
-                                safeQuestion = safeQuestion.replace(/[。，、：；\s]*$/, ''); // 去除結尾多餘標點
+                                safeQuestion = safeQuestion.replace(/[。，、：；\s]*$/, ''); 
                                 if (!safeQuestion.endsWith('？') && !safeQuestion.endsWith('?')) {
                                     safeQuestion += '？';
                                 }
                             }
 
-                            // 🌟 【完美置中 ＆ 自然行距不裁切】拔除 exact line-height，加入 text-valign: center; 完美對應 Word 印刷樣式置中！
                             let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                                 const formattedOptions = q.options.map((opt, i) => {
-                                    // 選項若有橫線也一併抹除
                                     let cleanOpt = opt.trim().replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
                                     let optText = this.formatMath(cleanOpt);
                                     if (!optText.includes('(A)') && !optText.includes('(B)') && !optText.includes('(C)') && !optText.includes('(D)')) {
-                                        if (i < labels.length) optText = `${labels[i]} ${optText}`;
+                                        // 🌟 強制標籤與選項內容無縫貼合，不留空白
+                                        if (i < labels.length) optText = `${labels[i]}${optText}`;
                                     }
                                     return optText;
                                 });
-                                // 🌟 選項行距同樣解除限制並置中
                                 qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; mso-text-control: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                             } else {
-                                // 若無選項(填充題)，在題目後加上較大下邊距分隔
                                 qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             }
                             
@@ -761,7 +719,6 @@ createApp({
 
                 if (this.exportOptions.examPaper) {
                     let totalQs = allQuestions.filter(q => !q.isHeader).length;
-                    // 🌟 第一頁因為放置了表頭和兩大答題區，空間明顯減少，故改分配約 40% 的題目
                     let midPoint = Math.floor(totalQs * 0.4);
                     let part1HTML = "";
                     let part2HTML = "";
@@ -776,11 +733,7 @@ createApp({
                         }
                     });
 
-                    // --- 【第一頁】 ---
-                    // 🌟 1. 將有姓名的官方表頭放在第一頁
                     docHTML += this.getHeaderPage2();
-                    
-                    // 🌟 2. 將作答區放在第一頁最上面 (緊接著表頭)
                     docHTML += `<div style="margin-bottom: 15px;">`;
                     let ansSectionNum = ['一', '二', '三'];
                     let ansSectionIdx = 0;
@@ -816,21 +769,16 @@ createApp({
                     }
                     docHTML += `</div>`;
                     
-                    // 🌟 替換為指定的完美長度分隔線
                     docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">------------------------------------- 以下為題目區 ------------------------------------</p>`;
 
-                    // 🌟 3. 自然輸出所有題目，不強制切斷！讓 Word 自動換頁
                     allQuestions.forEach(q => {
                         docHTML += q.html;
                     });
                 }
 
                 if (this.exportOptions.correctAnswers) {
-                    // 🌟 強制換頁 (Ctrl+Enter)：採用標準 Word 換頁符號並加上隱形緩衝段落，保證 100% 換頁成功！
                     docHTML += `<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />`;
                     docHTML += `<p style="margin: 0; padding: 0; height: 0; line-height: 0; font-size: 0;">&nbsp;</p>`;
-                    
-                    // 🌟 5. 作答區(解答卷)再開始有表頭
                     docHTML += this.getHeaderPage2();
                     
                     const finalMCQs = groupedQs['選擇題'].slice(0, this.questionTypes.find(x => x.name === '選擇題')?.count || 0);
@@ -870,7 +818,6 @@ createApp({
                         docHTML += `</table>`;
                     }
 
-                    // 🌟 將「教師版解答與解析」移到答案表格的下方
                     docHTML += `<h2 style="text-align: center; color: red; margin-top: 20px; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
 
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
@@ -879,7 +826,6 @@ createApp({
                             docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                             finalQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                // 🌟 詳解區也同步解除裁切限制並設定置中對齊
                                 docHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
                         }
@@ -893,9 +839,8 @@ createApp({
                 const a = document.createElement('a');
                 a.href = url;
                 
-                // 🌟 動態產生檔名：學年度-學期 考試名稱數學考卷(科別簡稱+年級簡稱)
-                const deptShort = this.exam.dept.charAt(0); // 取第一個字：工、商、體
-                const gradeShort = this.exam.grade.charAt(1); // 取第二個字：一、二、三
+                const deptShort = this.exam.dept.charAt(0);
+                const gradeShort = this.exam.grade.charAt(1);
                 a.download = `${this.exam.year}-${this.exam.semester} ${this.exam.name}數學考卷(${deptShort}${gradeShort}).doc`;
                 
                 document.body.appendChild(a);
@@ -905,7 +850,8 @@ createApp({
 
                 btn.innerHTML = origHTML;
                 status.className = "mt-4 font-bold text-lg text-green-600";
-                status.innerHTML = `✅ 考卷生成成功！已下載檔案。<br><span style="font-size:14px; color:#4a5568;">💡 (開啟檔案若有警告請點選「是」，公式與排版即會完美呈現！)</span>`;
+                // 🌟 移除了下載成功的冗長文字提示
+                status.innerHTML = `✅ 考卷生成成功！已下載檔案。`;
 
             } catch (error) {
                 console.error(error);
