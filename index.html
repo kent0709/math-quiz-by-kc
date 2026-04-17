@@ -892,7 +892,12 @@ createApp({
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${this.exam.school}_${this.exam.name}_數學考卷(B4).doc`;
+                
+                // 🌟 動態產生檔名：學年度-學期 考試名稱數學考卷(科別簡稱+年級簡稱)
+                const deptShort = this.exam.dept.charAt(0); // 取第一個字：工、商、體
+                const gradeShort = this.exam.grade.charAt(1); // 取第二個字：一、二、三
+                a.download = `${this.exam.year}-${this.exam.semester} ${this.exam.name}數學考卷(${deptShort}${gradeShort}).doc`;
+                
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
