@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V52.0 官方完美版</title>
+    <title>數學出題小幫手 - V53.0 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,7 +51,7 @@
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 印刷樣式完美置中 ‧ 終極無損排版</p>
+        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 印刷樣式完美置中 ‧ 圖像智慧防呆</p>
     </div>
 
     <!-- API Key 設定區 -->
@@ -253,9 +253,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V52.0 教學版 -->
+    <!-- 🌟 落款升級為 V53.0 教學版 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V52.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V53.0 官方完美版 byKC</span>
     </footer>
 </div>
 
@@ -503,7 +503,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                // ⚠️ 終極指令：封殺 \n 亂碼、強制包裹所有公式、統一單邊向量長箭頭，並加入 LaTeX 語法防呆
+                // ⚠️ 終極指令：封殺 \n 亂碼、強制包裹所有公式、統一單邊向量長箭頭，並加入 LaTeX 語法防呆與圖像處理防呆
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
@@ -524,16 +524,17 @@ createApp({
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
 12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
-13. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
-14. ⚠️ 嚴禁自我對話與設計過程 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或設計過程（例如 "重新設計選項..."、"此題數字是修改的..."、"Let's re-design..." 等）。詳解只能有純粹的數學計算過程與純中文解說，直接給出最終解法！
-15. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
-16. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
-17. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
-18. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
-19. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\begin{bmatrix}...\\end{bmatrix} 或 \\begin{cases}...\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
-20. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
-21. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
-22. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數與矩陣的括號 { } 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！`;
+13. ⚠️ 嚴禁自我對話與英文碎碎念 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或英文（例如 "Let's re-design...", "Modified" 等）。詳解只能有純粹的數學計算過程與純中文解說！
+14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
+15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
+16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
+18. ⚠️ 矩陣與聯立方程式 ⚠️：必須使用 \\begin{bmatrix}...\\end{bmatrix} 或 \\begin{cases}...\\end{cases}，且內部換行請使用標準 LaTeX 的雙反斜線 \\\\\\\\。絕對禁止使用純文字空白或純文字換行來排版！
+19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
+20. ⚠️ 分數規範 ⚠️：所有的分數【必須】使用 LaTeX 的 \\frac{分子}{分母} 語法，絕對禁止寫成 1/2 這種單行文字。
+21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數與矩陣的括號 { } 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
+22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
+23. ⚠️ 圖片與圖形防呆（極度重要） ⚠️：系統無法複製或繪製出原題目的圖片！當你看到原題包含幾何圖形、棋盤格等圖片時，請你【務必用純文字詳盡描述該圖形的特徵】（例如：「有一個 4x5 的方格棋盤街道，點 A 在左上，點 B 在右下...」），確保學生單看文字就能作答。若該圖形過於複雜絕對無法用文字描述，請【直接捨棄該題，改出其他不需要圖片的題目】來湊齊題數！【絕對禁止】在新題目中保留「如圖」、「如右圖」卻沒有附圖的幽靈文字！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -689,7 +690,7 @@ createApp({
                             
                             let safeQuestion = q.question.replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
                             // 🌟 【完美置中 ＆ 自然行距不裁切】拔除 exact line-height，加入 text-valign: center; 完美對應 Word 印刷樣式置中！
-                            let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                            let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -701,10 +702,10 @@ createApp({
                                     return optText;
                                 });
                                 // 🌟 選項行距同樣解除限制並置中
-                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
+                                qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; mso-text-control: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                             } else {
                                 // 若無選項(填充題)，在題目後加上較大下邊距分隔
-                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
+                                qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(safeQuestion)}</p>`;
                             }
                             
                             if (tName === '計算題') qHtml += `<br><br><br><br>`;
@@ -835,7 +836,7 @@ createApp({
                             finalQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                                 // 🌟 詳解區也同步解除裁切限制並設定置中對齊
-                                docHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; vertical-align: middle;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
+                                docHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                             });
                         }
                     });
