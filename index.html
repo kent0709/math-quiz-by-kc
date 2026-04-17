@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V54.0 官方完美版</title>
+    <title>數學出題小幫手 - V5.4 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -46,12 +46,30 @@
         </div>
     </div>
 
+    <!-- 🌟 圖形題說明 Modal (新增) -->
+    <div v-if="showImageTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
+            <button @click="showImageTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
+            <h3 class="text-2xl font-bold text-red-600 mb-4"><i class="fas fa-image mr-2"></i>圖形題處理說明</h3>
+            <div class="space-y-4 text-gray-700 font-medium">
+                <p class="text-base leading-relaxed">
+                    目前的 AI 模型無法直接把原題目的圖片「剪下來」貼到新的考卷上，也無法憑空畫出複雜的幾何圖形（如棋盤格）。
+                </p>
+                <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
+                    <p class="font-bold mb-1"><i class="fas fa-lightbulb mr-2"></i>建議解決方案：</p>
+                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
+                </div>
+            </div>
+            <button @click="showImageTutorial = false" class="mt-6 w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">我明白了</button>
+        </div>
+    </div>
+
     <!-- 大標題 -->
     <div class="text-center mb-8">
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
-        <p class="text-gray-500 font-bold tracking-wide text-lg">【教學分享版】上下 1.5cm ‧ 圖像限制提示 ‧ 填充題純淨問號</p>
+        <!-- 副標題依要求移除 -->
     </div>
 
     <!-- API Key 設定區 -->
@@ -129,16 +147,15 @@
 
         <!-- 區塊 2：分區匯入素材與指定範圍 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
-            <!-- 🌟 加上「圖片限制」說明提示框 -->
+            <!-- 🌟 標題加上紅色的「圖形題說明」按鈕 -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-xl font-bold text-gray-800 flex items-center shrink-0">
                     <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">2</span>
                     分區匯入素材與出題要求
+                    <button @click="showImageTutorial = true" class="text-red-500 hover:text-red-700 text-sm flex items-center bg-red-50 px-3 py-1 rounded-full transition ml-4 border border-red-200 shadow-sm">
+                        <i class="fas fa-question-circle mr-1"></i>圖形題說明
+                    </button>
                 </h2>
-                <div class="bg-rose-50 text-red-600 text-xs font-bold px-4 py-2 rounded-lg border border-red-200 flex items-center shadow-sm max-w-lg">
-                    <i class="fas fa-exclamation-circle mr-2 text-lg"></i>
-                    <span>目前的 AI 模型無法直接把原題目的圖片「剪下來」貼到新的考卷上，也無法憑空畫出複雜的幾何圖形（如棋盤格）。建議遇圖形題可事後手動截圖貼上！</span>
-                </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -260,9 +277,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V54.0 教學版 -->
+    <!-- 🌟 落款升級為 V5.4 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V54.0 官方完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.4 byKC</span>
     </footer>
 </div>
 
@@ -274,6 +291,7 @@ createApp({
         return {
             apiKey: localStorage.getItem('gemini_api_key') || '',
             showApiTutorial: false,
+            showImageTutorial: false, // 🌟 綁定圖形題說明 Modal
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
             examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。`,
@@ -311,6 +329,8 @@ createApp({
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
+                // 🌟 【防破圖機制】過濾掉干擾 CodeCogs 的 \text 等文字指令，避免含有中文字導致當機
+                cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^}]+)\}/g, '$2');
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 // 🌟 【單邊長箭頭滿血回歸】台灣高中專用向量符號，保證超漂亮！
@@ -386,7 +406,6 @@ createApp({
 
             // 🌟 步驟 3：【公式轉譯與歸位】
             const renderMath = (tex) => {
-                tex = tex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
                 let parts = tex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
                 let html = '';
                 parts.forEach(part => {
@@ -520,13 +539,14 @@ createApp({
 1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！
    ❌ 錯誤示範：當角度 \\theta 由 20^circ 增加到 70^circ。已知點 A(1, 2)。
    ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
+   ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A) $1$", "(B) $2$", "(C) $\\sqrt{3}$", "(D) $\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
-8. 填充題出題要求：【絕對禁止】加入任何作答底線（如「_____」、「---」、「......」等），請直接將題目改寫為問句形式，並在句尾加上問號「？」。例如：「試求度數為_____」必須改成「試求度數為何？」
+8. 填充題出題要求：【絕對禁止】在題目結尾或中間加入任何作答底線（如「_____」、「---」）、括號「(  )」。請務必直接把句子改成疑問句，並在句尾加上問號「？」。例如：「試求度數為_____」必須改成「試求度數為何？」
 9. 選擇題解答格式：\`answer\` 欄位請務必保留「完整的」選項與答案內容（例如："(C) $15$"），以便詳解區顯示完整答案內容。
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
@@ -685,7 +705,7 @@ createApp({
                                 }
 
                                 // 移除選項原本可能帶有的標題，避免重複出現 (A) (A)
-                                q.options = q.options.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, ''));
+                                q.options = q.options.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, ' '));
                                 
                                 // 情況3：AI 真的死都不給，自動補齊
                                 while (q.options.length < 4) {
@@ -696,8 +716,9 @@ createApp({
                             let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
                             
                             // 🌟 【強制抹除填充題的作答線並補上問號】
-                            let safeQuestion = q.question.replace(/[＿_]{2,}/g, '')
-                                                         .replace(/[-─—]{2,}/g, '') // 處理破折號、橫線
+                            let safeQuestion = q.question.replace(/\\underline\{.*?\}/g, '')
+                                                         .replace(/[＿_]{2,}/g, '')
+                                                         .replace(/[-─—\-−–—―]{2,}/g, '') // 徹底消滅各種長度的破折號、橫線
                                                          .replace(/[\.．]{3,}/g, '') // 處理點點點
                                                          .replace(/\(\s*\)/g, '')
                                                          .replace(/（\s*）/g, '')
@@ -716,7 +737,9 @@ createApp({
                             if (q.options && q.options.length > 0) {
                                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                                 const formattedOptions = q.options.map((opt, i) => {
-                                    let optText = this.formatMath(opt.trim());
+                                    // 選項若有橫線也一併抹除
+                                    let cleanOpt = opt.trim().replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
+                                    let optText = this.formatMath(cleanOpt);
                                     if (!optText.includes('(A)') && !optText.includes('(B)') && !optText.includes('(C)') && !optText.includes('(D)')) {
                                         if (i < labels.length) optText = `${labels[i]} ${optText}`;
                                     }
