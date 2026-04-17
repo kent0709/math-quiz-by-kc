@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V5.5 官方完美版</title>
+    <title>數學出題小幫手 - V5.6 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -268,9 +268,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V5.5 byKC -->
+    <!-- 🌟 落款升級為 V5.6 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.5 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V5.6 byKC</span>
     </footer>
 </div>
 
@@ -324,6 +324,12 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
+
+                // 🌟 【極限與西格瑪強制上下標】強制將 \lim_ 與 \sum_ 轉換為 \lim\limits_ 與 \sum\limits_ 讓條件顯示在正上下方
+                cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
+                cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
+                cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
+                cleanTex = cleanTex.replace(/\\min\s*_/g, '\\min\\limits_');
 
                 if (!isBlock && !cleanTex.includes('\\textstyle') && !cleanTex.includes('\\displaystyle')) {
                     cleanTex = '\\textstyle ' + cleanTex;
@@ -520,7 +526,7 @@ createApp({
 10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
 11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
 12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
-13. ⚠️ 嚴禁自我對話與英文碎碎念 ⚠️：在 JSON 欄位（特別是 solution 詳解）中，【絕對禁止】寫出你的思考過程或英文（例如 "Let's re-design...", "Modified" 等）。詳解只能有純粹的數學計算過程與純中文解說！
+13. ⚠️ 嚴禁在詳解中出現英文與碎碎念 ⚠️：我已經為你在 JSON 中開啟了 \`thought_process\` 欄位，請把所有的思考過程、計算草稿、英文通通丟到那裡！\`solution\` 欄位【只准】放純中文的最終詳解與排版好的數學公式，絕對不能有任何一句英文！
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
@@ -562,13 +568,14 @@ createApp({
                                         items: {
                                             type: "OBJECT",
                                             properties: {
+                                                thought_process: { type: "STRING" },
                                                 type: { type: "STRING" },
                                                 question: { type: "STRING" },
                                                 options: { type: "ARRAY", items: { type: "STRING" } },
                                                 answer: { type: "STRING" },
                                                 solution: { type: "STRING" }
                                             },
-                                            required: ["type", "question", "options", "answer", "solution"]
+                                            required: ["thought_process", "type", "question", "options", "answer", "solution"]
                                         }
                                     }
                                 },
