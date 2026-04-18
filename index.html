@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V6.1 官方完美版</title>
+    <title>數學出題小幫手 - V6.2 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -339,9 +339,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V6.1 byKC -->
+    <!-- 🌟 落款升級為 V6.2 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.1 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.2 byKC</span>
     </footer>
 </div>
 
@@ -428,21 +428,30 @@ createApp({
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
-                cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^}]+)\}/g, '$2');
+                
+                // 🌟 【防破圖】安全移除外層 \text{} 避免重複包覆，但不破壞內部有括號的複雜式子
+                cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
+                
+                // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
+                
+                // 🌟 【單邊長箭頭】台灣高中專用向量符號
                 cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
 
-                // 🌟 【雙直線轉換為單直線】確保向量長度和面積不會出現雙直線 ||
+                // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
                 cleanTex = cleanTex.replace(/\\left\\\|/g, '\\left|').replace(/\\right\\\|/g, '\\right|');
+                cleanTex = cleanTex.replace(/\\\|/g, '|');
+                cleanTex = cleanTex.replace(/\|\|/g, '|');
 
-                // 防呆：偶爾 AI 會寫出 \dfrac，這會影響某些解析，統一轉 \frac
+                // 防呆：\dfrac 轉 \frac
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
 
+                // 極限與西格瑪強制上下標
                 cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
                 cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
                 cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
@@ -506,18 +515,17 @@ createApp({
             placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
             const renderMath = (tex) => {
-                let parts = tex.split(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/);
-                let html = '';
-                parts.forEach(part => {
-                    if (/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]/.test(part)) {
-                        html += `<span style="font-family: '標楷體', 'Times New Roman', serif;">${part}</span>`;
-                    } else if (part.trim().length > 0) {
-                        let mathPart = part.trim();
-                        let encoded = encodeURIComponent(mathPart);
-                        html += `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="${mathPart}" />`;
-                    }
-                });
-                return html;
+                let mathPart = tex.trim();
+                
+                // 🌟 【防破圖】過濾換行符號與未跳脫的 % 符號，這兩個是 CodeCogs 破圖元凶
+                mathPart = mathPart.replace(/\n/g, ' ').replace(/\r/g, '');
+                mathPart = mathPart.replace(/(^|[^\\])%/g, '$1\\%');
+                
+                // 🌟 【防破圖】直接把公式內的中文字用 \text{} 包起來，不再切割公式！確保矩陣與分數 100% 完整
+                mathPart = mathPart.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
+
+                let encoded = encodeURIComponent(mathPart);
+                return `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="math" />`;
             };
 
             let result = placeholderText.trim();
