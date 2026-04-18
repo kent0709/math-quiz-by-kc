@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V6.4 官方完美版</title>
+    <title>數學出題小幫手 - V6.5 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -57,7 +57,7 @@
                 </p>
                 <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
                     <p class="font-bold mb-1"><i class="fas fa-lightbulb mr-2"></i>建議解決方案：</p>
-                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
+                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
                 </div>
             </div>
             <button @click="showImageTutorial = false" class="mt-6 w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">我明白了</button>
@@ -89,7 +89,6 @@
                 
                 <div class="space-y-4">
                     <div v-for="(q, idx) in previewQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
-                        <!-- 🌟 新增刪除按鈕 -->
                         <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
@@ -116,7 +115,6 @@
                 </div>
             </div>
             
-            <!-- 🌟 底部按鈕區 (包含二次補題與下載) -->
             <div class="p-6 border-t bg-white flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <button @click="showPreviewConsole = false" class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
                     <i class="fas fa-arrow-left mr-2"></i>返回修改設定
@@ -339,9 +337,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V6.4 byKC -->
+    <!-- 🌟 落款升級為 V6.5 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.4 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.5 byKC</span>
     </footer>
 </div>
 
@@ -425,9 +423,6 @@ createApp({
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
-            // 🌟 預防 AI 亂寫 aeqO
-            placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
-
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
@@ -475,6 +470,7 @@ createApp({
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
+            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
@@ -482,6 +478,11 @@ createApp({
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
             placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
+            // 🌟 清除幽靈 \r 與統一換行 (利用負向表查 (?!\w) 確保絕對不會誤殺 \right 或 \neq 等指令)
+            placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '');
+            placeholderText = placeholderText.replace(/\\\\n(?!\w)/g, '\n');
+
+            // 智慧表格轉換
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
                 let out = [];
@@ -512,13 +513,13 @@ createApp({
             };
             placeholderText = parseMarkdownTables(placeholderText);
 
-            // 🌟 徹底清理 \n 與 \r，把它變成安全的排版換行 <br>
-            placeholderText = placeholderText.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '');
-            placeholderText = placeholderText.replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
+            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br>
+            placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
             placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
+            // 🌟 步驟 3：【公式轉譯與歸位】
             const renderMath = (tex) => {
                 let mathPart = tex.trim();
                 
@@ -731,7 +732,7 @@ createApp({
                     
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
-                        q.options = q.options.map(opt => opt.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '').replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
+                        q.options = q.options.map(opt => opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim());
                         if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                             let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
                             q.options = parts.map(p => p.trim()).filter(p => p);
@@ -917,7 +918,8 @@ createApp({
                     this.finalGroupedQs[tName].forEach(q => {
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
-                            q.options = q.options.map(opt => opt.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '').replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
+                            // 🌟 預防 \right 誤殺：負向表查
+                            q.options = q.options.map(opt => opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim());
                             if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                                 let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
                                 q.options = parts.map(p => p.trim()).filter(p => p);
