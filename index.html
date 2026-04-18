@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V7.9 官方極致穩定版 byKC</title>
+    <title>數學出題小幫手 - V7.4 官方極致版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -341,9 +341,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V7.9 官方極致版 byKC -->
+    <!-- 🌟 落款升級為 V7.4 官方極致版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.9 官方極致穩定版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.4 官方極致版 byKC</span>
     </footer>
 </div>
 
@@ -443,22 +443,17 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 隱形控制字元
+            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 解析毀損
             placeholderText = placeholderText.replace(/\rightharpoonup/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\rightarrow/g, '\\rightarrow');
             placeholderText = placeholderText.replace(/\right\b/g, '\\right');
-            placeholderText = placeholderText.replace(/\rangle\b/g, '\\rangle');
             placeholderText = placeholderText.replace(/\theta\b/g, '\\theta');
             placeholderText = placeholderText.replace(/\triangle\b/g, '\\triangle');
             placeholderText = placeholderText.replace(/\text\b/g, '\\text');
-            placeholderText = placeholderText.replace(/\tan\b/g, '\\tan');
             placeholderText = placeholderText.replace(/\neq\b/g, '\\neq');
             placeholderText = placeholderText.replace(/\frac/g, '\\frac');
             placeholderText = placeholderText.replace(/\beta\b/g, '\\beta');
             placeholderText = placeholderText.replace(/\bmatrix\b/g, '\\bmatrix');
-            placeholderText = placeholderText.replace(/\begin\b/g, '\\begin');
-            placeholderText = placeholderText.replace(/(^|[^\\])\boverrightharpoon\b/g, '$1\\overrightharpoon');
-            placeholderText = placeholderText.replace(/(^|[^\\])\boverset\b/g, '$1\\overset');
 
             // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (因為 AI 常常把減號寫成 ##)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
@@ -478,14 +473,12 @@ createApp({
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【智慧向量箭頭：全面回歸 \overset{\rightharpoonup}{AB}】保證單向單邊，且置中對齊不破圖！單字母用 \vec
-                const convertVector = (m, p1) => p1.length > 1 ? '\\overset{\\rightharpoonup}{' + p1 + '}' : '\\vec{' + p1 + '}';
-                cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
+                // 🌟 【單邊長箭頭 V7.4 完美回歸】強制轉換為 \overset{\rightharpoonup}{AB} 確保置中且不破圖
+                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s*\{([^}]+)\}/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overset{\\rightharpoonup}{$1}');
+                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overset{\\rightharpoonup}{$1}');
 
                 // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
@@ -498,9 +491,6 @@ createApp({
                 
                 // 修正 ^circ 為 ^{\circ}
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
-
-                // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
-                cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
 
                 // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示，避免被伺服器拒絕
                 let prevMath;
@@ -543,7 +533,6 @@ createApp({
 
             // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (使用單層 $ 提取，避免雙重切分引發的 @@MATHBLOCK 亂碼)
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\{\\rightharpoonup\}\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta\b)(?!\$)/g, '$1$$$2$$');
@@ -730,8 +719,8 @@ createApp({
    ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
    ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
-3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學運算中的減號請正常使用「-」，絕對不可寫成「##」！
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
+3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學方程式中的減號請正常使用「-」，絕對不可以寫成「##」！
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！特別注意：\\\\theta 務必確實雙跳脫，否則會變成亂碼 heta！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A)$1$", "(B)$2$", "(C)$\\sqrt{3}$", "(D)$\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
@@ -743,8 +732,8 @@ createApp({
 13. ⚠️ 嚴禁在詳解中出現英文與碎碎念（毀滅級警告） ⚠️：我已經為你在 JSON 中開啟了 \`thought_process\` 欄位，請把所有的思考過程、計算邏輯推演、英文草稿通通丟到那裡！\`solution\` 欄位【只准】放純中文的最終詳解與排版好的數學公式，如果 solution 內出現任何英文單字(除數學變數外)或英文句子，系統將會直接崩潰！
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
-16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow，否則會變成雙邊箭頭！
+16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -757,8 +746,7 @@ createApp({
 27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
 28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 "，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
-30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
-31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！`;
+30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -814,9 +802,13 @@ createApp({
                     throw new Error("AI 回傳了空白資料，請重試！");
                 }
 
-                // 🌟 JSON 剝殼術：過濾 AI 產生的 ```json ... ``` 外殼，徹底解決「一直生不出題目來」的當機 Bug
+                // 🌟 【終極 JSON 剝殼術】精準提取 JSON，徹底解決 AI 包裝 Markdown 導致的無盡轉圈當機 Bug！
                 let rawText = data.candidates[0].content.parts[0].text;
-                rawText = rawText.replace(/^```(json)?\s*/gi, '').replace(/```\s*$/gi, '').trim();
+                let startIndex = rawText.indexOf('{');
+                let endIndex = rawText.lastIndexOf('}');
+                if (startIndex !== -1 && endIndex !== -1) {
+                    rawText = rawText.substring(startIndex, endIndex + 1);
+                }
                 const quizData = JSON.parse(rawText);
                 
                 quizData.questions.forEach(q => {
@@ -905,7 +897,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow，否則會變成雙邊箭頭！
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -975,9 +967,13 @@ createApp({
                     throw new Error("AI 回傳了空白資料，請重試！");
                 }
 
-                // 🌟 JSON 剝殼術：過濾 AI 產生的 ```json ... ``` 外殼，徹底解決「一直生不出題目來」的當機 Bug
+                // 🌟 【終極 JSON 剝殼術】精準提取 JSON，徹底解決 AI 包裝 Markdown 導致的無盡轉圈當機 Bug！
                 let rawText = data.candidates[0].content.parts[0].text;
-                rawText = rawText.replace(/^```(json)?\s*/gi, '').replace(/```\s*$/gi, '').trim();
+                let startIndex = rawText.indexOf('{');
+                let endIndex = rawText.lastIndexOf('}');
+                if (startIndex !== -1 && endIndex !== -1) {
+                    rawText = rawText.substring(startIndex, endIndex + 1);
+                }
                 const quizData = JSON.parse(rawText);
                 
                 quizData.questions.forEach(q => {
@@ -1020,8 +1016,9 @@ createApp({
                     this.previewQuestions.push(q);
                 });
 
-                this.isReplenishing = false;
-                
+                this.isGenerating = false;
+                this.showPreviewConsole = true; 
+
             } catch (error) {
                 console.error(error);
                 this.isGenerating = false;
