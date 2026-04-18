@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V7.3 官方極致版</title>
+    <title>數學出題小幫手 - V7.4 官方極致版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -89,7 +89,6 @@
                 
                 <div class="space-y-4">
                     <div v-for="(q, idx) in previewQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
-                        <!-- 🌟 新增刪除按鈕 -->
                         <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
@@ -116,7 +115,6 @@
                 </div>
             </div>
             
-            <!-- 🌟 底部按鈕區 (包含二次補題與下載) -->
             <div class="p-6 border-t bg-white flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <button @click="showPreviewConsole = false" class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
                     <i class="fas fa-arrow-left mr-2"></i>返回修改設定
@@ -225,7 +223,7 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 🌟 教科書上傳區改版：支援無限追加 -->
+                <!-- 🌟 教科書上傳區 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
@@ -241,7 +239,7 @@
                     </div>
                 </div>
 
-                <!-- 🌟 考卷上傳區改版：支援無限追加 -->
+                <!-- 🌟 考卷上傳區 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
@@ -343,9 +341,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V7.3 官方極致版 -->
+    <!-- 🌟 落款升級為 V7.4 官方極致版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.3 官方極致版</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.4 官方極致版 byKC</span>
     </footer>
 </div>
 
@@ -396,7 +394,6 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        // 🌟 升級版檔案處理：支援無限追加，並重置 input 讓重複選檔也能觸發
         handleTextbookUpload(event) { 
             if (event.target.files.length > 0) {
                 this.textbookFiles = this.textbookFiles.concat(Array.from(event.target.files));
@@ -463,22 +460,12 @@ createApp({
             placeholderText = placeholderText.replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
 
-            // 🌟 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\rightharpoonup\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
-
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
                 
                 // 🌟 【防呆】過濾掉公式中的雙引號，避免出現 |"sin(3x)"|
                 cleanTex = cleanTex.replace(/"/g, '').replace(/&quot;/g, '');
-
-                // 🌟 【防呆】修復 JSON 轉譯時把 \theta 變成 tab + heta 的失誤
-                cleanTex = cleanTex.replace(/\t?heta\b/g, '\\theta');
 
                 // 🌟 【防破圖】安全移除外層 \text{} 避免重複包覆
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
@@ -538,10 +525,22 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
+            // 1. 先把乖乖寫在公式框內的提取出來
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
+
+            // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (確保不會切斷大公式)
+            placeholderText = placeholderText.replace(/(\\rightharpoonup\s*\{?[A-Za-z0-9]+\}?)/g, '$$$1$$');
+            placeholderText = placeholderText.replace(/(\\theta\b)/g, '$$$1$$');
+            placeholderText = placeholderText.replace(/(\\triangle\s*[A-Za-z0-9]*)/g, '$$$1$$');
+            placeholderText = placeholderText.replace(/(\\angle\s*[A-Za-z0-9]*)/g, '$$$1$$');
+            placeholderText = placeholderText.replace(/(\\vec\s*\{?[A-Za-z0-9]+\}?)/g, '$$$1$$');
+            placeholderText = placeholderText.replace(/(\\(cos|sin|tan|log)\b)/g, '$$$1$$');
+            
+            // 再次提取剛剛補救回來的孤兒公式
+            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, false));
 
             // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
             placeholderText = placeholderText.replace(/\\_+/g, '');
@@ -878,7 +877,7 @@ createApp({
    ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
    ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
-3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學方程式中的減號請正常使用「-」，絕對不可以寫成「##」！
+3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學運算中的減號請正常使用「-」，絕對不可以寫成「##」！
 4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！特別注意：\\\\theta 務必確實雙跳脫，否則會變成亂碼 heta！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A)$1$", "(B)$2$", "(C)$\\sqrt{3}$", "(D)$\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
@@ -1006,29 +1005,25 @@ createApp({
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
                             
-                            // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
-                            let tempOptions = [];
-                            q.options.forEach(opt => {
-                                let cleanedOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
-                                let parts = cleanedOpt.split(/(?=\([A-E]\)|[A-E]\.)/);
-                                parts.forEach(p => {
-                                    if (p.trim()) tempOptions.push(p.trim());
-                                });
-                            });
-                            
-                            q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
-                            
-                            while (q.options.length < 4) { q.options.push(`選項待補`); }
-                            
+                            // 🌟 強制幫遺漏 $$ 的選項補上保護罩，保證 100% 轉為數學圖片
                             const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                             q.options = q.options.map((opt, i) => {
-                                let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
+                                let cleanOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
+                                cleanOpt = cleanOpt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
+                                
+                                // 若有斜線但沒有錢字號，代表 AI 忘記包覆公式
                                 if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
                                     cleanOpt = `$${cleanOpt}$`;
+                                }
+                                
+                                if (cleanOpt.includes('(A)') || cleanOpt.includes('A.') || cleanOpt.includes('(B)')) {
+                                    cleanOpt = cleanOpt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '');
                                 }
                                 if (i < labels.length) return `${labels[i]} ${cleanOpt}`;
                                 return cleanOpt;
                             });
+                            
+                            while (q.options.length < 4) { q.options.push(`選項待補`); }
                         }
                         if (tName === '填充題') {
                             q.question = q.question.replace(/\\underline\{.*?\}/g, '').replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '').replace(/[\.．]{3,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
