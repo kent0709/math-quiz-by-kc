@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V6.5 官方完美版</title>
+    <title>數學出題小幫手 - V6.6 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -57,7 +57,7 @@
                 </p>
                 <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
                     <p class="font-bold mb-1"><i class="fas fa-lightbulb mr-2"></i>建議解決方案：</p>
-                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
+                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
                 </div>
             </div>
             <button @click="showImageTutorial = false" class="mt-6 w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">我明白了</button>
@@ -337,9 +337,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V6.5 byKC -->
+    <!-- 🌟 落款升級為 V6.6 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.5 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.6 byKC</span>
     </footer>
 </div>
 
@@ -423,10 +423,19 @@ createApp({
             
             let placeholderText = text.replace(/##+/g, ' 或 ').replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
 
+            // 🌟 預防 AI 亂寫 aeqO
+            placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
+
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
                 
+                // 🌟 【防呆】過濾掉公式中的雙引號，避免出現 |"sin(3x)"|
+                cleanTex = cleanTex.replace(/"/g, '').replace(/&quot;/g, '');
+
+                // 🌟 【防呆】修復 JSON 轉譯時把 \theta 變成 tab + heta 的失誤
+                cleanTex = cleanTex.replace(/\t?heta\b/g, '\\theta');
+
                 // 🌟 【防破圖】安全移除外層 \text{} 避免重複包覆，但不破壞內部有括號的複雜式子
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
                 
@@ -644,7 +653,7 @@ createApp({
    ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！特別注意：\\\\theta 務必確實雙跳脫，否則會變成亂碼 heta！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A)$1$", "(B)$2$", "(C)$\\sqrt{3}$", "(D)$\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
@@ -668,7 +677,7 @@ createApp({
 25. ⚠️ 嚴禁中文混入指令（致命錯誤） ⚠️：【絕對致命禁止】把中文字放在 \`\\frac{}\`、\`\\sqrt{}\`、\`_{}\` 或是 \`\\text{}\` 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 \`\\frac{事件數}{總數}\`，請改寫為純文字 \`事件數 / 總數\`，或用代號 \`\\frac{n(A)}{n(S)}\`。
 26. ⚠️ 標示單元(觀念) ⚠️：請在 \`unit\` 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」（例如：「三角函數」、「平面向量內積」、「一元二次不等式」等），字數盡量精簡。
 27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
-28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。`;
+28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 "，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。`;
 
                 contentsParts.push({ text: promptText });
                 
@@ -795,7 +804,7 @@ createApp({
    ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 絕對禁止：嚴禁在字串或數學式中使用「#」或「##」符號來表示「或」！若需表示或，請直接寫中文「或」。
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！）。
+4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！特別注意：\\\\theta 務必確實雙跳脫，否則會變成亂碼 heta！）。
 5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
 6. 選擇題選項 (options)：選擇題【必須且強制】在 \`options\` 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！（例如：["(A)$1$", "(B)$2$", "(C)$\\sqrt{3}$", "(D)$\\vec{b}$"]）。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 \`question\` 中！
 7. 填充/計算題選項：若為填充題或計算題，\`options\` 陣列請給空陣列 \`[]\`。
@@ -819,7 +828,7 @@ createApp({
 25. ⚠️ 嚴禁中文混入指令（致命錯誤） ⚠️：【絕對致命禁止】把中文字放在 \`\\frac{}\`、\`\\sqrt{}\`、\`_{}\` 或是 \`\\text{}\` 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 \`\\frac{事件數}{總數}\`，請改寫為純文字 \`事件數 / 總數\`，或用代號 \`\\frac{n(A)}{n(S)}\`。
 26. ⚠️ 標示單元(觀念) ⚠️：請在 \`unit\` 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」（例如：「三角函數」、「平面向量內積」、「一元二次不等式」等），字數盡量精簡。
 27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
-28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。`;
+28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 "，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。`;
 
                 contentsParts.push({ text: promptText });
                 
