@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V7.8 官方極致版 byKC</title>
+    <title>數學出題小幫手 - V7.9 官方極致穩定版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -341,9 +341,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V7.8 官方極致版 byKC -->
+    <!-- 🌟 落款升級為 V7.9 官方極致版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.8 官方極致版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.9 官方極致穩定版 byKC</span>
     </footer>
 </div>
 
@@ -478,13 +478,14 @@ createApp({
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【智慧向量箭頭：全面回歸 \vec】解決 CodeCogs 不支援 \overrightharpoon 導致的破圖問題，統一為單向單邊標準短箭頭！
-                cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\vec{$1}');
+                // 🌟 【智慧向量箭頭：全面回歸 \overset{\rightharpoonup}{AB}】保證單向單邊，且置中對齊不破圖！單字母用 \vec
+                const convertVector = (m, p1) => p1.length > 1 ? '\\overset{\\rightharpoonup}{' + p1 + '}' : '\\vec{' + p1 + '}';
+                cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, convertVector);
+                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
 
                 // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
@@ -542,6 +543,7 @@ createApp({
 
             // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (使用單層 $ 提取，避免雙重切分引發的 @@MATHBLOCK 亂碼)
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\{\\rightharpoonup\}\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta\b)(?!\$)/g, '$1$$$2$$');
@@ -742,7 +744,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\vec{a} 或 \\vec{AB}，這是最標準不會破圖的寫法！【絕對禁止】使用 \\overrightharpoon 或 \\overrightarrow，否則圖片會當機無法顯示！
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow，否則會變成雙邊箭頭！
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -752,7 +754,7 @@ createApp({
 24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有多個等號的連等式（如多項式展開、長積分過程），【絕對禁止】把整串連等式塞在同一個 \`$ $\` 裡面！這會導致圖片過長被切掉。請務必在每個「等號」處斷開公式，並將每個數學式【分別】用 \`$ $\` 包覆。正確示範：\`$\\int (x+1)^2 dx$\` \`=\` \`$\\int (x^2+2x+1) dx$\` \`=\` \`$\\frac{1}{3}x^3 + x^2 + x + C$\`。讓等號獨立在公式外，這樣系統才能自動換行！
 25. ⚠️ 嚴禁中文混入指令（核彈級防破圖令） ⚠️：【絕對致命禁止】把中文字放在 \`\\frac{}\`、\`\\sqrt{}\`、\`_{}\` 或是 \`\\text{}\` 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 \`\\frac{事件數}{總數}\`，請改寫為純文字 \`事件數 / 總數\`，或用代號 \`\\frac{n(A)}{n(S)}\`。
 26. ⚠️ 標示單元(觀念) ⚠️：請在 \`unit\` 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」（例如：「三角函數」、「平面向量內積」、「一元二次不等式」等），字數盡量精簡。
-27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\vec{AB} \\times \\vec{AC}|$。絕對禁止使用雙直線（例如 $||\\vec{AB} \\times \\vec{AC}||$ 或 \\lVert \\rVert）！
+27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
 28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 "，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
 30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
@@ -812,7 +814,10 @@ createApp({
                     throw new Error("AI 回傳了空白資料，請重試！");
                 }
 
-                const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
+                // 🌟 JSON 剝殼術：過濾 AI 產生的 ```json ... ``` 外殼，徹底解決「一直生不出題目來」的當機 Bug
+                let rawText = data.candidates[0].content.parts[0].text;
+                rawText = rawText.replace(/^```(json)?\s*/gi, '').replace(/```\s*$/gi, '').trim();
+                const quizData = JSON.parse(rawText);
                 
                 quizData.questions.forEach(q => {
                     let tName = q.type || '';
@@ -821,7 +826,6 @@ createApp({
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
                         
-                        // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
                         let tempOptions = [];
                         q.options.forEach(opt => {
                             let cleanedOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
@@ -901,7 +905,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\vec{a} 或 \\vec{AB}，這是最標準不會破圖的寫法！【絕對禁止】使用 \\overrightharpoon 或 \\overrightarrow，否則圖片會當機無法顯示！
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow，否則會變成雙邊箭頭！
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -911,7 +915,7 @@ createApp({
 24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有多個等號的連等式（如多項式展開、長積分過程），【絕對禁止】把整串連等式塞在同一個 \`$ $\` 裡面！這會導致圖片過長被切掉。請務必在每個「等號」處斷開公式，並將每個數學式【分別】用 \`$ $\` 包覆。正確示範：\`$\\int (x+1)^2 dx$\` \`=\` \`$\\int (x^2+2x+1) dx$\` \`=\` \`$\\frac{1}{3}x^3 + x^2 + x + C$\`。讓等號獨立在公式外，這樣系統才能自動換行！
 25. ⚠️ 嚴禁中文混入指令（核彈級防破圖令） ⚠️：【絕對致命禁止】把中文字放在 \`\\frac{}\`、\`\\sqrt{}\`、\`_{}\` 或是 \`\\text{}\` 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 \`\\frac{事件數}{總數}\`，請改寫為純文字 \`事件數 / 總數\`，或用代號 \`\\frac{n(A)}{n(S)}\`。
 26. ⚠️ 標示單元(觀念) ⚠️：請在 \`unit\` 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」（例如：「三角函數」、「平面向量內積」、「一元二次不等式」等），字數盡量精簡。
-27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\vec{AB} \\times \\vec{AC}|$。絕對禁止使用雙直線（例如 $||\\vec{AB} \\times \\vec{AC}||$ 或 \\lVert \\rVert）！
+27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
 28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 "，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
 30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
@@ -971,7 +975,10 @@ createApp({
                     throw new Error("AI 回傳了空白資料，請重試！");
                 }
 
-                const quizData = JSON.parse(data.candidates[0].content.parts[0].text);
+                // 🌟 JSON 剝殼術：過濾 AI 產生的 ```json ... ``` 外殼，徹底解決「一直生不出題目來」的當機 Bug
+                let rawText = data.candidates[0].content.parts[0].text;
+                rawText = rawText.replace(/^```(json)?\s*/gi, '').replace(/```\s*$/gi, '').trim();
+                const quizData = JSON.parse(rawText);
                 
                 quizData.questions.forEach(q => {
                     let tName = q.type || '';
@@ -980,7 +987,6 @@ createApp({
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
                         
-                        // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
                         let tempOptions = [];
                         q.options.forEach(opt => {
                             let cleanedOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
@@ -1018,8 +1024,9 @@ createApp({
                 
             } catch (error) {
                 console.error(error);
-                alert(`補題發生錯誤：${error.message}`);
-                this.isReplenishing = false;
+                this.isGenerating = false;
+                status.className = "mt-4 font-bold text-lg text-red-600";
+                status.innerText = `❌ 發生錯誤：${error.message}`;
             }
         },
 
