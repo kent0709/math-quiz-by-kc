@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V6.3 官方完美版</title>
+    <title>數學出題小幫手 - V6.4 官方完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -89,6 +89,7 @@
                 
                 <div class="space-y-4">
                     <div v-for="(q, idx) in previewQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
+                        <!-- 🌟 新增刪除按鈕 -->
                         <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
@@ -115,6 +116,7 @@
                 </div>
             </div>
             
+            <!-- 🌟 底部按鈕區 (包含二次補題與下載) -->
             <div class="p-6 border-t bg-white flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <button @click="showPreviewConsole = false" class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
                     <i class="fas fa-arrow-left mr-2"></i>返回修改設定
@@ -337,9 +339,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V6.3 byKC -->
+    <!-- 🌟 落款升級為 V6.4 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.3 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V6.4 byKC</span>
     </footer>
 </div>
 
@@ -510,6 +512,8 @@ createApp({
             };
             placeholderText = parseMarkdownTables(placeholderText);
 
+            // 🌟 徹底清理 \n 與 \r，把它變成安全的排版換行 <br>
+            placeholderText = placeholderText.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '');
             placeholderText = placeholderText.replace(/\\\\n/g, '<br>').replace(/\\n/g, '<br>').replace(/\n+/g, '<br>');
 
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
@@ -654,7 +658,7 @@ createApp({
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
 17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
-19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
+19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
 21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數、矩陣的括號 \`{ }\` 以及 \`\\left( \\right)\` 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
 22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
@@ -727,7 +731,7 @@ createApp({
                     
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
-                        q.options = q.options.map(opt => opt.replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
+                        q.options = q.options.map(opt => opt.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '').replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
                         if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                             let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
                             q.options = parts.map(p => p.trim()).filter(p => p);
@@ -805,7 +809,7 @@ createApp({
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等任何分隔線符號。
 17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 $\\overset{\\rightharpoonup}{a}$ 或 $\\overset{\\rightharpoonup}{AB}$，並確實用 $ $ 包覆！【絕對禁止】使用短箭頭 \\vec{a} 或 雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
-19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」或「\\\\n」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
+19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
 21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數、矩陣的括號 \`{ }\` 以及 \`\\left( \\right)\` 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
 22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
@@ -913,7 +917,7 @@ createApp({
                     this.finalGroupedQs[tName].forEach(q => {
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
-                            q.options = q.options.map(opt => opt.replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
+                            q.options = q.options.map(opt => opt.replace(/\\\\r/g, '').replace(/\\r/g, '').replace(/\r/g, '').replace(/\\\\n/g, ' ').replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
                             if (q.options.length === 1 && (q.options[0].includes('(A)') || q.options[0].includes('A.')) && (q.options[0].includes('(B)') || q.options[0].includes('B.'))) {
                                 let parts = q.options[0].split(/(?=\([A-E]\)|[A-E]\.)/);
                                 q.options = parts.map(p => p.trim()).filter(p => p);
