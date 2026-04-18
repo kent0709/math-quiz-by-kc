@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V7.6 官方極致版 byKC</title>
+    <title>數學出題小幫手 - V7.7 官方極致版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -341,9 +341,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V7.6 官方極致版 byKC -->
+    <!-- 🌟 落款升級為 V7.7 官方極致版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.6 官方極致版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.7 官方極致版 byKC</span>
     </footer>
 </div>
 
@@ -447,9 +447,11 @@ createApp({
             placeholderText = placeholderText.replace(/\rightharpoonup/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\rightarrow/g, '\\rightarrow');
             placeholderText = placeholderText.replace(/\right\b/g, '\\right');
+            placeholderText = placeholderText.replace(/\rangle\b/g, '\\rangle');
             placeholderText = placeholderText.replace(/\theta\b/g, '\\theta');
             placeholderText = placeholderText.replace(/\triangle\b/g, '\\triangle');
             placeholderText = placeholderText.replace(/\text\b/g, '\\text');
+            placeholderText = placeholderText.replace(/\tan\b/g, '\\tan');
             placeholderText = placeholderText.replace(/\neq\b/g, '\\neq');
             placeholderText = placeholderText.replace(/\frac/g, '\\frac');
             placeholderText = placeholderText.replace(/\beta\b/g, '\\beta');
