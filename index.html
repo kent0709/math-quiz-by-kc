@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V7.5 官方極致版 byKC</title>
+    <title>數學出題小幫手 - V7.6 官方極致版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -341,9 +341,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V7.5 官方極致版 byKC -->
+    <!-- 🌟 落款升級為 V7.6 官方極致版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.5 官方極致版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V7.6 官方極致版 byKC</span>
     </footer>
 </div>
 
@@ -443,7 +443,7 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 解析毀損
+            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 隱形控制字元
             placeholderText = placeholderText.replace(/\rightharpoonup/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\rightarrow/g, '\\rightarrow');
             placeholderText = placeholderText.replace(/\right\b/g, '\\right');
@@ -454,18 +454,14 @@ createApp({
             placeholderText = placeholderText.replace(/\frac/g, '\\frac');
             placeholderText = placeholderText.replace(/\beta\b/g, '\\beta');
             placeholderText = placeholderText.replace(/\bmatrix\b/g, '\\bmatrix');
+            placeholderText = placeholderText.replace(/\begin\b/g, '\\begin');
+            placeholderText = placeholderText.replace(/(^|[^\\])\boverrightharpoon\b/g, '$1\\overrightharpoon');
+            placeholderText = placeholderText.replace(/(^|[^\\])\boverset\b/g, '$1\\overset');
 
             // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (因為 AI 常常把減號寫成 ##)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
             placeholderText = placeholderText.replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
-
-            // 🌟 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
@@ -480,14 +476,12 @@ createApp({
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【智慧向量箭頭】單字母用 \vec，多字母用 \overrightarrow 自動拉伸
-                cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, function(m, p1) { return p1.length > 1 ? '\\overrightarrow{' + p1 + '}' : '\\vec{' + p1 + '}'; });
-                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, function(m, p1) { return p1.length > 1 ? '\\overrightarrow{' + p1 + '}' : '\\vec{' + p1 + '}'; });
-                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, function(m, p1) { return p1.length > 1 ? '\\overrightarrow{' + p1 + '}' : '\\vec{' + p1 + '}'; });
-                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, function(m, p1) { return p1.length > 1 ? '\\overrightarrow{' + p1 + '}' : '\\vec{' + p1 + '}'; });
-                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]{2,})/g, '\\overrightarrow{$1}');
-                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9])/g, '\\vec{$1}');
-                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\vec{$1}');
+                // 🌟 【智慧向量箭頭】單字母用 \overrightharpoon (單向單邊)，多字母也用 \overrightharpoon 自動拉伸！
+                cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, '\\overrightharpoon{$1}');
+                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, '\\overrightharpoon{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, '\\overrightharpoon{$1}');
+                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overrightharpoon{$1}');
+                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, '\\overrightharpoon{$1}');
 
                 // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
@@ -500,6 +494,9 @@ createApp({
                 
                 // 修正 ^circ 為 ^{\circ}
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
+
+                // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
+                cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
 
                 // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示，避免被伺服器拒絕
                 let prevMath;
@@ -534,16 +531,24 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 1. 先把乖乖寫在公式框內的提取出來
+            // 1. 先把乖乖寫在公式框內的提取出來並保護
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 2. 【自動包裹系統】再次提取剛剛補救回來的孤兒公式
+            // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (確保不會切斷大公式)
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta)(?!\$)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$$$2$$$$');
+            
+            // 再次提取剛剛補救回來的孤兒公式
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 步驟 2：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
+            // 🌟 步驟 3：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
@@ -551,7 +556,7 @@ createApp({
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
             placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
-            // 🌟 清除幽靈控制字元與換行 (確保雙反斜線 \\ 完美轉為 <br>)
+            // 🌟 清除幽靈控制字元與換行 (確保雙反斜線 \\ 完美轉為 <br>，並利用負向表查閃避數學指令)
             placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '');
             placeholderText = placeholderText.replace(/\\\\n(?!\w)/g, '\n');
             
@@ -595,7 +600,7 @@ createApp({
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
             placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
-            // 🌟 步驟 3：【公式轉譯與歸位】
+            // 🌟 步驟 4：【公式轉譯與歸位】
             const renderMath = (tex) => {
                 let mathPart = tex.trim();
                 
@@ -616,7 +621,8 @@ createApp({
                 if (block.isBlock) {
                     imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
                 }
-                result = result.replace(`@@MATHBLOCK${idx}@@`, imgHtml);
+                // 🌟 【無限精準替換術】使用 split().join() 取代 replace()，解決 @@MATHBLOCK 重複不替換的世紀 Bug
+                result = result.split(`@@MATHBLOCK${idx}@@`).join(imgHtml);
             });
 
             return result;
@@ -733,7 +739,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！
-17. ⚠️ 向量符號 ⚠️：表示單一字母向量時請使用 \\vec{a} (例如 $\\vec{a}$)，表示兩個字母以上的向量時【絕對必須】使用 \\overrightarrow{AB} (例如 $\\overrightarrow{AB}$)，讓箭頭可以自動依照字母長度拉長！並確實用 $ $ 包覆。
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\overrightharpoon{a} 或 \\overrightharpoon{AB}，讓箭頭可以自動依照字母長度拉長！並確實用 $ $ 包覆。【絕對禁止】使用短箭頭 \\vec{a} 或 單向雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -892,7 +898,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
-17. ⚠️ 向量符號 ⚠️：表示單一字母向量時請使用 \\vec{a} (例如 $\\vec{a}$)，表示兩個字母以上的向量時【絕對必須】使用 \\overrightarrow{AB} (例如 $\\overrightarrow{AB}$)，讓箭頭可以自動依照字母長度拉長！並確實用 $ $ 包覆。
+17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】使用 \\overrightharpoon{a} 或 \\overrightharpoon{AB}，讓箭頭可以自動依照字母長度拉長！並確實用 $ $ 包覆。【絕對禁止】使用短箭頭 \\vec{a} 或 單向雙邊長箭頭 \\overrightarrow{a}。
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -1006,25 +1012,29 @@ createApp({
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
                             
-                            // 🌟 強制幫遺漏 $$ 的選項補上保護罩，保證 100% 轉為數學圖片
+                            // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
+                            let tempOptions = [];
+                            q.options.forEach(opt => {
+                                let cleanedOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
+                                let parts = cleanedOpt.split(/(?=\([A-E]\)|[A-E]\.)/);
+                                parts.forEach(p => {
+                                    if (p.trim()) tempOptions.push(p.trim());
+                                });
+                            });
+                            
+                            q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
+                            
+                            while (q.options.length < 4) { q.options.push(`選項待補`); }
+                            
                             const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                             q.options = q.options.map((opt, i) => {
-                                let cleanOpt = opt.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
-                                cleanOpt = cleanOpt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
-                                
-                                // 若有斜線但沒有錢字號，代表 AI 忘記包覆公式
+                                let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
                                 if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
                                     cleanOpt = `$${cleanOpt}$`;
-                                }
-                                
-                                if (cleanOpt.includes('(A)') || cleanOpt.includes('A.') || cleanOpt.includes('(B)')) {
-                                    cleanOpt = cleanOpt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '');
                                 }
                                 if (i < labels.length) return `${labels[i]} ${cleanOpt}`;
                                 return cleanOpt;
                             });
-                            
-                            while (q.options.length < 4) { q.options.push(`選項待補`); }
                         }
                         if (tName === '填充題') {
                             q.question = q.question.replace(/\\underline\{.*?\}/g, '').replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '').replace(/[\.．]{3,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').trim();
