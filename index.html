@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.1 終極相容滿血版 byKC</title>
+    <title>數學出題小幫手 - V10.2 向量智慧分流完美版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.1 終極相容滿血版 byKC -->
+    <!-- 🌟 落款升級為 V10.2 向量智慧分流完美版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.1 終極相容滿血版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.2 向量智慧分流完美版 byKC</span>
     </footer>
 </div>
 
@@ -405,7 +405,7 @@ createApp({
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
 1. 公式全面包覆：所有的數學式、變數（如 x, y）、座標（如 A(1,2)）、方程式（如 2x+y=1），【絕對必須】用 $ 符號前後包覆，例如 $x=1$。
-2. 向量強制規範：表示向量時，請一律使用 \\vec{AB} 或 \\vec{a}。系統會自動幫你轉成完美長箭頭！絕對禁止使用 \\overset 或 \\overrightarrow 等複雜寫法！
+2. 向量強制規範：表示向量時，無論單字母或雙字母，【請一律使用 \\vec{}】（例如 \\vec{a} 或 \\vec{AB}）。系統底層會自動將單字母轉為短箭頭，雙字母轉為台灣標準的單向半箭頭 \\overset{\\rightharpoonup}{AB}。絕對禁止你自作聰明使用 \\overrightarrow 或 \\overset 等複雜寫法！
 3. 線段長度規範：表示兩點距離或線段長度時，請一律使用 \\overline{AB}，必須有橫線！
 4. 分數強制規範：分數【絕對禁止】使用斜線 (1/2)，一律使用 \\frac{1}{2}，分子分母必須用大括號包住！
 5. 方程組排版：聯立方程式請使用 \\begin{cases} ... \\end{cases}，每行結尾必須有 \\\\\\\\。絕對禁止使用 array 或是 align 環境！
@@ -604,8 +604,18 @@ createApp({
                 cleanTex = cleanTex.replace(/H\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'H^{$1}_{$2}');
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9_])\s*([a-zA-Z0-9_])/g, '\\frac{$1}{$2}');
 
-                // 🌟 向量轉換引擎
-                const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
+                // 🌟 【智慧向量分流轉換引擎 V10.2】單字母->\vec，雙字母->\overset{\rightharpoonup}
+                const convertVector = (m, p1) => {
+                    let inner = p1.trim();
+                    // 取出底層字母計算長度 (去除 LaTeX 指令與下標)
+                    let baseLetter = inner.split('_')[0].replace(/[^a-zA-Z]/g, '');
+                    if (baseLetter.length <= 1) {
+                        return `\\vec{${inner}}`; // 單字母短箭頭
+                    } else {
+                        return `\\overset{\\rightharpoonup}{${inner}}`; // 雙字母長箭頭
+                    }
+                };
+
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec|rightharpoonup)\s*\{([^{}]+)\}/g, convertVector);
