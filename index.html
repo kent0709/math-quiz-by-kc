@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.4 英文退散與公式強化版 byKC</title>
+    <title>數學出題小幫手 - V9.5 終極排版與全域除錯版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.4 英文退散與公式強化版 byKC -->
+    <!-- 🌟 落款升級為 V9.5 終極排版與全域除錯版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.4 英文退散與公式強化版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.5 終極排版與全域除錯版 byKC</span>
     </footer>
 </div>
 
@@ -393,7 +393,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，嚴格禁止英文與修復向量公式
+        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，嚴格禁止 align 破圖環境與英文
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
@@ -411,30 +411,28 @@ createApp({
 2. 向量強制規範：表示向量時，【一律強制使用】\\overset{\\rightharpoonup}{AB} 或 \\overset{\\rightharpoonup}{a}。絕對禁止使用 \\vec{} 或 \\overrightarrow{}！
 3. 線段與距離強制規範：表示兩點間的距離或線段長度時（如 AB 線段），【一律強制使用】\\overline{AB}，上面必須要有橫線，絕對禁止只寫 AB！
 4. 分數強制規範：分數【絕對禁止】使用斜線（如 1/2 或 x/y），必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
-5. 聯立方程組（防 Unbalanced Eqn）：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。絕對禁止用 array 或 align，且 cases 內禁止放中文！
-6. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
+5. 聯立方程組（防 Unbalanced Eqn）：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。絕對禁止用 array，且 cases 內禁止放中文！
+6. 🚫 嚴禁使用 Align 環境：【絕對禁止】使用 \\begin{align} 或 \\begin{eqnarray} 等對齊環境！這會導致整張考卷破圖！若需換行，請直接把算式切斷，分成多個 $ $ 區塊！
+7. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
    - ✅ 正確：$\\int (x+1)^2 dx$ = $\\int (x^2+2x+1) dx$ = $\\frac{1}{3}x^3 + C$
    - ❌ 錯誤：$\\int (x+1)^2 dx = \\int (x^2+2x+1) dx$ (太長會破圖)
-7. 符號防呆：
+8. 符號防呆：
    - 絕對禁止在等號或數學式兩側加上單/雙引號（如 '$\\sin(x)$' 或 '='）或逗號。
-   - 減號請正常使用「-」，絕對不可寫成「##」！
-   - 不等於請用 $\\neq$（不可寫 AeqO）。
+   - 減號請正常使用「-」，絕對不可寫成「##」！不等於請用 $\\neq$。
    - 絕對值、向量長度、外積一律使用單直線 $| |$，絕對禁止使用雙直線 $|| ||$ 或 \\lVert \\rVert！
-8. 排列組合符號規範：表示組合數時，【絕對禁止】使用 C(n,k) 的格式！請一律使用台灣高中標準寫法 C^{n}_{k}（總數 n 在上，取出數 k 在下，例如 C(4,2) 必須寫成 C^{4}_{2}）。排列數 P 與重複組合 H 亦同。
+9. 排列組合符號規範：表示組合數時，【絕對禁止】使用 C(n,k) 的格式！請一律使用台灣高中標準寫法 C^{n}_{k}（總數 n 在上，取出數 k 在下）。排列數 P 與重複組合 H 亦同。
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
 1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}, \\\\theta, \\\\begin{cases}）。所有的 LaTeX 環境（矩陣、分數、根號）前都必須有反斜線！
 2. 換行符號清零：所有字串中【絕對禁止】包含純文字換行代碼（\\n, \\\\n, \\r, \\\\r）。文字敘述請直接以單行字串輸出。
 3. 嚴格題數限制：精準算出要求的題數，絕對不可多出或少於指定題數！
 4. 選項 (options)：選擇題【強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。若來源無選項，請「自行設計」錯誤選項湊齊四個。
-5. 單元標示 (unit)：精準標示該題所測驗的核心觀念（如「平面向量內積」）。
 
 === 📝 四、題目與詳解內容要求 ===
 1. 數據變更強制要求：擷取素材題目時，【絕對不可照抄原題數據】！必須修改數字、座標或係數，產出考點相同但【數據完全不同】的新題目，並確實重新計算新答案與新詳解！
 2. 選項同步更新：修改數據後，【絕對必須】將重新計算的「全新選項」填入 options 陣列中！答案 (answer) 也必須對應新選項！
 3. 🔴 嚴禁任何英文碎碎念（核彈級防爆）：'solution' 欄位【絕對只准】放純中文的最終詳解與數學公式！如果出現 "Let's use", "Here is", "Step 1" 等任何英文單字或句子，系統會直接崩潰！所有計算邏輯推演請全部丟進 'thought_process' 裡！
-4. 詳解換行：解答與詳解中若需換行（例如換行解說不同選項），請直接使用 HTML 的 <br> 標籤！
-5. 表格排版：原題若有表格，請使用標準 Markdown 表格語法（每一行以 | 開頭與結尾）。`;
+4. 詳解換行：解答與詳解中若需換行（例如換行解說不同選項），請直接使用 HTML 的 <br> 標籤！`;
         }
     },
     methods: {
@@ -576,6 +574,12 @@ createApp({
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 
+                // 🌟 【獨家：Align 破圖修復 V9.5】將會導致 CodeCogs 整片破圖的 align 環境強制轉換為安全支援的 aligned
+                cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{aligned}');
+                cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{aligned}');
+                cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{aligned}');
+                cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{aligned}');
+                
                 // 去除可能干擾的引號
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
 
@@ -590,8 +594,8 @@ createApp({
                 cleanTex = cleanTex.replace(/P\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'P^{$1}_{$2}');
                 cleanTex = cleanTex.replace(/H\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'H^{$1}_{$2}');
 
-                // 🌟 【分數防呆深度修復 V9.1】自動將 \frac12 修復為 \frac{1}{2}，並支援簡單變數 (如 x)
-                cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
+                // 🌟 【分數防呆深度修復 V9.5】自動將 \frac12 修復為 \frac{1}{2}，並支援簡單變數 (如 x)
+                cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9_])\s*([a-zA-Z0-9_])/g, '\\frac{$1}{$2}');
 
                 // 🌟 【向量強制轉換系統 V8.10 完美回歸】應使用者要求，強制退回最美觀、置中的 \overset{\rightharpoonup}{AB}
                 const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
@@ -639,7 +643,7 @@ createApp({
                 if (leftCount > rightCount) cleanTex += '\\right.'.repeat(leftCount - rightCount);
 
                 // 🌟 【防破圖】自動補齊遺漏的 LaTeX 環境結尾 (解決 Unbalanced Eqn)
-                const envs = ['cases', 'bmatrix', 'pmatrix', 'vmatrix', 'array', 'align', 'aligned'];
+                const envs = ['cases', 'bmatrix', 'pmatrix', 'vmatrix', 'array', 'aligned'];
                 envs.forEach(env => {
                     let beginRegex = new RegExp(`\\\\begin\\{${env}\\}`, 'g');
                     let endRegex = new RegExp(`\\\\end\\{${env}\\}`, 'g');
