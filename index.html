@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.6 向量優化修復版 byKC</title>
+    <title>數學出題小幫手 - V8.7 破圖還原修復版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.6 向量優化修復版 byKC -->
+    <!-- 🌟 落款升級為 V8.7 破圖還原修復版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.6 向量優化修復版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.7 破圖還原修復版 byKC</span>
     </footer>
 </div>
 
@@ -393,7 +393,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【重構】將長達 31 點的防呆規則集中在這裡，確保生新卷跟補題都不偷懶！
+        // 🌟 【重構】將長達 33 點的防呆規則集中在這裡，加入破圖還原防呆！
         aiFormatRules() {
             return `【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
@@ -430,7 +430,9 @@ createApp({
 28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 " 或反引號 (backtick)，例如絕對值 |\\sin(3x)| 絕對不可寫成 |"\\sin(3x)"|。
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
 30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
-31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！`;
+31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！
+32. ⚠️ 影像破損還原（極度重要） ⚠️：上傳的圖片中可能含有「無法顯示的亂碼圖示」（例如含有紅色叉叉的框框、或是顯示為亂碼的分數）。請你發揮專業數學能力，根據前後文、方程式與選項邏輯，【完美推理並還原出原本的數字、分數或方程式】！絕對不可以偷懶跳過或照抄亂碼！例如問兩平面距離，請自己算出距離並將正確解答放在選項中！
+33. ⚠️ 嚴格反斜線防呆 ⚠️：所有的 LaTeX 環境（如矩陣 \\begin{bmatrix}、分數 \\frac{}{}、根號 \\sqrt{}）前面【絕對必須】加上反斜線 \！絕不允許輸出 begin{bmatrix} 這種殘缺語法！`;
         }
     },
     methods: {
@@ -545,9 +547,11 @@ createApp({
             // 🌟 移除反引號，避免 Markdown 程式碼區塊干擾公式解析與產生奇怪的單引號
             placeholderText = placeholderText.replace(/`/g, '');
 
-            // 🌟 新增：針對照片問題，修復遺失反斜線的矩陣環境 (防止 begin{bmatrix} 破圖)
-            placeholderText = placeholderText.replace(/(?<!\\)begin\{/g, '\\begin{');
-            placeholderText = placeholderText.replace(/(?<!\\)end\{/g, '\\end{');
+            // 🌟 新增：針對照片問題，更安全地修復遺失反斜線的矩陣與分數環境 (閃避 Lookbehind 兼容性問題)
+            placeholderText = placeholderText.replace(/(^|[^\\])begin\{/g, '$1\\begin{');
+            placeholderText = placeholderText.replace(/(^|[^\\])end\{/g, '$1\\end{');
+            placeholderText = placeholderText.replace(/(^|[^\\])frac\{/g, '$1\\frac{');
+            placeholderText = placeholderText.replace(/(^|[^\\])sqrt\{/g, '$1\\sqrt{');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
