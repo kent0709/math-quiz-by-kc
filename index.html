@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.7 終極防禦與渲染滿血版 byKC</title>
+    <title>數學出題小幫手 - V9.8 渲染引擎重構滿血版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.7 終極防禦與渲染滿血版 byKC -->
+    <!-- 🌟 落款升級為 V9.8 渲染引擎重構滿血版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.7 終極防禦與渲染滿血版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.8 渲染引擎重構滿血版 byKC</span>
     </footer>
 </div>
 
@@ -532,34 +532,24 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 【防呆】強制清除所有的 # 亂碼 (AI 有時會用 ### 當作未知單位)
+            // 🌟 1. 【基礎清理與防呆】
             placeholderText = placeholderText.replace(/#+/g, '');
-
-            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 解析隱形控制字元與遺失的 \r
             placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
             placeholderText = placeholderText.replace(/\x0D?ightharpoonup/g, '\\rightharpoonup');
-            placeholderText = placeholderText.replace(/\x0D?ightharpoonright/g, '\\rightharpoonup'); // 統一轉換為台灣習慣的 harpoonup
+            placeholderText = placeholderText.replace(/\x0D?ightharpoonright/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\x0D?ightarrow/g, '\\rightarrow');
             placeholderText = placeholderText.replace(/\x0D?ight\b/g, '\\right');
             placeholderText = placeholderText.replace(/\x0C?rac\b/g, '\\frac'); 
             placeholderText = placeholderText.replace(/\x08?eta\b/g, '\\beta');
+            placeholderText = placeholderText.replace(/\x0B?ec\b/g, '\\vec'); // \v vertical tab
 
-            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (確保之前版本殘留的防護依然有效)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
-
-            // 🌟 移除反引號，避免 Markdown 程式碼區塊干擾公式解析與產生奇怪的單引號
             placeholderText = placeholderText.replace(/`/g, '');
-
-            // 🌟 新增：針對照片問題，更安全地修復遺失反斜線的矩陣與分數環境
-            placeholderText = placeholderText.replace(/(^|[^\\])begin\{/g, '$1\\begin{');
-            placeholderText = placeholderText.replace(/(^|[^\\])end\{/g, '$1\\end{');
-            placeholderText = placeholderText.replace(/(^|[^\\])frac\{/g, '$1\\frac{');
-            placeholderText = placeholderText.replace(/(^|[^\\])sqrt\{/g, '$1\\sqrt{');
             
-            // 🌟 新增：針對漏掉反斜線的希臘字母與運算符號自動修復
+            // 補充遺失的反斜線
             const safeMathKeywords = [
-                'overset', 'overline', 'frac', 'sqrt', 'rightharpoonup', 'rightarrow', 
+                'begin', 'end', 'frac', 'sqrt', 'overset', 'overline', 'rightharpoonup', 'rightarrow', 
                 'times', 'cdot', 'theta', 'alpha', 'beta', 'gamma', 'pi', 
                 'triangle', 'angle', 'sin', 'cos', 'tan', 'log', 'ln', 'neq', 'approx'
             ];
@@ -568,89 +558,64 @@ createApp({
                 placeholderText = placeholderText.replace(reg, `$1\\${kw}`);
             });
 
-            // 🌟 距離與線段長度防呆：強制將大寫字母配上等號的寫法（如 AB = 5）換成 \overline{AB} = 5
+            // 線段與距離防呆
             placeholderText = placeholderText.replace(/\b([A-Z]{2})\b\s*=/g, '\\overline{$1} =');
 
-            // 🌟 【等號防呆修復 V8.10】修正 AI 聽從錯誤指令產生的單引號等號與奇怪的逗號
+            // 修正等號周圍引號與逗號
             placeholderText = placeholderText.replace(/['"]=/g, ' =');
             placeholderText = placeholderText.replace(/=['"]/g, '= ');
             placeholderText = placeholderText.replace(/','='?\s*/g, ' = ');
             placeholderText = placeholderText.replace(/','/g, '<br>');
 
-            // 🌟 孤兒矩陣與公式強力補救 (在轉交給渲染前強制加上 $$)
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overline\s*\{[^{}]+\})/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*[a-zA-Z0-9_]\s*[a-zA-Z0-9_])/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\sqrt\s*\{[^{}]+\})/g, '$1$$$2$$');
-
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
                 
-                // 🌟 【聯立方程防爆防呆 V8.10】將公式內多餘的換行轉為 LaTeX 的換行指令，防止 Unbalanced Eqn
+                // 換行防護
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 
-                // 🌟 【獨家：Align 破圖修復 V9.5】將會導致 CodeCogs 整片破圖的 align 環境強制轉換為安全支援的 array
-                // 注意：CodeCogs 對 aligned 支援有時不穩，改用 array 最為保險
+                // Align 破圖修復
                 cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{array}{l}');
                 cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{array}');
                 cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{array}{l}');
                 cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{array}');
                 
-                // Unbalanced Eqn 防爆：如果公式內有 \\ 卻沒有任何環境包覆，強制加上 array 環境
                 if (cleanTex.includes('\\\\') && !cleanTex.includes('\\begin{')) {
                     cleanTex = '\\begin{array}{l} ' + cleanTex + ' \\end{array}';
                 }
 
-                // 去除可能干擾的引號
+                // 移除引號與外層 \text{}
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
-
-                // 移除外層 \text{}
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
-                
-                // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【排列組合符號防呆 V9.3】將 C(n,k) 轉換為台灣高中標準 C^{n}_{k} (n在上、k在下)
+                // 排列組合與分數
                 cleanTex = cleanTex.replace(/C\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'C^{$1}_{$2}');
                 cleanTex = cleanTex.replace(/P\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'P^{$1}_{$2}');
                 cleanTex = cleanTex.replace(/H\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'H^{$1}_{$2}');
-
-                // 🌟 【分數防呆深度修復 V9.5】自動將 \frac12 修復為 \frac{1}{2}，並支援簡單變數 (如 x)
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9_])\s*([a-zA-Z0-9_])/g, '\\frac{$1}{$2}');
 
-                // 🌟 【向量強制轉換系統 V8.10 完美回歸】應使用者要求，強制退回最美觀、置中的 \overset{\rightharpoonup}{AB}
+                // 🌟 向量轉換引擎
                 const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
-                
-                // 處理有大括號包住的情況 (例如 \overset{\rightharpoonup}{AB} 或 \overrightarrow{AB})
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec|rightharpoonup)\s*\{([^{}]+)\}/g, convertVector);
-                
-                // 處理沒有大括號、殘缺的 OCR / AI 生成錯誤情況 (強制捕捉長度1~3的字母或數字)
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec|rightharpoonup)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
                 
-                // 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
+                // 絕對值與其他符號
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
                 cleanTex = cleanTex.replace(/\\left\\\|/g, '\\left|').replace(/\\right\\\|/g, '\\right|');
                 cleanTex = cleanTex.replace(/\\\|/g, '|');
                 cleanTex = cleanTex.replace(/\|\|/g, '|');
-
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
-
-                // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
                 cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
-
-                // 🌟 【防破圖】過濾公式中的中文標點符號，避免 CodeCogs 渲染失敗
                 cleanTex = cleanTex.replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
 
-                // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示，避免被伺服器拒絕
+                // 防呆：分數內含中文字
                 let prevMath;
                 do {
                     prevMath = cleanTex;
@@ -658,16 +623,26 @@ createApp({
                     cleanTex = cleanTex.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]*[\u4e00-\u9fa5][^{}]*)\}/g, '($1) / ($2)');
                 } while (cleanTex !== prevMath);
 
-                // 🌟 【防破圖】自動補齊遺漏的成對括號
+                // 補齊括號
                 let openBraces = (cleanTex.match(/\{/g) || []).length;
                 let closeBraces = (cleanTex.match(/\}/g) || []).length;
                 if (openBraces > closeBraces) cleanTex += '}'.repeat(openBraces - closeBraces);
-                
                 let leftCount = (cleanTex.match(/\\left\b/g) || []).length;
                 let rightCount = (cleanTex.match(/\\right\b/g) || []).length;
                 if (leftCount > rightCount) cleanTex += '\\right.'.repeat(leftCount - rightCount);
 
-                // 極限與西格瑪強制上下標
+                // 補齊環境
+                const envs = ['cases', 'bmatrix', 'pmatrix', 'vmatrix', 'array', 'aligned'];
+                envs.forEach(env => {
+                    let beginRegex = new RegExp(`\\\\begin\\{${env}\\}`, 'g');
+                    let endRegex = new RegExp(`\\\\end\\{${env}\\}`, 'g');
+                    let beginCount = (cleanTex.match(beginRegex) || []).length;
+                    let endCount = (cleanTex.match(endRegex) || []).length;
+                    if (beginCount > endCount) {
+                        cleanTex += `\\end{${env}}`.repeat(beginCount - endCount);
+                    }
+                });
+
                 cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
                 cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
                 cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
@@ -683,21 +658,20 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 1. 先把乖乖寫在公式框內的提取出來並保護
+            // 🌟 2. 【提取完美包裹的公式】
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (確保不會切斷大公式)
-            // 針對照片中漏掉 $ 的 \overset{\rightharpoonup}{n_1}=(1,1,0) 或 \overline{AB}=5 或 \frac{15}{4} 進行強力捕捉
+            // 🌟 3. 【自動包裹系統】拯救孤兒指令
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})(?!\$)/g, '$1$$$$$2$$$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overline\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\d\s*\d(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\sqrt\s*\{[^{}]+\})(?!\$)/g, '$1$$$2$$');
             
-            // 其他殘缺矩陣與殘缺向量的自動包裹保護
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|⇀|→)\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
@@ -706,32 +680,27 @@ createApp({
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])\b(sin|cos|tan|log|ln)\b(?!\$)/g, '$1$$\\$2$$');
-            
-            // 再次提取剛剛補救回來的孤兒公式 (只用單層 $ 捕捉)
+
+            // 再次提取孤兒公式
+            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 步驟 3：【純文字雜訊大掃除】 (此時公式安全地待在 @@MATHBLOCK@@ 裡)
+            // 🌟 4. 【純文字雜訊與英文碎碎念大掃除】
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
             placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
-
-            // 🌟 清除幽靈控制字元與換行 (確保雙反斜線 \\ 完美轉為 <br>，並利用負向表查閃避數學指令)
             placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '');
             placeholderText = placeholderText.replace(/\\\\n(?!\w)/g, '\n');
-            
-            // 🌟 將純文字區(詳解)中被當作換行的雙反斜線 \\ 強制轉換為網頁換行 <br>
             placeholderText = placeholderText.replace(/\\\\/g, '<br>');
-
-            // 🌟 英文碎碎念過濾 (雙保險)
+            
             placeholderText = placeholderText.replace(/Let's.*?(?=[。，\n]|$)/gi, '');
             placeholderText = placeholderText.replace(/Here is.*?(?=[。，\n]|$)/gi, '');
             placeholderText = placeholderText.replace(/Step \d.*?(?=[。，\n]|$)/gi, '');
             placeholderText = placeholderText.replace(/We can.*?(?=[。，\n]|$)/gi, '');
 
-            // 智慧表格轉換
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
                 let out = [];
@@ -762,23 +731,16 @@ createApp({
             };
             placeholderText = parseMarkdownTables(placeholderText);
 
-            // 🌟 徹底清理 \n，把它變成安全的排版換行 <br>
             placeholderText = placeholderText.replace(/\n+/g, '<br>');
-
             placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
             placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
-            // 🌟 步驟 4：【公式轉譯與歸位】
+            // 🌟 5. 【公式轉譯與無縫歸位】
             const renderMath = (tex) => {
                 let mathPart = tex.trim();
-                
-                // 🌟 【防破圖】過濾換行符號與未跳脫的 % 符號
                 mathPart = mathPart.replace(/\n/g, ' ').replace(/\r/g, '');
                 mathPart = mathPart.replace(/(^|[^\\])%/g, '$1\\%');
-                
-                // 🌟 【防破圖】直接把公式內的中文字用 \text{} 包起來
                 mathPart = mathPart.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
-
                 let encoded = encodeURIComponent(mathPart);
                 return `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="math" />`;
             };
@@ -789,8 +751,8 @@ createApp({
                 if (block.isBlock) {
                     imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
                 }
-                // 🌟 【無限精準替換術】優化使用 replaceAll
-                result = result.replaceAll(`@@MATHBLOCK${idx}@@`, imgHtml);
+                // 🌟 【無限精準替換術】使用 split().join() 取代 replaceAll 以防舊版瀏覽器崩潰
+                result = result.split(`@@MATHBLOCK${idx}@@`).join(imgHtml);
             });
 
             return result;
