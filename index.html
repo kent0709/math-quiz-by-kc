@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.1 終極破圖還原與排版重構版 byKC</title>
+    <title>數學出題小幫手 - V9.2 距離橫線與全域除錯版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -207,7 +207,7 @@
                     </tr>
                 </table>
                 <div class="w-full max-w-4xl text-left mt-2 text-xs font-bold text-gray-500">
-                    依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
+                    依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準 গঠন,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
                 </div>
             </div>
         </div>
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.1 終極破圖還原與排版重構版 byKC -->
+    <!-- 🌟 落款升級為 V9.2 距離橫線與全域除錯版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.1 終極破圖還原與排版重構版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.2 距離橫線與全域除錯版 byKC</span>
     </footer>
 </div>
 
@@ -393,7 +393,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【史詩級重構】將原本雜亂的 35 點 Prompt 重新歸納為四大結構，並置頂「破圖還原」指令！
+        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，並新增距離橫線與禁止亂碼指令！
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
@@ -401,19 +401,21 @@ createApp({
 === 💡 一、破圖與亂碼「終極自癒」機制（核彈級要求） ===
 1. 影像破損極致還原：上傳的圖片中常有「無法顯示的亂碼圖示」（如紅色叉叉、空白方塊）。【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」或「Unbalanced Eqn」等字眼！
 2. 邏輯反推：你必須發揮數學專業，從前後文（如平行法向量、垂直條件、多項式變數）「完美反推並填補」遺失的方程式、變數（如 $m_2$、$Q(x)$）或選項！絕對不准偷懶跳過！
+3. 嚴禁任何雜訊：【絕對禁止】在解答或題目中輸出「#」、「###」等亂碼符號！不要用它來排版，若代表數值請自行計算還原。
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
-1. $ 符號全面包覆：所有數學式、數字、變數、幾何符號（如 $\\triangle ABC$）、方程式（如 $3x-4y=0$）、點座標（如 $A(1, 2)$）、角度（$20^{\\circ}$），【必須且完整連同代號】用 $ $ 符號前後成對包住！
-   - ❌ 錯誤：角度 \\theta 是 30^circ。點 P(1, 2)。已知平面 E_1: 2x+y=1。
-   - ✅ 正確：角度 $\\theta$ 是 $30^{\\circ}$。點 $P(1, 2)$。已知平面 $E_1: 2x+y=1$。
+1. $ 符號全面包覆（拒絕代碼裸奔）：所有數學式、數字、變數、方程式（如 $3x-4y=0$）、點座標（如 $A(1, 2)$），【必須且完整連同代號】用 $ $ 符號前後成對包住！
+   - ❌ 錯誤裸奔：法向量為 \\overset{\\rightharpoonup}{n_1}=(1,1,0) (這會印出原始代碼)
+   - ✅ 正確包覆：法向量為 $\\overset{\\rightharpoonup}{n_1}=(1,1,0)$
    - ⚠️ 警告：$ $ 內【絕對禁止】出現中文字（如「$3人$」請改為「$3$人」）！
 2. 向量強制規範：表示向量時，【一律強制使用】\\overset{\\rightharpoonup}{AB} 或 \\overset{\\rightharpoonup}{a}。絕對禁止使用 \\vec{} 或 \\overrightarrow{}！
-3. 分數強制規範：分數【絕對禁止】使用斜線（如 1/2 或 x/y），必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
-4. 聯立方程組（防 Unbalanced Eqn）：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。絕對禁止用 array 或 align，且 cases 內禁止放中文！
-5. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
+3. 線段與距離強制規範：表示兩點間的距離或線段長度時（如 AB 線段），【一律強制使用】\\overline{AB}，上面必須要有橫線，絕對禁止只寫 AB！
+4. 分數強制規範：分數【絕對禁止】使用斜線（如 1/2 或 x/y），必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
+5. 聯立方程組（防 Unbalanced Eqn）：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。絕對禁止用 array 或 align，且 cases 內禁止放中文！
+6. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
    - ✅ 正確：$\\int (x+1)^2 dx$ = $\\int (x^2+2x+1) dx$ = $\\frac{1}{3}x^3 + C$
    - ❌ 錯誤：$\\int (x+1)^2 dx = \\int (x^2+2x+1) dx$ (太長會破圖)
-6. 符號防呆：
+7. 符號防呆：
    - 絕對禁止在等號或數學式兩側加上單/雙引號（如 '$\\sin(x)$' 或 '='）或逗號。
    - 減號請正常使用「-」，絕對不可寫成「##」！
    - 不等於請用 $\\neq$（不可寫 AeqO）。
@@ -531,6 +533,9 @@ createApp({
             
             let placeholderText = text;
 
+            // 🌟 【防呆】強制清除所有的 # 亂碼 (AI 有時會用 ### 當作未知單位)
+            placeholderText = placeholderText.replace(/#+/g, '');
+
             // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 解析隱形控制字元
             placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
             placeholderText = placeholderText.replace(/\x0Dightharpoonup/g, '\\rightharpoonup');
@@ -539,7 +544,7 @@ createApp({
             placeholderText = placeholderText.replace(/\x0Crac\b/g, '\\frac'); 
             placeholderText = placeholderText.replace(/\x08eta\b/g, '\\beta');
 
-            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (因為 AI 常常把減號寫成 ##)
+            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (確保之前版本殘留的防護依然有效)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
 
@@ -661,7 +666,11 @@ createApp({
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
             // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令 (確保不會切斷大公式)
-            // 增加對殘缺矩陣與殘缺向量的自動包裹保護
+            // 針對照片中漏掉 $ 的 \overset{\rightharpoonup}{n_1}=(1,1,0) 或 \overline{AB}=5 進行強力捕捉
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overline\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
+            
+            // 其他殘缺矩陣與殘缺向量的自動包裹保護
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|⇀|→)\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
             placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
