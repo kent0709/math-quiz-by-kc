@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.4 絕對服從與滿血渲染版 byKC</title>
+    <title>數學出題小幫手 - V10.5 終極護城河滿血出題版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.4 絕對服從與滿血渲染版 byKC -->
+    <!-- 🌟 落款升級為 V10.5 終極護城河滿血出題版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.4 絕對服從與滿血渲染版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.5 終極護城河滿血出題版 byKC</span>
     </footer>
 </div>
 
@@ -393,21 +393,21 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，嚴格遵從使用者的指令
+        // 🌟 【V10.5 史詩級指令優化】嚴格分流向量，加入橫線強制規範與防爆指令
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
 
 === 💡 一、破圖與亂碼「終極自癒」機制（核彈級要求） ===
 1. 影像破損極致還原：圖片中常有「無法顯示的亂碼圖示」（如紅色叉叉）。【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」等字眼！你必須發揮數學專業，從前後文「完美反推並填補」遺失的方程式或選項！
-2. 嚴禁雜訊：【絕對禁止】輸出「#」、「###」等亂碼符號！
+2. 嚴禁雜訊：【絕對禁止】輸出「#」、「###」等亂碼符號！不要用它來排版，若代表數值請自行計算還原。
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
 1. 公式全面包覆：所有的數學式、變數（如 x, y）、座標（如 A(1,2)）、方程式（如 2x+y=1），【絕對必須】用 $ 符號前後包覆，例如 $x=1$。
 2. 👑 向量強制規範：表示向量時，請依據字母數量使用不同寫法：
-   - 遇到單字母（如向量a）：【絕對強制】使用 \\vec{a}（完美的單邊短箭頭）。
-   - 遇到雙字母（如向量AB）：【絕對強制】轉換為 \\overset{\\rightharpoonup}{AB}。這會在字母正中央放上一個單向的半箭頭，不僅保證絕對不破圖，且完美符合台灣高中的標準！
-3. 📏 線段與距離強制規範：如果是 AB 兩點，距離的話上面要有橫線，請絕對強制寫成 \\overline{AB}！
+   - 單字母（如向量a）：【絕對強制】使用 \\vec{a}（完美的單邊短箭頭）。
+   - 雙字母（如向量AB）：【絕對強制】轉換為 \\overset{\\rightharpoonup}{AB}。這會在字母正中央放上一個單向的半箭頭，不僅保證絕對不破圖，且完美符合台灣高中的標準！
+3. 📏 線段與距離強制規範：表示兩點之間的距離或線段時（例如 AB = 5），請絕對強制加上線段符號，寫成 \\overline{AB} = 5！
 4. 分數強制規範：分數【絕對禁止】使用斜線 (1/2)，一律使用 \\frac{1}{2}，分子分母必須用大括號包住！
 5. 方程組排版：聯立方程式請使用 \\begin{cases} ... \\end{cases}，每行結尾必須有 \\\\\\\\。絕對禁止使用 array 或是 align 環境！
 
@@ -515,158 +515,185 @@ createApp({
         formatMath(text) {
             if (!text) return '';
             
-            let placeholderText = text.trim();
+            try {
+                let placeholderText = text.trim();
 
-            // 🌟 1. 【基礎清理與防呆】
-            placeholderText = placeholderText.replace(/#+/g, '');
-            placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
-            placeholderText = placeholderText.replace(/\x0D?ightharpoonup/g, '\\rightharpoonup');
-            placeholderText = placeholderText.replace(/\x0D?ightarrow/g, '\\rightarrow');
-            placeholderText = placeholderText.replace(/\x0D?ight\b/g, '\\right');
-            placeholderText = placeholderText.replace(/\x0C?rac\b/g, '\\frac'); 
-            placeholderText = placeholderText.replace(/\x08?eta\b/g, '\\beta');
-            placeholderText = placeholderText.replace(/\x0B?ec\b/g, '\\vec'); 
+                // 🌟 1. 【基礎清理與防呆】
+                placeholderText = placeholderText.replace(/#+/g, '');
+                placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
+                placeholderText = placeholderText.replace(/\x0D?ightharpoonup/g, '\\rightharpoonup');
+                placeholderText = placeholderText.replace(/\x0D?ightarrow/g, '\\rightarrow');
+                placeholderText = placeholderText.replace(/\x0D?ight\b/g, '\\right');
+                placeholderText = placeholderText.replace(/\x0C?rac\b/g, '\\frac'); 
+                placeholderText = placeholderText.replace(/\x08?eta\b/g, '\\beta');
+                placeholderText = placeholderText.replace(/\x0B?ec\b/g, '\\vec'); 
 
-            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
-            placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
-            placeholderText = placeholderText.replace(/`/g, '');
-            
-            // 補充遺失的反斜線 (安全無損寫法，避免 Safari 崩潰)
-            const safeMathKeywords = ['begin', 'end', 'frac', 'sqrt', 'overset', 'overline', 'rightharpoonup', 'rightarrow', 'times', 'cdot', 'theta', 'alpha', 'beta', 'gamma', 'pi', 'triangle', 'angle', 'sin', 'cos', 'tan', 'log', 'ln', 'neq', 'approx', 'vec'];
-            safeMathKeywords.forEach(kw => {
-                let regAdd = new RegExp(`(^|[^a-zA-Z\\\\])\\b${kw}\\b`, 'g');
-                placeholderText = placeholderText.replace(regAdd, `$1\\${kw}`);
-            });
-
-            placeholderText = placeholderText.replace(/['"]=/g, ' =');
-            placeholderText = placeholderText.replace(/=['"]/g, '= ');
-
-            // 🌟 2. 【無嵌套的全新公式包裹與提取系統】(徹底解決 MATHBLOCK 崩潰)
-            let mathBlocks = [];
-            const storeMath = (tex, isBlock) => {
-                mathBlocks.push({ tex: tex, isBlock: isBlock });
-                return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
-            };
-
-            // 優先提取標準數學公式
-            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => storeMath(p1, true));
-            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => storeMath(p1, true));
-            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => storeMath(p1, false));
-            // 提取單個 $，但避開已經變成 @@MATHBLOCK 的區塊
-            placeholderText = placeholderText.replace(/\$((?:(?!@@MATHBLOCK).)+?)\$/g, (m, p1) => storeMath(p1, false));
-
-            // 3. 強力捕捉漏掉 $ 的孤兒指令 (直接提取，杜絕嵌套)
-            const orphanRegexes = [
-                /\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g,
-                /\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g,
-                /\\overline\s*\{[^{}]+\}/g,
-                /\\frac\s*\{[^{}]+\}\s*\{[^{}]+\}/g,
-                /\\frac\s*[a-zA-Z0-9_]\s*[a-zA-Z0-9_]/g,
-                /\\sqrt\s*\{[^{}]+\}/g,
-                /\\vec\s*\{?[A-Za-z0-9_]+\}?/g
-            ];
-            orphanRegexes.forEach(reg => {
-                placeholderText = placeholderText.replace(reg, (m) => storeMath(m, false));
-            });
-
-            // 🌟 4. 【純文字雜訊與英文碎碎念大掃除】(此時公式已被安全抽離)
-            placeholderText = placeholderText.replace(/Let's.*?(?=[。，\n]|$)/gi, '');
-            placeholderText = placeholderText.replace(/Here is.*?(?=[。，\n]|$)/gi, '');
-            placeholderText = placeholderText.replace(/Step \d.*?(?=[。，\n]|$)/gi, '');
-            placeholderText = placeholderText.replace(/We can.*?(?=[。，\n]|$)/gi, '');
-            placeholderText = placeholderText.replace(/\\\\/g, '<br>');
-            
-            let parseMarkdownTables = (textStr) => {
-                let lines = textStr.split('\n');
-                let out = [];
-                let inTable = false;
-                let tableHtml = "";
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i].trim();
-                    if (line.match(/^\|?[\s\-\:]+\|?$/) && line.includes('-')) continue; 
-                    if (line.startsWith('|') && line.endsWith('|') && line.includes('|', 1)) {
-                        if (!inTable) {
-                            inTable = true;
-                            tableHtml = '<table width="80%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin: 15px auto; font-family: \'標楷體\', \'Times New Roman\', serif;">';
-                        }
-                        let cells = line.split('|').slice(1, -1);
-                        tableHtml += '<tr>' + cells.map(c => `<td style="border: 1px solid black; padding: 8px;">${c.trim()}</td>`).join('') + '</tr>';
-                    } else {
-                        if (inTable) {
-                            inTable = false;
-                            tableHtml += '</table>';
-                            out.push(tableHtml);
-                            tableHtml = "";
-                        }
-                        out.push(lines[i]);
-                    }
-                }
-                if (inTable) { tableHtml += '</table>'; out.push(tableHtml); }
-                return out.join('\n');
-            };
-            placeholderText = parseMarkdownTables(placeholderText);
-            placeholderText = placeholderText.replace(/\n+/g, '<br>');
-
-            // 🌟 5. 【公式轉譯與無縫歸位】
-            const processMath = (tex) => {
-                let cleanTex = tex.trim();
+                placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
+                placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
+                placeholderText = placeholderText.replace(/`/g, '');
                 
-                // 聯立方程式防爆 (換行)
-                cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
-                cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
-                
-                // Align 破圖修復
-                cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{array}{l}');
-                cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{array}');
-                cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{array}{l}');
-                cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{array}');
-                
-                // Unbalanced Eqn 防護
-                if (cleanTex.includes('\\\\') && !cleanTex.includes('\\begin{')) {
-                    cleanTex = '\\begin{array}{l} ' + cleanTex + ' \\end{array}';
-                }
+                // 補充遺失的反斜線
+                const safeMathKeywords = ['begin', 'end', 'frac', 'sqrt', 'overset', 'overline', 'rightharpoonup', 'rightarrow', 'times', 'cdot', 'theta', 'alpha', 'beta', 'gamma', 'pi', 'triangle', 'angle', 'sin', 'cos', 'tan', 'log', 'ln', 'neq', 'approx', 'vec'];
+                safeMathKeywords.forEach(kw => {
+                    let regAdd = new RegExp(`(^|[^a-zA-Z\\\\])\\b${kw}\\b`, 'g');
+                    placeholderText = placeholderText.replace(regAdd, `$1\\${kw}`);
+                });
 
-                cleanTex = cleanTex.replace(/["']/g, '');
-                cleanTex = cleanTex.replace(/\\text\s*\{([^{}\\]+)\}/g, '$1');
-                
-                // 🌟 【向量智慧分流 V10.4】單字母->\vec，雙字母->\overset{\rightharpoonup}
-                const convertVector = (m, p1) => {
-                    let inner = p1.trim();
-                    let base = inner.replace(/[^a-zA-Z]/g, '');
-                    if (base.length <= 1) return `\\vec{${inner}}`;
-                    return `\\overset{\\rightharpoonup}{${inner}}`;
+                placeholderText = placeholderText.replace(/['"]=/g, ' =');
+                placeholderText = placeholderText.replace(/=['"]/g, '= ');
+
+                // 🌟 2. 【無嵌套的全新公式包裹與提取系統】
+                let mathBlocks = [];
+                const storeMath = (tex, isBlock) => {
+                    mathBlocks.push({ tex: tex, isBlock: isBlock });
+                    return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
                 };
-                cleanTex = cleanTex.replace(/\\(?:vec|overrightarrow|overrightharpoon)\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow)\s*\}\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow)\s*\{([^{}]+)\}/g, convertVector);
 
-                // 線段與距離
-                cleanTex = cleanTex.replace(/\b([A-Z]{2})\b\s*=/g, '\\overline{$1} =');
+                // 優先提取標準數學公式
+                placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => storeMath(p1, true));
+                placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => storeMath(p1, true));
+                placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => storeMath(p1, false));
+                placeholderText = placeholderText.replace(/\$((?:(?!@@MATHBLOCK).)+?)\$/g, (m, p1) => storeMath(p1, false));
 
-                // 排列組合
-                cleanTex = cleanTex.replace(/[CPH]\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (m, p1, p2) => `${m[0]}^{${p1}}_{${p2}}`);
+                // 3. 強力捕捉漏掉 $ 的孤兒指令 (使用安全提取器)
+                const extractOrphan = (regex) => {
+                    placeholderText = placeholderText.replace(regex, (m, p1, p2) => {
+                        let tex = p2;
+                        mathBlocks.push({ tex: tex, isBlock: false });
+                        return `${p1}@@MATHBLOCK${mathBlocks.length - 1}@@`;
+                    });
+                };
+
+                extractOrphan(/(^|[^a-zA-Z\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\})/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\overline\s*\{[^{}]+\})/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\})/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\frac\s*\d\s*\d)/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\sqrt\s*\{[^{}]+\})/g);
+                extractOrphan(/(^|[^a-zA-Z\\])(\\vec\s*\{?[A-Za-z0-9_]+\}?)/g);
                 
-                // 分數修復
-                cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9_])\s*([a-zA-Z0-9_])/g, '\\frac{$1}{$2}');
+                // 強制線段轉換
+                placeholderText = placeholderText.replace(/\b([A-Z]{2})\b\s*=/g, '\\overline{$1} =');
+                extractOrphan(/(^|[^a-zA-Z\\])(\\overline\s*\{[^{}]+\})/g);
 
-                // 標點符號防破圖
-                cleanTex = cleanTex.replace(/，/g, ', ').replace(/。/g, '. ');
+                // 🌟 4. 【純文字雜訊與英文碎碎念大掃除】
+                placeholderText = placeholderText.replace(/Let's.*?(?=[。，\n]|$)/gi, '');
+                placeholderText = placeholderText.replace(/Here is.*?(?=[。，\n]|$)/gi, '');
+                placeholderText = placeholderText.replace(/Step \d.*?(?=[。，\n]|$)/gi, '');
+                placeholderText = placeholderText.replace(/We can.*?(?=[。，\n]|$)/gi, '');
+                placeholderText = placeholderText.replace(/\\\\/g, '<br>');
+                
+                let parseMarkdownTables = (textStr) => {
+                    let lines = textStr.split('\n');
+                    let out = [];
+                    let inTable = false;
+                    let tableHtml = "";
+                    for (let i = 0; i < lines.length; i++) {
+                        let line = lines[i].trim();
+                        if (line.match(/^\|?[\s\-\:]+\|?$/) && line.includes('-')) continue; 
+                        if (line.startsWith('|') && line.endsWith('|') && line.includes('|', 1)) {
+                            if (!inTable) {
+                                inTable = true;
+                                tableHtml = '<table width="80%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin: 15px auto; font-family: \'標楷體\', \'Times New Roman\', serif;">';
+                            }
+                            let cells = line.split('|').slice(1, -1);
+                            tableHtml += '<tr>' + cells.map(c => `<td style="border: 1px solid black; padding: 8px;">${c.trim()}</td>`).join('') + '</tr>';
+                        } else {
+                            if (inTable) {
+                                inTable = false;
+                                tableHtml += '</table>';
+                                out.push(tableHtml);
+                                tableHtml = "";
+                            }
+                            out.push(lines[i]);
+                        }
+                    }
+                    if (inTable) { tableHtml += '</table>'; out.push(tableHtml); }
+                    return out.join('\n');
+                };
+                placeholderText = parseMarkdownTables(placeholderText);
+                placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
-                let encoded = encodeURIComponent(cleanTex);
-                return `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="math" />`;
-            };
+                // 🌟 5. 【公式轉譯與無縫歸位】
+                const processMath = (tex) => {
+                    try {
+                        let cleanTex = tex.trim();
+                        
+                        // 聯立方程式防爆 (換行)
+                        cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
+                        cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
+                        
+                        // Align 破圖修復
+                        cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{array}{l}');
+                        cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{array}');
+                        cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{array}{l}');
+                        cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{array}');
+                        
+                        if (cleanTex.includes('\\\\') && !cleanTex.includes('\\begin{')) {
+                            cleanTex = '\\begin{array}{l} ' + cleanTex + ' \\end{array}';
+                        }
 
-            let result = placeholderText;
-            mathBlocks.forEach((block, idx) => {
-                let imgHtml = processMath(block.tex);
-                if (block.isBlock) {
-                    imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
-                }
-                // 使用 split().join() 取代 replaceAll 以防舊版瀏覽器崩潰
-                result = result.split(`@@MATHBLOCK${idx}@@`).join(imgHtml);
-            });
+                        cleanTex = cleanTex.replace(/["']/g, '');
+                        cleanTex = cleanTex.replace(/\\text\s*\{([^{}\\]+)\}/g, '$1');
+                        
+                        // 🌟 【向量智慧分流 V10.5 滿血版】強制覆寫所有向量表達式
+                        const convertVector = (...args) => {
+                            let inner = '';
+                            for (let i = 1; i < args.length - 2; i++) {
+                                if (args[i] !== undefined) { inner = args[i].trim(); break; }
+                            }
+                            if (!inner) return args[0];
+                            let base = inner.replace(/[^a-zA-Z0-9]/g, '');
+                            if (base.length <= 1) return `\\vec{${inner}}`;
+                            return `\\overset{\\rightharpoonup}{${inner}}`;
+                        };
 
-            return result;
+                        const vecRegexes = [
+                            /\\overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g,
+                            /\\overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*([a-zA-Z0-9_]{1,3})\b/g,
+                            /\\overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g,
+                            /\\overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*([a-zA-Z0-9_]{1,3})\b/g,
+                            /\\(?:vec|overrightarrow|overrightharpoon|rightharpoonup)\s*\{([^{}]+)\}/g,
+                            /\\(?:vec|overrightarrow|overrightharpoon|rightharpoonup)\s*([a-zA-Z0-9_]{1,3})\b/g
+                        ];
+                        
+                        vecRegexes.forEach(reg => { cleanTex = cleanTex.replace(reg, convertVector); });
+
+                        // 線段與距離強制掛載
+                        cleanTex = cleanTex.replace(/\b([A-Z]{2})\b\s*=/g, '\\overline{$1} =');
+
+                        // 排列組合
+                        cleanTex = cleanTex.replace(/[CPH]\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (m, p1, p2) => `${m[0]}^{${p1}}_{${p2}}`);
+                        
+                        // 分數修復
+                        cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9_])\s*([a-zA-Z0-9_])/g, '\\frac{$1}{$2}');
+
+                        // 標點符號防破圖
+                        cleanTex = cleanTex.replace(/，/g, ', ').replace(/。/g, '. ');
+
+                        let encoded = encodeURIComponent(cleanTex);
+                        return `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="math" />`;
+                    } catch (err) {
+                        console.error("公式渲染錯誤:", err);
+                        return `<span style="color:red">[公式無法顯示]</span>`;
+                    }
+                };
+
+                let result = placeholderText;
+                mathBlocks.forEach((block, idx) => {
+                    let imgHtml = processMath(block.tex);
+                    if (block.isBlock) {
+                        imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
+                    }
+                    // 🌟 【無限精準替換術】使用 split().join() 取代 replaceAll 以防舊版瀏覽器崩潰
+                    result = result.split(`@@MATHBLOCK${idx}@@`).join(imgHtml);
+                });
+
+                return result;
+            } catch (globalErr) {
+                console.error("formatMath 全域崩潰防護:", globalErr);
+                return text; // 如果真的遇到世紀大 Bug，保底返回原始文字，絕對不讓網頁白屏！
+            }
         },
 
         getHeaderPage1() {
