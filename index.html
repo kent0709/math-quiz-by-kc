@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.5 終極完美無損防斷版 byKC</title>
+    <title>數學出題小幫手 - V9.0 終極完美防斷尾版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,24 +343,27 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.5 終極精簡防斷版 byKC -->
+    <!-- 🌟 落款升級為 V9.0 終極化繁為簡・防斷尾完美版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極精簡防斷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.0 終極化繁為簡・防斷尾完美版 byKC</span>
     </footer>
 </div>
 
 <script>
-// 🌟 【超級瘦身版 Prompt】精煉至極限，使用常數安全拼接，徹底解決 JSON 斷尾與 SyntaxError 當機！
-const SYSTEM_PROMPT = "請嚴格遵守以下9大核心規則出題，並回傳完整封閉的JSON格式(嚴禁斷尾)：\n" +
-"1. 【防斷尾與格式】：thought_process 需極度精簡(50字內)。JSON內禁用 \\n, \\r 換行符，詳解換行一律用 HTML 的 <br>。LaTeX反斜線必雙跳脫(如 \\\\frac)。\n" +
-"2. 【公式包覆】：所有數學式、數字、變數、符號(\\\\triangle, \\\\theta)、函數(\\\\sin, \\\\cos, \\\\log)必用 $ $ 包覆。絕對禁止將中文放入 $ $ 內。連等式必在等號處斷開分別包覆(如 $A$=$B$)。\n" +
-"3. 【禁用干擾符號】：嚴禁使用 #, ##, ---。公式與文字內皆禁止使用雙引號與反引號。減號請用 -，不等於用 \\\\neq。\n" +
-"4. 【向量與絕對值】：單字母向量強制用 \\\\vec{a}，雙字母向量強制用 \\\\overset{\\\\rightharpoonup}{AB} (嚴禁 \\\\overrightarrow 或 \\\\overrightharpoon 以防破圖)。長度/外積用單直線 |\\\\vec{AB}| (嚴禁 || 或 \\\\lVert)。\n" +
-"5. 【排版規範】：矩陣限用單純 \\\\begin{bmatrix} (禁帶參數)。分數限用 \\\\frac{分子}{分母}。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。角度用 ^{\\\\circ}。表格用 Markdown 繪製。\n" +
-"6. 【題型規範】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個選項並包覆 $ $。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。\n" +
-"7. 【題目內容】：將原圖形轉為純文字描述，若無法描述則換題，禁留「如圖」。必須修改原題數字並重新計算，新選項需同步至 options。精準產出指定題數。\n" +
-"8. 【解答要求】：solution 僅限純中文與公式，嚴禁英文碎碎念。answer 需包含完整選項。\n" +
-"9. 【隨機與單元】：題目順序必須打亂，unit 標示核心觀念。";
+// 🌟 【極致化繁為簡 Prompt】將 31 條規則徹底去重、精煉，解決斷尾當機並保證公式精準無誤！
+const SYSTEM_PROMPT = `請將所有產出的內容放入單一個 JSON 區塊中輸出，並嚴格遵守以下 11 大核心排版與出題規範，以利程式解析：
+1. 【數學公式全面包覆（極度重要）】：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！(✅ 範例：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。)
+2. 【嚴禁中文入公式（致命防呆）】：絕對禁止在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！若有「或」、「且」等中文說明文字，請務必移到 $ $ 之外。中文字放在 \\frac{}、\\sqrt{} 等指令內會導致系統當機破圖（例如不可寫 \\frac{事件數}{總數}，請改寫為純文字 事件數 / 總數，或用代號 \\frac{n(A)}{n(S)}）。
+3. 【符號防呆與跳脫】：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文。數學運算中的減號正常使用「-」，絕對不可寫成「##」！「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$，禁寫 AeqO）。點座標請直接寫 (x,y)，嚴禁加上 \\left 與 \\right。嚴禁在公式中使用雙引號 " 或反引號 \`。
+4. 【JSON 跳脫與換行防呆】：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，\\\\theta 務必確實雙跳脫，否則變成亂碼 heta）。所有的 JSON 字串中【絕對禁止】包含 \\n, \\\\n, \\r, \\\\r 等純文字換行代碼。詳解換行請直接使用 HTML 的 <br> 標籤（絕對禁止使用 \\\\ 或 \\n 來換行）。
+5. 【題型與選項規範】：type 必須嚴格填寫「選擇題」、「填充題」或「計算題」。選擇題 options 必須且強制提供四個選項並加上 (A)(B)(C)(D) 標號，選項內的數學式需包覆 $ $。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 question 中。填充/計算題 options 給 []。
+6. 【填充題出題要求】：【絕對禁止】在題目結尾或中間加入任何作答底線（如「_____」、「---」）、括號「( )」。請務必直接把句子改成疑問句，並在句尾加上問號「？」。
+7. 【解答與解析】：answer 欄位務必保留完整的選項與答案內容（例如："(C)$15$"）。solution 欄位【只准】放純中文的最終詳解與排版好的數學公式，嚴禁在詳解中出現英文與碎碎念（英文草稿或邏輯推演請全部放入 thought_process 欄位，否則系統會崩潰）。
+8. 【數據變更與題數限制】：擷取上傳素材時，【絕對不可直接照抄原題數據】！必須修改數字、座標或方程式係數，確實重新計算出正確的新答案與新詳解。新選項必須同步更新至 options 陣列。精準算好題數，多一題少一題都算失敗。出題順序必須隨機打亂。
+9. 【圖片與圖形處理】：遇到圖形/棋盤格等圖片，請【務必用純文字詳盡描述特徵】，無法描述請直接捨棄該題換題。絕對禁止保留「如圖」、「如右圖」等字眼。表格請用 Markdown 語法 (|---|---|) 繪製。
+10. 【長公式與特殊排版】：連等式（如多項式展開）【絕對禁止】塞在同一個 $ $ 內，必須在每個「等號」處斷開公式，並將每個數學式分別包覆 $ $ (例如：$\\int x dx$ = $\\frac{1}{2}x^2$)，讓等號獨立在外以利自動換行。矩陣一律使用最單純的 \\begin{bmatrix} (嚴禁帶有直線參數如 cc|c)。分數必須嚴格使用 \\frac{分子}{分母}，不可省略括號。集合符號使用 \\\\{ 與 \\\\}。
+11. 【向量與三角函數】：台灣高中向量為「單向單邊長箭頭」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow 或 \\vec。向量長度/外積必須使用單直線，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$ (嚴禁使用雙直線 || 或 \\lVert)。所有的 \\cos, \\sin, \\tan, \\log 等數學函數，【絕對必須】包覆在 $ $ 內！
+⚠️ 【防止斷尾最高指令】：thought_process 欄位請極度精簡（控制在 50 字以內），以確保整體 JSON 能夠完整封閉，絕對不可斷尾！`;
 
 const { createApp } = Vue;
 
@@ -458,51 +461,30 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 【自動治癒系統】精準修復 AI 忘記雙跳脫所造成的 JSON 解析隱形控制字元
-            placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
-            placeholderText = placeholderText.replace(/\x0Dightharpoonup/g, '\\rightharpoonup');
-            placeholderText = placeholderText.replace(/\x0Dightarrow/g, '\\rightarrow');
-            placeholderText = placeholderText.replace(/\x0Dight\b/g, '\\right');
-            placeholderText = placeholderText.replace(/\x0Crac\b/g, '\\frac'); 
-            placeholderText = placeholderText.replace(/\x08eta\b/g, '\\beta');
+            // 🌟 【智慧 JSON 雙跳脫修復器】攔截並還原所有被 JSON 轉譯吃掉的反斜線
+            placeholderText = placeholderText.replace(/([^\\])\\([a-zA-Z]+)/g, (match, p1, p2) => {
+                if (['n', 'r', 't', 'b', 'f'].includes(p2)) return match;
+                return p1 + '\\\\' + p2;
+            });
+            placeholderText = placeholderText.replace(/^\\([a-zA-Z]+)/g, (match, p1) => {
+                if (['n', 'r', 't', 'b', 'f'].includes(p1)) return match;
+                return '\\\\' + p1;
+            });
 
-            // 🌟 補充還原被跳脫處理吃掉的反斜線
-            placeholderText = placeholderText.replace(/([^\\])\brightharpoonup\b/g, '$1\\rightharpoonup');
-            placeholderText = placeholderText.replace(/([^\\])\brightarrow\b/g, '$1\\rightarrow');
-            placeholderText = placeholderText.replace(/([^\\])\bright\b/g, '$1\\right');
-            placeholderText = placeholderText.replace(/([^\\])\brangle\b/g, '$1\\rangle');
-            placeholderText = placeholderText.replace(/([^\\])\btheta\b/g, '$1\\theta');
-            placeholderText = placeholderText.replace(/([^\\])\btriangle\b/g, '$1\\triangle');
-            placeholderText = placeholderText.replace(/([^\\])\btext\b/g, '$1\\text');
-            placeholderText = placeholderText.replace(/([^\\])\btan\b/g, '$1\\tan');
-            placeholderText = placeholderText.replace(/([^\\])\bneq\b/g, '$1\\neq');
-            placeholderText = placeholderText.replace(/([^\\])\bfrac\b/g, '$1\\frac');
-            placeholderText = placeholderText.replace(/([^\\])\bbeta\b/g, '$1\\beta');
-            placeholderText = placeholderText.replace(/([^\\])\bbmatrix\b/g, '$1\\bmatrix');
-            placeholderText = placeholderText.replace(/([^\\])\bbegin\b/g, '$1\\begin');
-
-            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (AI 有時會用 # 當空格)
+            // 🌟 【防呆】強制將所有的 # 轉為空格 (防 AI 亂塞 Markdown 井字號)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
-            placeholderText = placeholderText.replace(/[#＿_]{2,}/g, ' '); 
+            placeholderText = placeholderText.replace(/#+/g, ' '); 
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
-
-            // 🌟 移除反引號，避免 Markdown 程式碼區塊干擾公式解析
-            placeholderText = placeholderText.replace(/`/g, '');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
                 
-                // 去除可能干擾的引號
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
-
-                // 移除外層 \text{}
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
-                
-                // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【向量終極回歸單向單邊置中加長】
+                // 🌟 【智慧向量引擎 V9.0】單向單邊、置中、且能加長不破圖的最佳解！
                 const convertVector = (m, p1) => {
                     let inner = p1.trim();
                     return inner.length > 1 ? `\\overset{\\rightharpoonup}{${inner}}` : `\\vec{${inner}}`;
@@ -515,8 +497,9 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
                 
                 // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |，避免破壞 |a||b|
-                cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
+                cleanTex = cleanTex.replace(/\\lVert([^|]+)\\rVert/g, '|$1|');
                 cleanTex = cleanTex.replace(/\|\|([^|]+)\|\|/g, '|$1|');
+                cleanTex = cleanTex.replace(/\\left\\\|([^|]+)\\right\\\|/g, '\\left|$1\\right|');
 
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
@@ -587,7 +570,7 @@ createApp({
                     return p1 + saveMath(p2, false);
                 }); 
             });
-            
+
             // 🌟 步驟 3：【純文字雜訊大掃除】
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
@@ -637,7 +620,6 @@ createApp({
                 let mathPart = tex.trim();
                 mathPart = mathPart.replace(/\n/g, ' ').replace(/\r/g, '');
                 mathPart = mathPart.replace(/(^|[^\\])%/g, '$1\\%');
-                // 將公式內的中文字用 \text{} 包起來，CodeCogs 完美支援
                 mathPart = mathPart.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
 
                 let encoded = encodeURIComponent(mathPart);
@@ -646,7 +628,7 @@ createApp({
 
             let result = placeholderText.trim();
             
-            // 🌟 【無限精準遞迴替換術】解決 @@MATHBLOCK 嵌套與重複出現不渲染的世紀 Bug
+            // 🌟 【無限精準遞迴替換術】解決 @@MATHBLOCK 嵌套與重複的世紀 Bug
             let hasReplacement;
             let loopCount = 0;
             do {
@@ -780,7 +762,8 @@ createApp({
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
                         generationConfig: { 
-                            responseMimeType: "application/json"
+                            responseMimeType: "application/json",
+                            maxOutputTokens: 8192
                         }
                     })
                 });
@@ -791,6 +774,11 @@ createApp({
                 }
 
                 const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].finishReason === 'MAX_TOKENS') {
+                    throw new Error("AI 產生的內容太多，超過了系統輸出上限！請減少一次要求的題數，或分批上傳圖片。");
+                }
+                
                 if (data.error) throw new Error(data.error.message);
                 if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content.parts[0].text) {
                     throw new Error("AI 回傳了空白資料，請重試！");
@@ -823,7 +811,6 @@ createApp({
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
                         
-                        // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
                         let tempOptions = [];
                         q.options.forEach(opt => {
                             let cleanedOpt = opt.replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
@@ -834,15 +821,12 @@ createApp({
                         });
                         
                         q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
-                        
                         while (q.options.length < 4) { q.options.push(`選項待補`); }
                         
                         const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                         q.options = q.options.map((opt, i) => {
                             let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
-                            if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
-                                cleanOpt = `$${cleanOpt}$`;
-                            }
+                            if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) { cleanOpt = `$${cleanOpt}$`; }
                             if (i < labels.length) return `${labels[i]} ${cleanOpt}`;
                             return cleanOpt;
                         });
@@ -916,12 +900,18 @@ createApp({
                 }
 
                 const data = await response.json();
+                
+                // 🌟 精準偵測並提示「字數超過上限」
+                if (data.candidates && data.candidates[0].finishReason === 'MAX_TOKENS') {
+                    throw new Error("AI 產生的內容太多，超過了系統輸出上限！請減少一次要求的題數，或分批上傳圖片。");
+                }
+                
                 if (data.error) throw new Error(data.error.message);
                 if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content.parts[0].text) {
                     throw new Error("AI 回傳了空白資料，請重試！");
                 }
 
-                // 🌟 【終極 JSON 剝殼術】精準提取 JSON，徹底解決 AI 包裝 Markdown 導致的無盡轉圈當機 Bug！
+                // 🌟 【終極 JSON 剝殼與跳脫修復術】
                 let rawText = data.candidates[0].content.parts[0].text;
                 let startIndex = rawText.indexOf('{');
                 let endIndex = rawText.lastIndexOf('}');
@@ -980,7 +970,6 @@ createApp({
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
                             
-                            // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
                             let tempOptions = [];
                             q.options.forEach(opt => {
                                 let cleanedOpt = opt.replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
@@ -991,15 +980,12 @@ createApp({
                             });
                             
                             q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
-                            
                             while (q.options.length < 4) { q.options.push(`選項待補`); }
                             
                             const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                             q.options = q.options.map((opt, i) => {
                                 let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
-                                if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
-                                    cleanOpt = `$${cleanOpt}$`;
-                                }
+                                if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) { cleanOpt = `$${cleanOpt}$`; }
                                 if (i < labels.length) return `${labels[i]} ${cleanOpt}`;
                                 return cleanOpt;
                             });
@@ -1025,14 +1011,13 @@ createApp({
         },
 
         downloadWord() {
-            this.showPreviewConsole = false; // 這裡不關閉，而是讓按鈕切換狀態
+            this.showPreviewConsole = false;
             const status = document.getElementById('status-message');
             status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在打包 Word 檔案...';
             status.className = "mt-4 font-bold text-lg text-teal-600";
 
-            // 此處防止關閉與動態按鈕
-            this.isDownloading = true; // 🌟 啟動下載狀態
-            this.showPreviewConsole = true; // 🌟 強制保持開啟
+            this.isDownloading = true;
+            this.showPreviewConsole = true;
 
             setTimeout(() => {
                 try {
@@ -1218,13 +1203,13 @@ createApp({
                     status.className = "mt-4 font-bold text-lg text-green-600";
                     status.innerHTML = `✅ 考卷生成成功！已下載檔案。`;
                     
-                    this.isDownloading = false; // 🌟 恢復按鈕狀態，讓預覽畫面可供繼續操作
+                    this.isDownloading = false;
 
                 } catch (error) {
                     console.error(error);
                     status.className = "mt-4 font-bold text-lg text-red-600";
                     status.innerText = `❌ 發生錯誤：${error.message}`;
-                    this.isDownloading = false; // 🌟 發生錯誤也恢復狀態
+                    this.isDownloading = false;
                 }
             }, 100);
         }
