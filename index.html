@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.5 終極精簡防斷版 byKC</title>
+    <title>數學出題小幫手 - V8.5 終極完美無損防斷版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -345,22 +345,22 @@
     
     <!-- 🌟 落款升級為 V8.5 終極精簡防斷版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極精簡防斷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極完美無損防斷版 byKC</span>
     </footer>
 </div>
 
 <script>
-// 🌟 【超級瘦身版 Prompt】精煉至極限，確保 AI 不會耗盡輸出 Token 而發生 JSON 斷尾當機！
-const SYSTEM_PROMPT = `請嚴格遵守以下9大核心規則出題，並回傳完整封閉的JSON格式(嚴禁斷尾)：
-1. 【防斷尾與格式】：thought_process 需極度精簡(50字內)。JSON內禁用 \\n, \\r 換行符，詳解換行一律用 HTML 的 <br>。LaTeX反斜線必雙跳脫(如 \\\\frac)。
-2. 【公式包覆】：所有數學式、數字、變數、符號(\\triangle, \\theta)、函數(\\sin, \\cos)必用 $ $ 包覆。連等式必在等號斷開分別包覆(如 $A$=$B$)。
-3. 【嚴禁中文字】：絕對禁止將中文放入 $ $ 內。
-4. 【禁用符號】：嚴禁 #, ##, ---。減號用 -，不等於用 \\neq。公式內禁用雙引號 " 與反引號 \`。
-5. 【向量與絕對值】：向量一律強制用 \\vec{a} 或 \\vec{AB} (嚴禁 \\overrightarrow 或 \\overrightharpoon)。長度/外積用單直線 |\\vec{AB}| (嚴禁 || 或 \\lVert)。
-6. 【排版規範】：矩陣限用單純 \\begin{bmatrix} (禁帶參數)。分數限用 \\frac{分子}{分母}。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。表格用 Markdown。
-7. 【題型選項】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。
-8. 【題目內容】：將圖片轉純文字描述，無法描述則換題，禁留「如圖」。必須修改原題數字並重新計算，新選項需同步至 options。精準產出指定題數。
-9. 【解答要求】：solution 僅限純中文與公式，嚴禁英文碎碎念。answer 需包含完整選項。`;
+// 🌟 【超級瘦身版 Prompt】精煉至極限，使用常數安全拼接，徹底解決 JSON 斷尾與 SyntaxError 當機！
+const SYSTEM_PROMPT = "請嚴格遵守以下9大核心規則出題，並回傳完整封閉的JSON格式(嚴禁斷尾)：\n" +
+"1. 【防斷尾與格式】：thought_process 需極度精簡(50字內)。JSON內禁用 \\n, \\r 換行符，詳解換行一律用 HTML 的 <br>。LaTeX反斜線必雙跳脫(如 \\\\frac)。\n" +
+"2. 【公式包覆】：所有數學式、數字、變數、符號(\\triangle, \\theta)、函數(\\sin, \\cos)必用 $ $ 包覆。連等式必在等號斷開分別包覆(如 $A$=$B$)。\n" +
+"3. 【嚴禁中文字】：絕對禁止將中文放入 $ $ 內。\n" +
+"4. 【禁用符號】：嚴禁 #, ##, ---。減號用 -，不等於用 \\neq。公式內禁用雙引號 \" 與反引號。\n" +
+"5. 【向量與絕對值】：向量一律強制用 \\vec{a} 或 \\vec{AB} (嚴禁 \\overrightarrow 或 \\overrightharpoon，以防伺服器破圖)。長度/外積用單直線 |\\vec{AB}| (嚴禁 || 或 \\lVert)。\n" +
+"6. 【排版規範】：矩陣限用單純 \\begin{bmatrix} (禁帶參數)。分數限用 \\frac{分子}{分母}。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。表格用 Markdown。\n" +
+"7. 【題型選項】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。\n" +
+"8. 【題目內容】：將圖片轉純文字描述，無法描述則換題，禁留「如圖」。必須修改原題數字並重新計算，新選項需同步至 options。精準產出指定題數。\n" +
+"9. 【解答要求】：solution 僅限純中文與公式，嚴禁英文草稿或碎碎念。answer 需包含完整選項。";
 
 const { createApp } = Vue;
 
@@ -564,21 +564,22 @@ createApp({
 
             // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令
             const orphanRegexes = [
-                /(^|[^$\\])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g,
-                /(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g,
-                /(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?!\$)/g,
-                /(^|[^$\\])(\\theta\b)(?!\$)/g,
-                /(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g,
-                /(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g,
-                /(^|[^$\\])\b(sin|cos|tan|log|ln)\b(?!\$)/g
+                /(^|[^A-Za-z0-9_])(\\overset\{\\rightharpoonup\}\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\overrightarrow\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\vec\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\theta\b)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\triangle\s*[A-Za-z0-9]*)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\angle\s*[A-Za-z0-9]*)(?=[^A-Za-z0-9_]|$)/g,
+                /(^|[^A-Za-z0-9_])(\\(sin|cos|tan|log|ln)\b)(?=[^A-Za-z0-9_]|$)/g
             ];
             
             orphanRegexes.forEach(regex => {
-                placeholderText = placeholderText.replace(regex, '$1$$$2$$'); 
+                placeholderText = placeholderText.replace(regex, (m, p1, p2) => {
+                    if (p2.includes('@@MATHBLOCK')) return m;
+                    return p1 + saveMath(p2, false);
+                }); 
             });
-            
-            // 再次提取
-            placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
             // 🌟 步驟 3：【純文字雜訊大掃除】
             placeholderText = placeholderText.replace(/\\_+/g, '');
@@ -586,10 +587,10 @@ createApp({
             placeholderText = placeholderText.replace(/\(\s*\)/g, '');
             placeholderText = placeholderText.replace(/（\s*）/g, '');
             placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
-            placeholderText = placeholderText.replace(/(\\-){3,}/g, '');
 
             placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '');
             placeholderText = placeholderText.replace(/\\\\n(?!\w)/g, '\n');
+            placeholderText = placeholderText.replace(/\\n/g, '\n');
             placeholderText = placeholderText.replace(/\\\\/g, '<br>');
 
             let parseMarkdownTables = (textStr) => {
@@ -623,8 +624,6 @@ createApp({
             placeholderText = parseMarkdownTables(placeholderText);
 
             placeholderText = placeholderText.replace(/\n+/g, '<br>');
-            placeholderText = placeholderText.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])\s+(@@MATHBLOCK\d+@@)/g, '$1$2');
-            placeholderText = placeholderText.replace(/(@@MATHBLOCK\d+@@)\s+([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF])/g, '$1$2');
 
             // 🌟 步驟 4：【公式轉譯與歸位】
             const renderMath = (tex) => {
