@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.7 終極精簡防斷版 byKC</title>
+    <title>數學出題小幫手 - V8.8 終極精簡防斷版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,24 +343,23 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.7 終極精簡防斷版 byKC -->
+    <!-- 🌟 落款升級為 V8.8 終極精簡防斷版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.7 終極精簡防斷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.8 終極精簡防斷版 byKC</span>
     </footer>
 </div>
 
 <script>
 // 🌟 【超級瘦身版 Prompt】精煉至極限，確保 AI 不會耗盡輸出 Token 而發生 JSON 斷尾當機！
-const SYSTEM_PROMPT = `嚴格遵守以下規則出題，並回傳完整封閉的 JSON 格式：
-1. 【JSON完整性】：為避免輸出中斷，\`thought_process\` 請極度精簡(50字內)。確保 JSON 格式完全封閉，不可斷尾。
-2. 【公式包覆】：所有數學式、數字、變數、符號(\\triangle, \\theta)必用 $ $ 包覆。絕對禁止在 $ $ 內放中文。
-3. 【跳脫與括號】：LaTeX 反斜線必雙跳脫(如 \\\\frac, \\\\theta)。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。
-4. 【禁用字元】：嚴禁 \\n, \\\\n, \\r 等換行代碼，詳解換行用 <br>。嚴禁 #, ##, ---。減號用 -。禁止雙引號 " 與反引號 \`。
-5. 【向量與絕對值】：向量一律用 \\vec{a} 或 \\vec{AB} (嚴禁 \\overrightarrow 或 \\overrightharpoon)。長度/外積用單直線 |\\vec{AB}| (嚴禁 || 或 \\lVert)。
-6. 【排版規範】：矩陣限用 \\begin{bmatrix} (嚴禁帶參數)。分數限用 \\frac{分子}{分母}，中文不可入 \\frac。連等式必在等號處斷開分別包覆(如 $A$=$B$)。表格用 Markdown。
-7. 【題型選項】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四選項並包 $ $。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。
-8. 【題目內容】：將圖片轉純文字描述，無法描述則換題，禁留「如圖」。必須修改原題數據並重算，新選項需同步至 options。
-9. 【解答詳解】：solution 僅限中文與公式，嚴禁英文碎碎念。`;
+const SYSTEM_PROMPT = `請嚴格遵守以下規則出題，並回傳完整封閉的JSON格式(嚴禁斷尾)：
+1. 【JSON安全與排版】：禁用 \\n, \\r 換行符，詳解換行一律用 <br>。LaTeX反斜線必雙跳脫(如 \\\\frac, \\\\theta)。thought_process 需極度精簡(50字內)以防斷尾。
+2. 【公式包覆】：所有數學式、數字、符號(\\triangle, \\theta)、函數(\\sin, \\cos)必用 $ $ 包覆。連等式必在等號斷開分別包覆(如 $A$=$B$)。
+3. 【嚴禁中文字】：絕對禁止將中文放入 $ $ 內，亦不可放入 \\frac{} 等指令中。
+4. 【禁用符號】：嚴禁 #, ##, ---。減號用 -，不等於用 \\neq。公式內禁用雙引號 " 與反引號。
+5. 【向量與絕對值】：向量一律強制用 \\vec{a} 或 \\vec{AB} (嚴禁 \\overrightarrow 或 \\overrightharpoon)。長度/外積用單直線 |\\vec{AB}| (嚴禁 || 或 \\lVert)。
+6. 【矩陣與分數】：矩陣限用單純 \\begin{bmatrix} (禁帶參數)。括號 {} 必成對。集合用 \\{ 與 \\}。
+7. 【題型規範】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。
+8. 【題目內容】：將圖片轉純文字描述，無法描述則換題，禁留「如圖」。必須修改原題數字重算，新選項需同步至 options。精準產出指定題數。`;
 
 const { createApp } = Vue;
 
