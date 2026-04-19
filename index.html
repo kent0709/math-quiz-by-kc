@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.6 矩陣防切與滿血還原版 byKC</title>
+    <title>數學出題小幫手 - V9.7 終極防禦與渲染滿血版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.6 矩陣防切與滿血還原版 byKC -->
+    <!-- 🌟 落款升級為 V9.7 終極防禦與渲染滿血版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.6 矩陣防切與滿血還原版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.7 終極防禦與渲染滿血版 byKC</span>
     </footer>
 </div>
 
@@ -568,6 +568,9 @@ createApp({
                 placeholderText = placeholderText.replace(reg, `$1\\${kw}`);
             });
 
+            // 🌟 距離與線段長度防呆：強制將大寫字母配上等號的寫法（如 AB = 5）換成 \overline{AB} = 5
+            placeholderText = placeholderText.replace(/\b([A-Z]{2})\b\s*=/g, '\\overline{$1} =');
+
             // 🌟 【等號防呆修復 V8.10】修正 AI 聽從錯誤指令產生的單引號等號與奇怪的逗號
             placeholderText = placeholderText.replace(/['"]=/g, ' =');
             placeholderText = placeholderText.replace(/=['"]/g, '= ');
@@ -590,12 +593,18 @@ createApp({
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 
-                // 🌟 【獨家：Align 破圖修復 V9.5】將會導致 CodeCogs 整片破圖的 align 環境強制轉換為安全支援的 aligned
-                cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{aligned}');
-                cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{aligned}');
-                cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{aligned}');
-                cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{aligned}');
+                // 🌟 【獨家：Align 破圖修復 V9.5】將會導致 CodeCogs 整片破圖的 align 環境強制轉換為安全支援的 array
+                // 注意：CodeCogs 對 aligned 支援有時不穩，改用 array 最為保險
+                cleanTex = cleanTex.replace(/\\begin\{align\*?\}/g, '\\begin{array}{l}');
+                cleanTex = cleanTex.replace(/\\end\{align\*?\}/g, '\\end{array}');
+                cleanTex = cleanTex.replace(/\\begin\{eqnarray\*?\}/g, '\\begin{array}{l}');
+                cleanTex = cleanTex.replace(/\\end\{eqnarray\*?\}/g, '\\end{array}');
                 
+                // Unbalanced Eqn 防爆：如果公式內有 \\ 卻沒有任何環境包覆，強制加上 array 環境
+                if (cleanTex.includes('\\\\') && !cleanTex.includes('\\begin{')) {
+                    cleanTex = '\\begin{array}{l} ' + cleanTex + ' \\end{array}';
+                }
+
                 // 去除可能干擾的引號
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
 
@@ -658,18 +667,6 @@ createApp({
                 let rightCount = (cleanTex.match(/\\right\b/g) || []).length;
                 if (leftCount > rightCount) cleanTex += '\\right.'.repeat(leftCount - rightCount);
 
-                // 🌟 【防破圖】自動補齊遺漏的 LaTeX 環境結尾 (解決 Unbalanced Eqn)
-                const envs = ['cases', 'bmatrix', 'pmatrix', 'vmatrix', 'array', 'aligned'];
-                envs.forEach(env => {
-                    let beginRegex = new RegExp(`\\\\begin\\{${env}\\}`, 'g');
-                    let endRegex = new RegExp(`\\\\end\\{${env}\\}`, 'g');
-                    let beginCount = (cleanTex.match(beginRegex) || []).length;
-                    let endCount = (cleanTex.match(endRegex) || []).length;
-                    if (beginCount > endCount) {
-                        cleanTex += `\\end{${env}}`.repeat(beginCount - endCount);
-                    }
-                });
-
                 // 極限與西格瑪強制上下標
                 cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
                 cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
@@ -727,6 +724,12 @@ createApp({
             
             // 🌟 將純文字區(詳解)中被當作換行的雙反斜線 \\ 強制轉換為網頁換行 <br>
             placeholderText = placeholderText.replace(/\\\\/g, '<br>');
+
+            // 🌟 英文碎碎念過濾 (雙保險)
+            placeholderText = placeholderText.replace(/Let's.*?(?=[。，\n]|$)/gi, '');
+            placeholderText = placeholderText.replace(/Here is.*?(?=[。，\n]|$)/gi, '');
+            placeholderText = placeholderText.replace(/Step \d.*?(?=[。，\n]|$)/gi, '');
+            placeholderText = placeholderText.replace(/We can.*?(?=[。，\n]|$)/gi, '');
 
             // 智慧表格轉換
             let parseMarkdownTables = (textStr) => {
@@ -925,8 +928,12 @@ createApp({
                 throw new Error("AI 回傳了空白資料，請重試！");
             }
 
-            // 終極 JSON 剝殼術
             let rawText = data.candidates[0].content.parts[0].text;
+            
+            // 🌟 【核彈級 JSON 防護網】在 JSON 剝殼與解析前，強制補齊遺失的反斜線！
+            // 解決 \frac, \sqrt, \vec 被 JSON 轉義吃掉的致命 Bug
+            rawText = rawText.replace(/(?<!\\)\\(?=[a-zA-Z])/g, '\\\\');
+            
             let startIndex = rawText.indexOf('{');
             let endIndex = rawText.lastIndexOf('}');
             if (startIndex !== -1 && endIndex !== -1) {
