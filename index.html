@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.9 方程分數與破圖極致修復版 byKC</title>
+    <title>數學出題小幫手 - V8.10 終極穩定完美修復版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.9 方程分數與破圖極致修復版 byKC -->
+    <!-- 🌟 落款升級為 V8.10 終極穩定完美修復版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.9 方程分數與破圖極致修復版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.10 終極穩定完美修復版 byKC</span>
     </footer>
 </div>
 
@@ -393,7 +393,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【重構】將長達 35 點的防呆規則集中在這裡，加入破圖還原與方程分數極致防呆！
+        // 🌟 【重構】將防呆規則集中在這裡，加入破圖還原、等號修正與方程防爆極致防呆！
         aiFormatRules() {
             return `【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
@@ -423,7 +423,11 @@ createApp({
 21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數、矩陣的括號 '{ }' 以及 '\\left( \\right)' 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
 22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
 23. ⚠️ 圖片與圖形防呆（極度重要） ⚠️：系統無法複製或繪製出原題目的圖片！當你看到原題包含幾何圖形、棋盤格等圖片時，請你【務必用純文字詳盡描述該圖形的特徵】（例如：「有一個 4x5 的方格棋盤街道，點 A 在左上，點 B 在右下...」），確保學生單看文字就能作答。若該圖形過於複雜絕對無法用文字描述，請【直接捨棄該題，改出其他不需要圖片的題目】來湊齊題數！【絕對禁止】在新題目中保留「如圖」、「如右圖」卻沒有附圖的幽靈文字！
-24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有多個等號的連等式（如多項式展開、長積分過程），【絕對禁止】把整串連等式塞在同一個 '$ $' 裡面！這會導致圖片過長被切掉。請務必在每個「等號」處斷開公式，並將每個數學式【分別】用 '$ $' 包覆。正確示範：'$\\int (x+1)^2 dx$' '=' '$\\int (x^2+2x+1) dx$' '=' '$\\frac{1}{3}x^3 + x^2 + x + C$'。讓等號獨立在公式外，這樣系統才能自動換行！【絕對禁止】在數學式兩側或等號加上反引號 (backtick)！
+24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有多個等號的連等式，【絕對禁止】把整串連等式塞在同一個 '$ $' 裡面！這會導致圖片過長被切掉。請務必在每個「等號」處斷開公式，並將每個數學式【分別】用 '$ $' 包覆，等號請作為一般文字直接寫在外面。
+    ✅ 正確示範：$\\int (x+1)^2 dx$ = $\\int (x^2+2x+1) dx$ = $\\frac{1}{3}x^3 + C$。
+    ❌ 錯誤示範1：$\\int (x+1)^2 dx = \\int (x^2+2x+1) dx$ (太長會破圖)
+    ❌ 錯誤示範2：'$\\int (x+1)^2 dx$' '=' '$\\int (x^2+2x+1) dx$' (絕對禁止加引號)
+    【核彈級警告】：絕對禁止在等號或數學式兩側加上單引號(')、雙引號(")或逗號(,)！
 25. ⚠️ 嚴禁中文混入指令（核彈級防破圖令） ⚠️：【絕對致命禁止】把中文字放在 '\\frac{}'、'\\sqrt{}'、'_{}' 或是 '\\text{}' 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 '\\frac{事件數}{總數}'，請改寫為純文字 '事件數 / 總數'，或用代號 '\\frac{n(A)}{n(S)}'。
 26. ⚠️ 標示單元(觀念) ⚠️：請在 'unit' 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」（例如：「三角函數」、「平面向量內積」、「一元二次不等式」等），字數盡量精簡。
 27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$。絕對禁止使用雙直線（例如 $||\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}||$ 或 \\lVert \\rVert）！
@@ -431,7 +435,7 @@ createApp({
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
 30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
 31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！
-32. ⚠️ 影像破損極致還原（核彈級指令） ⚠️：上傳的圖片中含有大量「無法顯示的亂碼圖示」（紅色叉叉框框）。【絕對禁止】在 JSON 輸出中留下「[無法顯示]」、「[?]」、「[圖]」等字眼！你必須發揮頂尖數學老師的直覺，從上下文（如平行平面的法向量、垂直條件）【完美反推並填補】出原本遺失的方程式、數字或選項！
+32. ⚠️ 影像破損極致還原（核彈級指令） ⚠️：上傳的圖片中含有大量「無法顯示的亂碼圖示」（紅色叉叉框框）。【絕對禁止】在 JSON 輸出中留下「[無法顯示]」、「[?]」、「[圖]」或「Unbalanced Eqn」等字眼！你必須發揮頂尖數學老師的直覺，從上下文（如平行平面的法向量、垂直條件）【完美反推並填補】出原本遺失的方程式、數字或選項！
 33. ⚠️ 嚴格反斜線防呆 ⚠️：所有的 LaTeX 環境（如矩陣 \\begin{bmatrix}、分數 \\frac{}{}、根號 \\sqrt{}）前面【絕對必須】加上反斜線 \！絕不允許輸出 begin{bmatrix} 這種殘缺語法！
 34. ⚠️ 聯立方程組防破圖（Unbalanced Eqn） ⚠️：若題目或詳解中出現線性方程組（聯立方程式），【絕對必須】使用 \\begin{cases} ... \\end{cases} 來排版！並且每一行的結尾【絕對必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行！絕對禁止使用 array 或是 align 環境，也不可以把中文塞進 cases 裡面！
 35. ⚠️ 方程式與分數強制規範 ⚠️：所有的方程式（例如 $E_1: 3x-4y+5z+2=0$）與點座標（例如 $P(1,2,3)$）必須【完整且連同代號】被 $ $ 完整包覆內！分數【絕對禁止】使用斜線（例如 1/2 或 x/y），必須一律轉換為標準且帶有大括號的 \\frac{1}{2} 格式！`;
@@ -558,9 +562,19 @@ createApp({
             // 🌟 新增：針對漏掉反斜線的希臘字母與運算符號自動修復
             placeholderText = placeholderText.replace(/(^|[^\\])\b(alpha|beta|gamma|pi|tau|omega|mu|sigma|times|cdot)\b/g, '$1\\$2');
 
+            // 🌟 【等號防呆修復 V8.10】修正 AI 聽從錯誤指令產生的單引號等號與奇怪的逗號
+            placeholderText = placeholderText.replace(/['"]=/g, ' =');
+            placeholderText = placeholderText.replace(/=['"]/g, '= ');
+            placeholderText = placeholderText.replace(/','='?\s*/g, ' = ');
+            placeholderText = placeholderText.replace(/','/g, '<br>');
+
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
+                
+                // 🌟 【聯立方程防爆防呆 V8.10】將公式內多餘的換行轉為 LaTeX 的換行指令，防止 Unbalanced Eqn
+                cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
+                cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 
                 // 去除可能干擾的引號
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
@@ -574,20 +588,18 @@ createApp({
                 // 🌟 【分數防呆修復】自動將 \frac12 修復為 \frac{1}{2}
                 cleanTex = cleanTex.replace(/\\frac\s*(\d)\s*(\d)/g, '\\frac{$1}{$2}');
 
-                // 🌟 【向量強制轉換系統 V8.8 完美回歸】應使用者要求，退回最美觀的 \overset{\rightharpoonup}{AB}
+                // 🌟 【向量強制轉換系統 V8.10 完美回歸】應使用者要求，強制退回最美觀、置中的 \overset{\rightharpoonup}{AB}
                 const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
                 
                 // 處理有大括號包住的情況 (例如 \overset{\rightharpoonup}{AB} 或 \overrightarrow{AB})
-                cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow)\s*\}\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
+                cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec)\s*\{([^{}]+)\}/g, convertVector);
                 
-                // 處理沒有大括號、殘缺的 OCR / AI 生成錯誤情況
-                cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|⇀|→)\s*([a-zA-Z0-9_]+)/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9_]+)/g, convertVector);
-                cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
+                // 處理沒有大括號、殘缺的 OCR / AI 生成錯誤情況 (強制捕捉長度1~3的字母或數字)
+                cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
+                cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
+                cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
                 
                 // 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
