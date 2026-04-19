@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.0 終極相容滿血版 byKC</title>
+    <title>數學出題小幫手 - V10.1 終極相容滿血版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.0 終極相容滿血版 byKC -->
+    <!-- 🌟 落款升級為 V10.1 終極相容滿血版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.0 終極相容滿血版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.1 終極相容滿血版 byKC</span>
     </footer>
 </div>
 
@@ -399,40 +399,28 @@ createApp({
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
 
 === 💡 一、破圖與亂碼「終極自癒」機制（核彈級要求） ===
-1. 影像破損極致還原：上傳的圖片中常有「無法顯示的亂碼圖示」（如紅色叉叉、空白方塊）。【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」或「Unbalanced Eqn」等字眼！
-2. 邏輯反推：你必須發揮數學專業，從前後文（如平行法向量、垂直條件、多項式變數）「完美反推並填補」遺失的方程式、變數（如 $m_2$、$Q(x)$）或選項！絕對不准偷懶跳過！
-3. 嚴禁任何雜訊：【絕對禁止】在解答或題目中輸出「#」、「###」等亂碼符號！不要用它來排版，若代表數值請自行計算還原。
+1. 影像破損極致還原：圖片中常有「無法顯示的亂碼圖示」（如紅色叉叉）。【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」等字眼！
+2. 邏輯反推：你必須發揮數學專業，從前後文「完美反推並填補」遺失的方程式或選項！絕對不准偷懶跳過！
+3. 嚴禁雜訊：【絕對禁止】輸出「#」、「###」等亂碼符號！
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
-1. $ 符號全面包覆（拒絕代碼裸奔）：所有數學式、數字、變數、方程式（如 $3x-4y=0$）、點座標（如 $A(1, 2)$），【必須且完整連同代號】用 $ $ 符號前後成對包住！
-   - ❌ 錯誤裸奔：法向量為 \\overset{\\rightharpoonup}{n_1}=(1,1,0) (這會印出原始代碼)
-   - ✅ 正確包覆：法向量為 $\\overset{\\rightharpoonup}{n_1}=(1,1,0)$
-   - ⚠️ 警告：$ $ 內【絕對禁止】出現中文字（如「$3人$」請改為「$3$人」）！
-2. 向量強制規範：表示向量時，【一律強制使用】\\overset{\\rightharpoonup}{AB} 或 \\overset{\\rightharpoonup}{a}。絕對禁止使用 \\vec{} 或 \\overrightarrow{}！
-3. 線段與距離強制規範：表示兩點間的距離或線段長度時（如 AB 線段），【一律強制使用】\\overline{AB}，上面必須要有橫線，絕對禁止只寫 AB！
-4. 分數強制規範：分數【絕對禁止】使用斜線（如 1/2 或 x/y），必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
-5. 矩陣與聯立方程防破圖：矩陣 \\begin{bmatrix} 與聯立方程組 \\begin{cases} 【絕對必須】獨立一行，並用 $$ 包覆（例如 $$ \\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix} $$）！【絕對禁止】與中文字寫在同一行內，否則會導致排版重疊切斷！且每行結尾必須加上 \\\\\\\\ 來換行。絕對禁止用 array。
-6. 🚫 嚴禁使用 Align 環境：【絕對禁止】使用 \\begin{align} 或 \\begin{eqnarray} 等對齊環境！這會導致整張考卷破圖！若需換行，請直接把算式切斷，分成多個 $ $ 區塊！
-7. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
-   - ✅ 正確：$\\int (x+1)^2 dx$ = $\\int (x^2+2x+1) dx$ = $\\frac{1}{3}x^3 + C$
-   - ❌ 錯誤：$\\int (x+1)^2 dx = \\int (x^2+2x+1) dx$ (太長會破圖)
-8. 符號防呆：
-   - 絕對禁止在等號或數學式兩側加上單/雙引號（如 '$\\sin(x)$' 或 '='）或逗號。
-   - 減號請正常使用「-」，絕對不可寫成「##」！不等於請用 $\\neq$。
-   - 絕對值、向量長度、外積一律使用單直線 $| |$，絕對禁止使用雙直線 $|| ||$ 或 \\lVert \\rVert！
-9. 排列組合符號規範：表示組合數時，【絕對禁止】使用 C(n,k) 的格式！請一律使用台灣高中標準寫法 C^{n}_{k}（總數 n 在上，取出數 k 在下）。排列數 P 與重複組合 H 亦同。
+1. 公式全面包覆：所有的數學式、變數（如 x, y）、座標（如 A(1,2)）、方程式（如 2x+y=1），【絕對必須】用 $ 符號前後包覆，例如 $x=1$。
+2. 向量強制規範：表示向量時，請一律使用 \\vec{AB} 或 \\vec{a}。系統會自動幫你轉成完美長箭頭！絕對禁止使用 \\overset 或 \\overrightarrow 等複雜寫法！
+3. 線段長度規範：表示兩點距離或線段長度時，請一律使用 \\overline{AB}，必須有橫線！
+4. 分數強制規範：分數【絕對禁止】使用斜線 (1/2)，一律使用 \\frac{1}{2}，分子分母必須用大括號包住！
+5. 方程組排版：聯立方程式請使用 \\begin{cases} ... \\end{cases}，每行結尾必須有 \\\\\\\\。絕對禁止使用 array 或是 align 環境！
+6. 長公式換行：長連等式（如多項式展開）絕對禁止全部包在同一個 $ 內，必須在等號處斷開。
+7. 絕對禁止：禁止在數學式周圍加上引號（' 或 "）。
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
-1. 雙跳脫字元：【！！！致命錯誤警告！！！】JSON 格式中的所有 LaTeX 指令反斜線『必須』雙跳脫！例如 \\frac 必須寫成 \\\\frac，\\vec 必須寫成 \\\\vec，\\begin 必須寫成 \\\\begin！若有任何一個單反斜線，系統將會崩潰！
-2. 換行符號清零：所有字串中【絕對禁止】包含純文字換行代碼（\\n, \\\\n, \\r, \\\\r）。文字敘述請直接以單行字串輸出。
+1. 雙跳脫字元：【！！！致命錯誤警告！！！】JSON 格式中的所有 LaTeX 指令反斜線『必須』雙跳脫！例如 \\frac 必須寫成 \\\\frac，\\vec 必須寫成 \\\\vec！
+2. 換行符號清零：所有字串中【絕對禁止】包含純文字換行代碼（\\n, \\\\n, \\r, \\\\r）。
 3. 嚴格題數限制：精準算出要求的題數，絕對不可多出或少於指定題數！
-4. 選項 (options)：選擇題【強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。若來源無選項，請「自行設計」錯誤選項湊齊四個。
+4. 選項 (options)：選擇題【強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。
 
 === 📝 四、題目與詳解內容要求 ===
-1. 數據變更強制要求：擷取素材題目時，【絕對不可照抄原題數據】！必須修改數字、座標或係數，產出考點相同但【數據完全不同】的新題目，並確實重新計算新答案與新詳解！
-2. 選項同步更新：修改數據後，【絕對必須】將重新計算的「全新選項」填入 options 陣列中！答案 (answer) 也必須對應新選項！
-3. 🔴 嚴禁任何英文碎碎念（核彈級防爆）：'solution' 欄位【絕對只准】放純中文的最終詳解與數學公式！如果出現 "Let's use", "Here is", "Step 1", "We can" 等任何英文單字或句子，系統會直接崩潰！所有計算邏輯推演請全部丟進 'thought_process' 裡！
-4. 詳解換行：解答與詳解中若需換行（例如換行解說不同選項），請直接使用 HTML 的 <br> 標籤！`;
+1. 數據變更強制要求：擷取素材題目時，【絕對不可照抄原題數據】！必須修改數字、座標或係數，產出考點相同但數據不同的新題目！
+2. 🔴 嚴禁任何英文碎碎念（核彈級防爆）：'solution' 欄位【絕對只准】放純中文的最終詳解與數學公式！如果出現 "Let's use", "Step 1" 等任何英文，系統會直接崩潰！所有計算邏輯推演請全部丟進 'thought_process' 裡！`;
         }
     },
     methods: {
@@ -547,7 +535,7 @@ createApp({
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
             placeholderText = placeholderText.replace(/`/g, '');
             
-            // 補充遺失的反斜線
+            // 補充遺失的反斜線 (安全寫法，不使用 lookbehind)
             const safeMathKeywords = [
                 'begin', 'end', 'frac', 'sqrt', 'overset', 'overline', 'rightharpoonup', 'rightarrow', 
                 'times', 'cdot', 'theta', 'alpha', 'beta', 'gamma', 'pi', 
@@ -567,8 +555,28 @@ createApp({
             placeholderText = placeholderText.replace(/','='?\s*/g, ' = ');
             placeholderText = placeholderText.replace(/','/g, '<br>');
 
+            // 🌟 2. 【公式環境統一包裝 (標準化 $$ 符號)】
+            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, '$$$$$1$$$$');
+            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, '$$$$$1$$$$');
+            // 將單個 $ 轉換為雙 $$，避免後續匹配錯誤 (跑兩次以防相鄰)
+            placeholderText = placeholderText.replace(/(^|[^$])\$([^$]+?)\$([^$]|$)/g, '$1$$$$$2$$$$$3');
+            placeholderText = placeholderText.replace(/(^|[^$])\$([^$]+?)\$([^$]|$)/g, '$1$$$$$2$$$$$3');
+
+            // 🌟 3. 【自動包裹系統】拯救孤兒指令 (強制將漏掉 $ 的指令包裝)
+            placeholderText = placeholderText.replace(/(^|[^$])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\overline\s*\{[^{}]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\frac\s*\d\s*\d)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\sqrt\s*\{[^{}]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\vec\s*\{?[A-Za-z0-9_]+\}?)/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$])(\\(?:theta|alpha|beta|gamma|pi|triangle|angle|sin|cos|tan|log|ln)\b)/g, '$1$$$$$2$$$$');
+
+            // 整理過多的 $
+            placeholderText = placeholderText.replace(/\${3,}/g, '$$$$');
+
             let mathBlocks = [];
-            const saveMath = (tex, isBlock) => {
+            const saveMath = (tex) => {
                 let cleanTex = tex.trim();
                 
                 // 換行防護
@@ -648,42 +656,16 @@ createApp({
                 cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
                 cleanTex = cleanTex.replace(/\\min\s*_/g, '\\min\\limits_');
 
-                if (!isBlock && !cleanTex.includes('\\textstyle') && !cleanTex.includes('\\displaystyle')) {
-                    cleanTex = '\\textstyle ' + cleanTex;
-                } else if (isBlock && !cleanTex.includes('\\displaystyle') && !cleanTex.includes('\\textstyle')) {
+                if (!cleanTex.includes('\\displaystyle')) {
                     cleanTex = '\\displaystyle ' + cleanTex;
                 }
 
-                mathBlocks.push({ tex: cleanTex, isBlock: isBlock });
+                mathBlocks.push({ tex: cleanTex });
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 🌟 2. 【提取完美包裹的公式】
-            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
-            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
-            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
-
-            // 🌟 3. 【自動包裹系統】拯救孤兒指令
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})(?!\$)/g, '$1$$$$$2$$$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overline\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\}(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\d\s*\d(?:\s*=\s*[\(\)0-9a-zA-Z_,\.\-]+)?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\sqrt\s*\{[^{}]+\})(?!\$)/g, '$1$$$2$$');
-            
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|⇀|→)\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overrightarrow\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\vec\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\rightharpoonup\s*\{?[A-Za-z0-9_]+\}?)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\theta\b)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\triangle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])(\\angle\s*[A-Za-z0-9]*)(?!\$)/g, '$1$$$2$$');
-            placeholderText = placeholderText.replace(/(^|[^$\\])\b(sin|cos|tan|log|ln)\b(?!\$)/g, '$1$$\\$2$$');
-
-            // 再次提取孤兒公式
-            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
-            placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
+            // 提取被 $$ 包住的公式，存入陣列並替換為 MATHBLOCK
+            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1));
 
             // 🌟 4. 【純文字雜訊與英文碎碎念大掃除】
             placeholderText = placeholderText.replace(/\\_+/g, '');
@@ -748,9 +730,6 @@ createApp({
             let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
                 let imgHtml = renderMath(block.tex);
-                if (block.isBlock) {
-                    imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
-                }
                 // 🌟 【無限精準替換術】使用 split().join() 取代 replaceAll 以防舊版瀏覽器崩潰
                 result = result.split(`@@MATHBLOCK${idx}@@`).join(imgHtml);
             });
@@ -893,8 +872,7 @@ createApp({
             let rawText = data.candidates[0].content.parts[0].text;
             
             // 🌟 【核彈級 JSON 防護網】在 JSON 剝殼與解析前，強制補齊遺失的反斜線！
-            // 解決 \frac, \sqrt, \vec 被 JSON 轉義吃掉的致命 Bug
-            // (移除 Lookbehind 以支援 iOS/Safari 舊版，解決 MATHBLOCK 崩潰問題)
+            // 不使用 lookbehind 以支援舊版 Safari/iOS
             rawText = rawText.replace(/(^|[^\\])\\(?=[a-zA-Z])/g, '$1\\\\');
             
             let startIndex = rawText.indexOf('{');
