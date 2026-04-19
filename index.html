@@ -345,7 +345,7 @@
     
     <!-- 🌟 落款升級為 V8.5 終極精簡防斷版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極完美無損防斷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極精簡防斷版 byKC</span>
     </footer>
 </div>
 
@@ -353,14 +353,14 @@
 // 🌟 【超級瘦身版 Prompt】精煉至極限，使用常數安全拼接，徹底解決 JSON 斷尾與 SyntaxError 當機！
 const SYSTEM_PROMPT = "請嚴格遵守以下9大核心規則出題，並回傳完整封閉的JSON格式(嚴禁斷尾)：\n" +
 "1. 【防斷尾與格式】：thought_process 需極度精簡(50字內)。JSON內禁用 \\n, \\r 換行符，詳解換行一律用 HTML 的 <br>。LaTeX反斜線必雙跳脫(如 \\\\frac)。\n" +
-"2. 【公式包覆】：所有數學式、數字、變數、符號(\\triangle, \\theta)、函數(\\sin, \\cos)必用 $ $ 包覆。連等式必在等號斷開分別包覆(如 $A$=$B$)。\n" +
-"3. 【嚴禁中文字】：絕對禁止將中文放入 $ $ 內。\n" +
-"4. 【禁用符號】：嚴禁 #, ##, ---。減號用 -，不等於用 \\neq。公式內禁用雙引號 \" 與反引號。\n" +
-"5. 【向量與絕對值】：向量一律強制用 \\vec{a} 或 \\vec{AB} (嚴禁 \\overrightarrow 或 \\overrightharpoon，以防伺服器破圖)。長度/外積用單直線 |\\vec{AB}| (嚴禁 || 或 \\lVert)。\n" +
-"6. 【排版規範】：矩陣限用單純 \\begin{bmatrix} (禁帶參數)。分數限用 \\frac{分子}{分母}。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。表格用 Markdown。\n" +
-"7. 【題型選項】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。\n" +
-"8. 【題目內容】：將圖片轉純文字描述，無法描述則換題，禁留「如圖」。必須修改原題數字並重新計算，新選項需同步至 options。精準產出指定題數。\n" +
-"9. 【解答要求】：solution 僅限純中文與公式，嚴禁英文草稿或碎碎念。answer 需包含完整選項。";
+"2. 【公式包覆】：所有數學式、數字、變數、符號(\\\\triangle, \\\\theta)、函數(\\\\sin, \\\\cos, \\\\log)必用 $ $ 包覆。絕對禁止將中文放入 $ $ 內。連等式必在等號處斷開分別包覆(如 $A$=$B$)。\n" +
+"3. 【禁用干擾符號】：嚴禁使用 #, ##, ---。公式與文字內皆禁止使用雙引號與反引號。減號請用 -，不等於用 \\\\neq。\n" +
+"4. 【向量與絕對值】：單字母向量強制用 \\\\vec{a}，雙字母向量強制用 \\\\overset{\\\\rightharpoonup}{AB} (嚴禁 \\\\overrightarrow 或 \\\\overrightharpoon 以防破圖)。長度/外積用單直線 |\\\\vec{AB}| (嚴禁 || 或 \\\\lVert)。\n" +
+"5. 【排版規範】：矩陣限用單純 \\\\begin{bmatrix} (禁帶參數)。分數限用 \\\\frac{分子}{分母}。括號 {} 必成對。集合用 \\\\{ 與 \\\\}。角度用 ^{\\\\circ}。表格用 Markdown 繪製。\n" +
+"6. 【題型規範】：限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個選項並包覆 $ $。填充/計算題 options 為 []。填充題改疑問句結尾，禁底線。\n" +
+"7. 【題目內容】：將原圖形轉為純文字描述，若無法描述則換題，禁留「如圖」。必須修改原題數字並重新計算，新選項需同步至 options。精準產出指定題數。\n" +
+"8. 【解答要求】：solution 僅限純中文與公式，嚴禁英文碎碎念。answer 需包含完整選項。\n" +
+"9. 【隨機與單元】：題目順序必須打亂，unit 標示核心觀念。";
 
 const { createApp } = Vue;
 
@@ -466,7 +466,7 @@ createApp({
             placeholderText = placeholderText.replace(/\x0Crac\b/g, '\\frac'); 
             placeholderText = placeholderText.replace(/\x08eta\b/g, '\\beta');
 
-            // 🌟 預防 AI 亂加雙重控制碼
+            // 🌟 補充還原被跳脫處理吃掉的反斜線
             placeholderText = placeholderText.replace(/([^\\])\brightharpoonup\b/g, '$1\\rightharpoonup');
             placeholderText = placeholderText.replace(/([^\\])\brightarrow\b/g, '$1\\rightarrow');
             placeholderText = placeholderText.replace(/([^\\])\bright\b/g, '$1\\right');
@@ -480,26 +480,33 @@ createApp({
             placeholderText = placeholderText.replace(/([^\\])\bbeta\b/g, '$1\\beta');
             placeholderText = placeholderText.replace(/([^\\])\bbmatrix\b/g, '$1\\bmatrix');
             placeholderText = placeholderText.replace(/([^\\])\bbegin\b/g, '$1\\begin');
-            
-            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號
+
+            // 🌟 【防呆】強制將所有的 # 或 \# 轉為減號 (AI 有時會用 # 當空格)
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
-            placeholderText = placeholderText.replace(/#+/g, ' '); // 清除落單的 # 避免 CodeCogs 當機
+            placeholderText = placeholderText.replace(/[#＿_]{2,}/g, ' '); 
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
 
-            // 🌟 移除反引號
+            // 🌟 移除反引號，避免 Markdown 程式碼區塊干擾公式解析
             placeholderText = placeholderText.replace(/`/g, '');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
                 
+                // 去除可能干擾的引號
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
+
+                // 移除外層 \text{}
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
+                
+                // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【向量終極降級】解決 CodeCogs 不支援 overrightharpoon 導致的 Unbalanced Eqn 破圖問題！
-                // 一律轉為 \vec 這是唯一 100% 能保證伺服器成功繪製的單向單邊短箭頭寫法。
-                const convertVector = (m, p1) => `\\vec{${p1}}`;
+                // 🌟 【向量終極回歸單向單邊置中加長】
+                const convertVector = (m, p1) => {
+                    let inner = p1.trim();
+                    return inner.length > 1 ? `\\overset{\\rightharpoonup}{${inner}}` : `\\vec{${inner}}`;
+                };
                 cleanTex = cleanTex.replace(/\\overset\{\\rightharpoonup\}\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\overrightharpoon\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\overrightarrow\s*\{([^{}]+)\}/g, convertVector);
@@ -508,20 +515,20 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
                 
                 // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |，避免破壞 |a||b|
+                cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
                 cleanTex = cleanTex.replace(/\|\|([^|]+)\|\|/g, '|$1|');
-                cleanTex = cleanTex.replace(/\\lVert([^|]+)\\rVert/g, '|$1|');
-                cleanTex = cleanTex.replace(/\\left\\\|([^|]+)\\right\\\|/g, '\\left|$1\\right|');
 
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
+                cleanTex = cleanTex.replace(/\^\\circ\b/g, '^{\\circ}');
 
                 // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
                 cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
 
-                // 🌟 【防破圖】過濾公式中的中文標點符號，避免 CodeCogs 渲染失敗
+                // 🌟 【防破圖】過濾公式中的中文標點符號
                 cleanTex = cleanTex.replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
 
-                // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示，避免被伺服器拒絕
+                // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示
                 let prevMath;
                 do {
                     prevMath = cleanTex;
@@ -580,7 +587,7 @@ createApp({
                     return p1 + saveMath(p2, false);
                 }); 
             });
-
+            
             // 🌟 步驟 3：【純文字雜訊大掃除】
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
@@ -773,8 +780,7 @@ createApp({
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
                         generationConfig: { 
-                            responseMimeType: "application/json",
-                            maxOutputTokens: 8192
+                            responseMimeType: "application/json"
                         }
                     })
                 });
