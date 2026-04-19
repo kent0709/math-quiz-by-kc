@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.5 終極完美無損防斷版 byKC</title>
+    <title>數學出題小幫手 - V8.6 終極瘦身防斷版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -124,7 +124,6 @@
                         <span v-if="!isReplenishing"><i class="fas fa-magic mr-2"></i>補足刪除的 {{ missingQuestions.total }} 題</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2"></i>AI 正在補題...</span>
                     </button>
-                    <!-- 🌟 升級版按鈕：顯示打包狀態且不會關閉視窗 -->
                     <button @click="downloadWord" :disabled="isDownloading" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
                         <span v-if="!isDownloading"><i class="fas fa-file-word mr-2 text-xl"></i>確認無誤，打包下載</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2 text-xl"></i>打包中...</span>
@@ -343,47 +342,30 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.5 終極完美無損版 byKC -->
+    <!-- 🌟 落款升級為 V8.6 終極瘦身防斷版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.5 終極完美無損防斷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.6 終極瘦身防斷版 byKC</span>
     </footer>
 </div>
 
 <script>
-// 🌟 將超長 Prompt 抽離以防止 LLM 產生字數截斷，徹底解決 SyntaxError 當機問題
-const SYSTEM_PROMPT = `【重要輸出格式警告】：
-請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！
-2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
-3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學方程式中的減號請正常使用「-」，絕對不可以寫成「##」！
-4. JSON 跳脫字元：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，角度必須寫成 ^{\\\\circ}，絕對不可寫成 ^circ！特別注意：\\\\theta 務必確實雙跳脫，否則會變成亂碼 heta！）。
-5. 題型欄位 (type)：必須嚴格填寫「選擇題」、「填充題」或「計算題」，絕不能填寫填空題或其他字眼！
-6. 選擇題選項 (options)：選擇題【必須且強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。選項內的數學式也【務必】用 $ $ 包住！若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 'question' 中！
-7. 填充/計算題選項：若為填充題或計算題，'options' 陣列請給空陣列 '[]'。
-8. 填充題出題要求：【絕對禁止】在題目結尾或中間加入任何作答底線（如「_____」、「---」）、括號「(  )」。請務必直接把句子改成疑問句，並在句尾加上問號「？」。
-9. 選擇題解答格式：'answer' 欄位請務必保留「完整的」選項與答案內容（例如："(C)$15$"），以便詳解區顯示完整答案內容。
-10. 出題順序：請務必將題目【隨機打亂】，絕對不要和上傳的參考素材順序一模一樣！
-11. 集合符號：數學集合的大括號請使用標準單一跳脫的 \\\\{ 與 \\\\}，【絕對禁止】使用雙大括號（例如 \\\\{\\\\{ \\\\}\\\\}）。
-12. ⚠️ 數據變更強制要求 ⚠️：擷取上傳素材的題目時，【絕對不可直接照抄原題數據】！請務必修改題目中的「數字」、「座標」、「方程式係數」或「情境設定」，產出與原題考點相同但【數據完全不同】的全新題目，並確實重新計算出正確的新答案與新詳解！
-13. ⚠️ 嚴禁在詳解中出現英文與碎碎念（毀滅級警告） ⚠️：我已經為你在 JSON 中開啟了 'thought_process' 欄位，請把所有的思考過程、計算邏輯推演、英文草稿通通丟到那裡！'solution' 欄位【只准】放純中文的最終詳解與排版好的數學公式，如果 solution 內出現任何英文單字(除數學變數外)或英文句子，系統將會直接崩潰！
-14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
-15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製。
-16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
-17. ⚠️ 向量符號 ⚠️：台灣高中數學的向量為「單向單邊長箭頭(半箭頭)」。表示向量時，【絕對必須】一律使用 \\overrightharpoon{a} 或 \\overrightharpoon{AB}，這是最標準不會破圖的寫法！【絕對禁止】使用 \\overrightarrow 或 \\vec！
-18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
-19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
-20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！
-21. ⚠️ LaTeX 語法防呆 ⚠️：請再三確認你的 LaTeX 語法是否正確，分數、矩陣的括號 '{ }' 以及 '\\left( \\right)' 絕對不能漏掉成對，否則會導致公式圖片無法顯示破圖！
-22. ⚠️ 選項同步更新防呆 ⚠️：當你依規定修改了題目數據後，【絕對必須】將重新計算後的「全新選項」直接填入 JSON 的 options 陣列中！【嚴禁】發生「options 陣列照抄舊選項，卻在詳解裡另外寫新選項」的低級錯誤！答案 (answer) 也必須完全對應 options 裡的新選項！
-23. ⚠️ 圖片與圖形防呆（極度重要） ⚠️：系統無法複製或繪製出原題目的圖片！當你看到原題包含幾何圖形、棋盤格等圖片時，請你【務必用純文字詳盡描述該圖形的特徵】，確保學生單看文字就能作答。若該圖形過於複雜絕對無法用文字描述，請【直接捨棄該題，改出其他不需要圖片的題目】來湊齊題數！【絕對禁止】在新題目中保留「如圖」、「如右圖」卻沒有附圖的幽靈文字！
-24. ⚠️ 長公式強制換行（極度重要） ⚠️：詳解中若有多個等號的連等式，【絕對禁止】把整串連等式塞在同一個 '$ $' 裡面！這會導致圖片過長被切掉。請務必在每個「等號」處斷開公式，並將每個數學式【分別】用 '$ $' 包覆。讓等號獨立在公式外，這樣系統才能自動換行！【絕對禁止】在數學式兩側或等號加上反引號 (backtick)！
-25. ⚠️ 嚴禁中文混入指令（核彈級防破圖令） ⚠️：【絕對致命禁止】把中文字放在 '\\frac{}'、'\\sqrt{}'、'_{}' 或是 '\\text{}' 等任何 LaTeX 指令的括號裡面！這會導致系統當機破圖！例如：絕對不可寫 '\\frac{事件數}{總數}'，請改寫為純文字 '事件數 / 總數'，或用代號 '\\frac{n(A)}{n(S)}'。
-26. ⚠️ 標示單元(觀念) ⚠️：請在 'unit' 欄位中，精準標示該題所測驗的「單元名稱或核心觀念」。
-27. ⚠️ 向量長度與外積符號 ⚠️：表示向量的長度、外積大小或三角形面積時，【絕對必須】使用單直線的絕對值符號，例如 $|\\overrightharpoon{AB} \\times \\overrightharpoon{AC}|$。絕對禁止使用雙直線！
-28. ⚠️ 特殊符號防破圖 ⚠️：「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$），【絕對禁止】寫成 AeqO 或 neq！點座標請直接寫 (x,y)，絕對禁止在座標外加上 \\left 與 \\right。【絕對禁止】在數學公式中加入雙引號 " 或反引號 (backtick)。
-29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
-30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
-31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！`;
+// 🌟 【終極瘦身】將 31 條重複累贅的指令，精煉濃縮為 14 條核心法則，徹底解決 AI 記憶體不足導致的 JSON 斷掉當機 Bug！
+const SYSTEM_PROMPT = `請出一份數學考卷，嚴格回傳 JSON 格式。
+【嚴格輸出規範(防當機必讀)】：
+1. 公式包覆：所有數學式、數字、變數、函數(\\cos, \\sin)、幾何符號(\\triangle)必須用 $ $ 包覆。絕對禁止在 $ $ 內放入中文！
+2. 跳脫與括號：LaTeX 反斜線必須雙跳脫(如 \\\\frac, \\\\theta)。所有括號 {} 務必成對。集合用 \\\\{ 與 \\\\}。
+3. 禁用符號：嚴禁使用 #、##、--- 作為分隔。減號用 -，不等於用 \\neq。公式內禁止雙引號 " 或反引號 \`。
+4. 換行符號：JSON 內絕對禁止出現 \\n, \\\\n, \\r 等換行代碼！詳解若需換行請一律用 HTML 標籤 <br>。
+5. 向量與絕對值：向量一律用 \\vec{a} 或 \\vec{AB}，絕對禁止 \\overrightarrow 或 \\overrightharpoon。長度/外積用單直線 |\\vec{AB}|，嚴禁雙直線 || 或 \\lVert。
+6. 矩陣：嚴禁帶參數排版(如 \\begin{array}{cc|c})，一律使用單純的 \\begin{bmatrix}。
+7. 分數：嚴格使用 \\frac{分子}{分母}，不可省略括號寫成 \\frac12。中文不可放入 \\frac 內，請改用 / (如 事件數/總數)。
+8. 長公式斷開：連等式必須在等號處斷開並分別包覆(如 $A$ = $B$ = $C$)，嚴禁把長等式塞在同一個 $ $ 內。
+9. 圖形題：將圖形轉為詳盡純文字描述。若無法描述請捨棄並換題。題目中禁止殘留「如圖」字眼。
+10. 題型格式：僅限「選擇題、填充題、計算題」。選擇題 options 必須有四個選項(A)(B)(C)(D)並加 $ $。填充/計算題 options 給 []。填充題一律改為疑問句(加問號)，禁止作答底線。
+11. 數據變更：絕對不可照抄原題數據！必須修改數字並重新計算。新選項必須同步更新至 options 陣列，answer 必須完全對應。
+12. 思考區隔離：所有思考推演放 thought_process，solution 僅放純中文詳解與公式，嚴禁英文碎碎念。
+13. 題數與單元：精準產出指定題數。unit 欄位標示單元名稱。
+14. 表格：請用 Markdown 語法繪製 (|---|---|)。`;
 
 const { createApp } = Vue;
 
@@ -541,8 +523,16 @@ createApp({
                 // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
                 cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
 
-                // 🌟 【防破圖】過濾公式中的中文標點符號
+                // 🌟 【防破圖】過濾公式中的中文標點符號，避免 CodeCogs 渲染失敗
                 cleanTex = cleanTex.replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
+
+                // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示，避免被伺服器拒絕
+                let prevMath;
+                do {
+                    prevMath = cleanTex;
+                    cleanTex = cleanTex.replace(/\\frac\s*\{([^{}]*[\u4e00-\u9fa5][^{}]*)\}\s*\{([^{}]+)\}/g, '($1) / ($2)');
+                    cleanTex = cleanTex.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]*[\u4e00-\u9fa5][^{}]*)\}/g, '($1) / ($2)');
+                } while (cleanTex !== prevMath);
 
                 // 🌟 【防破圖】自動補齊遺漏的成對括號
                 let cleanTexForBraces = cleanTex.replace(/\\\{/g, '').replace(/\\\}/g, '');
@@ -763,8 +753,8 @@ createApp({
                                            
                 const promptText = `你現在是一位專業的數學出題助理。我們目前正在進行「二次補充出題」。
 【指定範圍】：${this.targetUnit || '無'}
-【補充題型與數量】：${missingTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！絕對不可多出或少於此數量！)
-【要求】：這是一次補充出題，請務必出【全新、不同考點】的題目，不要跟之前出過的太類似。${this.examRules}\n` + SYSTEM_PROMPT;
+【補充題型與數量】：${missingTypes} (⚠️務必「精準」依照此數量的題型出題！)
+【要求】：這是一次補充出題，出題請與之前不同。${this.examRules}\n\n` + SYSTEM_PROMPT;
 
                 contentsParts.push({ text: promptText });
                 
@@ -787,7 +777,8 @@ createApp({
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
                         generationConfig: { 
-                            responseMimeType: "application/json"
+                            responseMimeType: "application/json",
+                            maxOutputTokens: 8192
                         }
                     })
                 });
@@ -830,7 +821,6 @@ createApp({
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
                         
-                        // 🌟 處理選擇題 ccdd 重複與黏在一起的問題
                         let tempOptions = [];
                         q.options.forEach(opt => {
                             let cleanedOpt = opt.replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
@@ -887,8 +877,8 @@ createApp({
                 
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes} (⚠️非常重要：請你務必「精準」依照此數量的題型出題！若上傳的素材題目過多，請自行挑選刪減；若素材不足，請自行原創補齊！絕對不可多出或少於指定題數！)
-【要求】：${this.examRules}\n` + SYSTEM_PROMPT;
+【題型配置】：${activeTypes} (⚠️務必精準產出此題數)
+【要求】：${this.examRules}\n\n` + SYSTEM_PROMPT;
 
                 contentsParts.push({ text: promptText });
                 
@@ -911,7 +901,8 @@ createApp({
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
                         generationConfig: { 
-                            responseMimeType: "application/json"
+                            responseMimeType: "application/json",
+                            maxOutputTokens: 8192
                         }
                     })
                 });
