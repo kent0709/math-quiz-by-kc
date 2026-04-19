@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.8 渲染引擎重構滿血版 byKC</title>
+    <title>數學出題小幫手 - V10.0 終極相容滿血版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.8 渲染引擎重構滿血版 byKC -->
+    <!-- 🌟 落款升級為 V10.0 終極相容滿血版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.8 渲染引擎重構滿血版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V10.0 終極相容滿血版 byKC</span>
     </footer>
 </div>
 
@@ -423,7 +423,7 @@ createApp({
 9. 排列組合符號規範：表示組合數時，【絕對禁止】使用 C(n,k) 的格式！請一律使用台灣高中標準寫法 C^{n}_{k}（總數 n 在上，取出數 k 在下）。排列數 P 與重複組合 H 亦同。
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
-1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}, \\\\theta, \\\\begin{cases}）。所有的 LaTeX 環境（矩陣、分數、根號）前都必須有反斜線！
+1. 雙跳脫字元：【！！！致命錯誤警告！！！】JSON 格式中的所有 LaTeX 指令反斜線『必須』雙跳脫！例如 \\frac 必須寫成 \\\\frac，\\vec 必須寫成 \\\\vec，\\begin 必須寫成 \\\\begin！若有任何一個單反斜線，系統將會崩潰！
 2. 換行符號清零：所有字串中【絕對禁止】包含純文字換行代碼（\\n, \\\\n, \\r, \\\\r）。文字敘述請直接以單行字串輸出。
 3. 嚴格題數限制：精準算出要求的題數，絕對不可多出或少於指定題數！
 4. 選項 (options)：選擇題【強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。若來源無選項，請「自行設計」錯誤選項湊齊四個。
@@ -894,7 +894,8 @@ createApp({
             
             // 🌟 【核彈級 JSON 防護網】在 JSON 剝殼與解析前，強制補齊遺失的反斜線！
             // 解決 \frac, \sqrt, \vec 被 JSON 轉義吃掉的致命 Bug
-            rawText = rawText.replace(/(?<!\\)\\(?=[a-zA-Z])/g, '\\\\');
+            // (移除 Lookbehind 以支援 iOS/Safari 舊版，解決 MATHBLOCK 崩潰問題)
+            rawText = rawText.replace(/(^|[^\\])\\(?=[a-zA-Z])/g, '$1\\\\');
             
             let startIndex = rawText.indexOf('{');
             let endIndex = rawText.lastIndexOf('}');
