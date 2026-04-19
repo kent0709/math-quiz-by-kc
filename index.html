@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.0 終極完美防斷尾版 byKC</title>
+    <title>數學出題小幫手 - V9.1 終極極簡防斷尾版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- 引入 KaTeX 數學引擎：用於將 LaTeX 轉換為大小適中的圖片公式 -->
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; background: #f0fdfa; min-height: 100vh; }
@@ -20,8 +17,6 @@
         .custom-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 4px; cursor: pointer; vertical-align: middle; position: relative;}
         .custom-checkbox:checked { background-color: #0d9488; border-color: #0d9488; }
         .custom-checkbox:checked::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 11px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
-        .box-radio { appearance: none; width: 14px; height: 14px; border: 1.5px solid #000; cursor: pointer; vertical-align: middle; position: relative; top: -1px;}
-        .box-radio:checked { background-color: #000; }
     </style>
 </head>
 <body class="text-gray-800 pb-10">
@@ -33,16 +28,13 @@
             <button @click="showApiTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
             <h3 class="text-2xl font-bold text-teal-700 mb-4"><i class="fas fa-key mr-2"></i>如何獲取免費 API Key？</h3>
             <div class="space-y-4 text-gray-700 font-medium">
-                <p class="text-sm bg-amber-50 text-amber-700 p-3 rounded-lg border border-amber-200">
-                    <i class="fas fa-info-circle mr-2"></i><b>分享給同事超安全：</b>本網頁是純靜態運行，金鑰只存在您的電腦。
-                </p>
                 <ol class="list-decimal pl-5 space-y-3 text-sm">
                     <li>請前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-bold">Google AI Studio</a></li>
                     <li>登入您的 Google 帳號，點擊 <b>「Get API key」</b> ➔ <b>「Create API key」</b>。</li>
                     <li>複製以 <code class="bg-gray-100 text-red-500 px-1 rounded">AIza</code> 開頭的金鑰，貼入網頁即可！</li>
                 </ol>
             </div>
-            <button @click="showApiTutorial = false" class="mt-6 w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">我明白了，關閉說明</button>
+            <button @click="showApiTutorial = false" class="mt-6 w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">我明白了</button>
         </div>
     </div>
 
@@ -52,11 +44,7 @@
             <button @click="showImageTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
             <h3 class="text-2xl font-bold text-red-600 mb-4"><i class="fas fa-image mr-2"></i>圖形題處理說明</h3>
             <div class="space-y-4 text-gray-700 font-medium">
-                <p class="text-base leading-relaxed">
-                    目前的 AI 模型無法直接把原題目的圖片「剪下來」貼到新的考卷上，也無法憑空畫出複雜的幾何圖形（如棋盤格）。
-                </p>
                 <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
-                    <p class="font-bold mb-1"><i class="fas fa-lightbulb mr-2"></i>建議解決方案：</p>
                     <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
                 </div>
             </div>
@@ -92,7 +80,6 @@
                         <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
-
                         <div class="flex justify-between items-start mb-3 gap-4 border-b border-gray-100 pb-3 pr-24">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="bg-teal-100 text-teal-700 text-sm font-bold px-3 py-1 rounded-full">{{ q.type }}</span>
@@ -103,14 +90,9 @@
                             <span class="text-gray-400 text-sm font-bold shrink-0 bg-gray-50 px-3 py-1 rounded-full">第 {{ idx + 1 }} 題</span>
                         </div>
                         <div class="text-base text-gray-800 leading-relaxed font-bold break-words" v-html="formatMath(q.question)"></div>
-                        
                         <div v-if="q.type === '選擇題' && q.options && q.options.length > 0" class="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                             <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="text-sm text-gray-600 font-bold bg-gray-50 p-2 rounded-lg" v-html="formatMath(opt)"></div>
                         </div>
-                    </div>
-                    
-                    <div v-if="previewQuestions.length === 0" class="text-center py-10 text-gray-400 font-bold">
-                        <i class="fas fa-inbox text-4xl mb-3"></i><br>目前沒有題目，請補足題目。
                     </div>
                 </div>
             </div>
@@ -124,7 +106,6 @@
                         <span v-if="!isReplenishing"><i class="fas fa-magic mr-2"></i>補足刪除的 {{ missingQuestions.total }} 題</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2"></i>AI 正在補題...</span>
                     </button>
-                    <!-- 🌟 升級版按鈕：顯示打包狀態且不會關閉視窗 -->
                     <button @click="downloadWord" :disabled="isDownloading" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
                         <span v-if="!isDownloading"><i class="fas fa-file-word mr-2 text-xl"></i>確認無誤，打包下載</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2 text-xl"></i>打包中...</span>
@@ -231,12 +212,10 @@
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
                         <i class="fas fa-book text-3xl text-blue-500 mb-2"></i>
                         <h3 class="text-blue-800 font-bold text-sm">上傳課本 / 習作</h3>
-                        <p class="text-xs text-blue-600 mt-1">以此作為 70% 標準題基礎</p>
                     </div>
                     <div v-else class="text-center w-full pointer-events-none">
                         <i class="fas fa-check-circle text-2xl text-blue-600 mb-1"></i>
                         <h3 class="text-blue-800 font-bold text-sm">已匯入 {{ textbookFiles.length }} 份素材</h3>
-                        <p class="text-xs text-blue-500 mt-1 font-bold">💡 點擊框框可繼續追加檔案</p>
                         <button @click.stop="textbookFiles = []" class="mt-2 text-xs bg-white text-red-500 px-3 py-1 rounded-full shadow-sm relative z-10 pointer-events-auto hover:bg-red-50">清空重選</button>
                     </div>
                 </div>
@@ -247,12 +226,10 @@
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
                         <i class="fas fa-file-signature text-3xl text-green-500 mb-2"></i>
                         <h3 class="text-green-800 font-bold text-sm">上傳補充考卷 / 題庫</h3>
-                        <p class="text-xs text-green-600 mt-1">供 AI 修改數據與變化題型</p>
                     </div>
                     <div v-else class="text-center w-full pointer-events-none">
                         <i class="fas fa-check-circle text-2xl text-green-600 mb-1"></i>
                         <h3 class="text-green-800 font-bold text-sm">已匯入 {{ examFiles.length }} 份素材</h3>
-                        <p class="text-xs text-green-500 mt-1 font-bold">💡 點擊框框可繼續追加檔案</p>
                         <button @click.stop="examFiles = []" class="mt-2 text-xs bg-white text-red-500 px-3 py-1 rounded-full shadow-sm relative z-10 pointer-events-auto hover:bg-red-50">清空重選</button>
                     </div>
                 </div>
@@ -264,15 +241,6 @@
                 </label>
                 <div class="flex flex-col md:flex-row gap-3 items-center">
                     <input v-model="targetUnit" type="text" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white">
-                    <span class="text-gray-400 font-bold text-sm">或</span>
-                    <div class="relative overflow-hidden w-full md:w-auto border border-dashed border-yellow-400 bg-white rounded-lg px-4 py-2 hover:bg-yellow-100 transition cursor-pointer flex items-center justify-center">
-                        <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".jpg,.png,.jpeg" @change="handleScopeUpload">
-                        <span v-if="scopeFiles.length === 0" class="text-sm font-bold text-yellow-700 pointer-events-none"><i class="fas fa-image mr-2"></i>上傳範圍圖</span>
-                        <span v-else class="text-sm font-bold text-green-600 pointer-events-none"><i class="fas fa-check mr-2"></i>已匯入 {{ scopeFiles.length }} 張圖</span>
-                    </div>
-                </div>
-                <div v-if="scopeFiles.length > 0" class="text-right mt-1">
-                    <button @click.stop="scopeFiles = []" class="text-xs text-red-500 hover:underline">清空範圍圖</button>
                 </div>
             </div>
 
@@ -280,7 +248,7 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
-                <textarea v-model="examRules" rows="6" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
+                <textarea v-model="examRules" rows="3" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
 
@@ -308,15 +276,11 @@
                         </div>
                         <div v-if="type.enabled" class="flex items-center gap-2 flex-grow">
                             <span class="text-sm font-bold text-gray-500">難度</span>
-                            <div class="relative flex-grow max-w-xs">
-                                <span class="absolute inset-y-0 left-3 flex items-center text-amber-400"><i class="fas fa-bolt text-xs bg-amber-50 p-1 rounded-full"></i></span>
-                                <select v-model="type.difficulty" class="w-full border border-gray-300 rounded-lg py-2 pl-9 pr-3 appearance-none focus:ring-teal-500 outline-none bg-white text-sm font-bold text-gray-700">
-                                    <option>中階 (Procedural)</option>
-                                    <option>初階 (Basic)</option>
-                                    <option>高階 (Advanced)</option>
-                                    <option>素養 (Competency)</option>
-                                </select>
-                            </div>
+                            <select v-model="type.difficulty" class="w-full border border-gray-300 rounded-lg py-2 pl-3 pr-3 appearance-none focus:ring-teal-500 outline-none bg-white text-sm font-bold text-gray-700">
+                                <option>中階 (Procedural)</option>
+                                <option>初階 (Basic)</option>
+                                <option>高階 (Advanced)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -327,10 +291,10 @@
         <div class="mt-8 text-center bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
             <div class="flex justify-center gap-6 mb-6">
                 <label class="cursor-pointer font-bold flex items-center text-teal-800">
-                    <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-2"> 1. 產生試題卷 (雙頁精準排版)
+                    <input type="checkbox" v-model="exportOptions.examPaper" class="custom-checkbox mr-2"> 1. 產生試題卷
                 </label>
                 <label class="cursor-pointer font-bold flex items-center text-blue-800">
-                    <input type="checkbox" v-model="exportOptions.correctAnswers" class="custom-checkbox mr-2"> 2. 產生解答與詳解卷
+                    <input type="checkbox" v-model="exportOptions.correctAnswers" class="custom-checkbox mr-2"> 2. 產生解答卷
                 </label>
             </div>
 
@@ -343,27 +307,28 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.0 終極化繁為簡・防斷尾完美版 byKC -->
+    <!-- 🌟 落款升級為 V9.1 終極極簡防斷尾版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.0 終極化繁為簡・防斷尾完美版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.1 終極極簡防斷尾版 byKC</span>
     </footer>
 </div>
 
 <script>
-// 🌟 【極致化繁為簡 Prompt】將 31 條規則徹底去重、精煉，解決斷尾當機並保證公式精準無誤！
-const SYSTEM_PROMPT = `請將所有產出的內容放入單一個 JSON 區塊中輸出，並嚴格遵守以下 11 大核心排版與出題規範，以利程式解析：
-1. 【數學公式全面包覆（極度重要）】：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！(✅ 範例：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。)
-2. 【嚴禁中文入公式（致命防呆）】：絕對禁止在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！若有「或」、「且」等中文說明文字，請務必移到 $ $ 之外。中文字放在 \\frac{}、\\sqrt{} 等指令內會導致系統當機破圖（例如不可寫 \\frac{事件數}{總數}，請改寫為純文字 事件數 / 總數，或用代號 \\frac{n(A)}{n(S)}）。
-3. 【符號防呆與跳脫】：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文。數學運算中的減號正常使用「-」，絕對不可寫成「##」！「不等於」必須使用 \\neq 並包在 $ $ 內（如 $A \\neq O$，禁寫 AeqO）。點座標請直接寫 (x,y)，嚴禁加上 \\left 與 \\right。嚴禁在公式中使用雙引號 " 或反引號 \`。
-4. 【JSON 跳脫與換行防呆】：所有 LaTeX 語法中的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}，\\\\theta 務必確實雙跳脫，否則變成亂碼 heta）。所有的 JSON 字串中【絕對禁止】包含 \\n, \\\\n, \\r, \\\\r 等純文字換行代碼。詳解換行請直接使用 HTML 的 <br> 標籤（絕對禁止使用 \\\\ 或 \\n 來換行）。
-5. 【題型與選項規範】：type 必須嚴格填寫「選擇題」、「填充題」或「計算題」。選擇題 options 必須且強制提供四個選項並加上 (A)(B)(C)(D) 標號，選項內的數學式需包覆 $ $。若來源無選項，請AI務必「自行設計」錯誤選項湊齊四個。絕對不可將選項寫在 question 中。填充/計算題 options 給 []。
-6. 【填充題出題要求】：【絕對禁止】在題目結尾或中間加入任何作答底線（如「_____」、「---」）、括號「( )」。請務必直接把句子改成疑問句，並在句尾加上問號「？」。
-7. 【解答與解析】：answer 欄位務必保留完整的選項與答案內容（例如："(C)$15$"）。solution 欄位【只准】放純中文的最終詳解與排版好的數學公式，嚴禁在詳解中出現英文與碎碎念（英文草稿或邏輯推演請全部放入 thought_process 欄位，否則系統會崩潰）。
-8. 【數據變更與題數限制】：擷取上傳素材時，【絕對不可直接照抄原題數據】！必須修改數字、座標或方程式係數，確實重新計算出正確的新答案與新詳解。新選項必須同步更新至 options 陣列。精準算好題數，多一題少一題都算失敗。出題順序必須隨機打亂。
-9. 【圖片與圖形處理】：遇到圖形/棋盤格等圖片，請【務必用純文字詳盡描述特徵】，無法描述請直接捨棄該題換題。絕對禁止保留「如圖」、「如右圖」等字眼。表格請用 Markdown 語法 (|---|---|) 繪製。
-10. 【長公式與特殊排版】：連等式（如多項式展開）【絕對禁止】塞在同一個 $ $ 內，必須在每個「等號」處斷開公式，並將每個數學式分別包覆 $ $ (例如：$\\int x dx$ = $\\frac{1}{2}x^2$)，讓等號獨立在外以利自動換行。矩陣一律使用最單純的 \\begin{bmatrix} (嚴禁帶有直線參數如 cc|c)。分數必須嚴格使用 \\frac{分子}{分母}，不可省略括號。集合符號使用 \\\\{ 與 \\\\}。
-11. 【向量與三角函數】：台灣高中向量為「單向單邊長箭頭」。表示向量時，【絕對必須】一律使用 \\overset{\\rightharpoonup}{a} 或 \\overset{\\rightharpoonup}{AB}，這是最標準不會破圖的置中寫法！【絕對禁止】使用 \\overrightarrow 或 \\vec。向量長度/外積必須使用單直線，例如 $|\\overset{\\rightharpoonup}{AB} \\times \\overset{\\rightharpoonup}{AC}|$ (嚴禁使用雙直線 || 或 \\lVert)。所有的 \\cos, \\sin, \\tan, \\log 等數學函數，【絕對必須】包覆在 $ $ 內！
-⚠️ 【防止斷尾最高指令】：thought_process 欄位請極度精簡（控制在 50 字以內），以確保整體 JSON 能夠完整封閉，絕對不可斷尾！`;
+// 🌟 【超級防斷尾 Prompt】極致壓縮為 11 條不重疊的核心法則，並強制關閉廢話輸出，100% 解決 JSON 斷尾崩潰當機！
+const SYSTEM_PROMPT = [
+    "請將產出內容放入 JSON 區塊，並嚴格遵守以下11大核心規範，確保程式能成功解析：",
+    "1. 【防斷尾最高指令】：為避免字數超載當機，絕對禁止寫任何思考過程、草稿或推演！thought_process 欄位請務必強制填入空字串 \"\"。",
+    "2. 【數學公式全面包覆】：所有數學式、數字、變數、幾何符號(\\\\triangle)、函數(\\\\sin)必用 $ $ 符號前後成對包住！(✅ 範例：角度 $\\\\theta$ 是 $20^{\\\\circ}$。點 $A(1, 2)$。)",
+    "3. 【嚴禁中文入公式】：絕對禁止在 $ $ 裡面放入中文字！數字與單位請分開(如「$3$人」)。中文字放在 \\\\frac{} 等指令內會導致系統當機破圖(請改寫為 事件數 / 總數)。",
+    "4. 【符號防呆】：嚴禁使用 #, ##, --- 符號。減號用 -，不等於用 \\\\neq。點座標寫 (x,y)，嚴禁加上 \\\\left 與 \\\\right。嚴禁在公式中使用雙引號 \" 或反引號 \`。",
+    "5. 【跳脫與換行】：LaTeX 反斜線必雙跳脫(如 \\\\\\\\frac, \\\\\\\\theta)。JSON 字串中【絕對禁止】包含 \\\\n, \\\\r 等換行代碼。詳解換行請用 HTML 的 <br> 標籤。",
+    "6. 【題型與選項】：type 限「選擇題、填充題、計算題」。選擇題 options 必含(A)(B)(C)(D)四個選項(含 $ $)；若無選項請自行設計。填充/計算題 options 給 []。填充題改疑問句結尾，禁作答底線。",
+    "7. 【解答與解析】：answer 欄位保留完整選項與答案內容(如 \"(C)$15$\")。solution 欄位【只准】放純中文最終詳解與公式，嚴禁英文碎碎念。",
+    "8. 【數據變更與題數】：擷取素材時，【絕對不可直接照抄數據】！必須修改數字重新計算。精準產出要求題數，不可多或少。出題順序隨機打亂。",
+    "9. 【圖片與圖形】：遇到圖形，請【務必用純文字詳盡描述特徵】，無法描述請直接捨棄換題。絕對禁止保留「如圖」字眼。表格用 Markdown (|---|)。",
+    "10. 【長公式與排版】：連等式【絕對禁止】塞在同一個 $ $ 內，必須在「等號」處斷開分別包覆 $ $ (如 $\\\\int x dx$ = $\\\\frac{1}{2}x^2$)。矩陣限用單純 \\\\begin{bmatrix} (禁帶參數)。分數限用 \\\\frac{分子}{分母}。集合符號用 \\\\\\\\{ 與 \\\\\\\\}。",
+    "11. 【向量】：台灣高中向量為單向單邊長箭頭。單字母用 \\\\vec{a}，雙字母以上【絕對必須】一律使用 \\\\overset{\\\\rightharpoonup}{AB} (這是最標準不會破圖的置中加長寫法！【絕對禁止】使用 \\\\overrightarrow 或 \\\\overrightharpoon)。向量長度/外積用單直線 $|\\\\overset{\\\\rightharpoonup}{AB}|$ (嚴禁 || 或 \\\\lVert)。"
+].join('\\n');
 
 const { createApp } = Vue;
 
@@ -381,7 +346,7 @@ createApp({
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
-            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。`,
+            examRules: `1. 數據必須修改，不可直接照抄原題\n2. 選擇題至少佔 40 分\n3. 範圍題型平均分佈，一種觀念以三題為上限\n4. 誘答力：錯誤選項要具似真性。`,
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
                 { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
@@ -395,15 +360,11 @@ createApp({
             let missing = {};
             let total = 0;
             if(Object.keys(this.finalGroupedQs).length === 0) return { details: missing, total: 0 };
-            
             this.questionTypes.forEach(t => {
                 if (t.enabled) {
                     let currentCount = this.finalGroupedQs[t.name] ? this.finalGroupedQs[t.name].length : 0;
                     let diff = parseInt(t.count) - currentCount;
-                    if (diff > 0) {
-                        missing[t.name] = diff;
-                        total += diff;
-                    }
+                    if (diff > 0) { missing[t.name] = diff; total += diff; }
                 }
             });
             return { details: missing, total: total };
@@ -411,25 +372,9 @@ createApp({
     },
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
-        
-        handleTextbookUpload(event) { 
-            if (event.target.files.length > 0) {
-                this.textbookFiles = this.textbookFiles.concat(Array.from(event.target.files));
-                event.target.value = '';
-            }
-        },
-        handleExamUpload(event) { 
-            if (event.target.files.length > 0) {
-                this.examFiles = this.examFiles.concat(Array.from(event.target.files));
-                event.target.value = '';
-            }
-        },
-        handleScopeUpload(event) { 
-            if (event.target.files.length > 0) {
-                this.scopeFiles = this.scopeFiles.concat(Array.from(event.target.files));
-                event.target.value = '';
-            }
-        },
+        handleTextbookUpload(event) { if (event.target.files.length > 0) { this.textbookFiles = this.textbookFiles.concat(Array.from(event.target.files)); event.target.value = ''; } },
+        handleExamUpload(event) { if (event.target.files.length > 0) { this.examFiles = this.examFiles.concat(Array.from(event.target.files)); event.target.value = ''; } },
+        handleScopeUpload(event) { if (event.target.files.length > 0) { this.scopeFiles = this.scopeFiles.concat(Array.from(event.target.files)); event.target.value = ''; } },
         
         async fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -450,18 +395,15 @@ createApp({
             this.previewQuestions.splice(idx, 1);
             if (this.finalGroupedQs[q.type]) {
                 const gIdx = this.finalGroupedQs[q.type].findIndex(item => item.question === q.question);
-                if (gIdx !== -1) {
-                    this.finalGroupedQs[q.type].splice(gIdx, 1);
-                }
+                if (gIdx !== -1) this.finalGroupedQs[q.type].splice(gIdx, 1);
             }
         },
 
         formatMath(text) {
             if (!text) return '';
-            
             let placeholderText = text;
 
-            // 🌟 【智慧 JSON 雙跳脫修復器】攔截並還原所有被 JSON 轉譯吃掉的反斜線
+            // 🌟 智能跳脫還原器：攔截並還原所有被 JSON.parse 吃掉的反斜線，防止 \theta 變成 heta 破圖
             placeholderText = placeholderText.replace(/([^\\])\\([a-zA-Z]+)/g, (match, p1, p2) => {
                 if (['n', 'r', 't', 'b', 'f'].includes(p2)) return match;
                 return p1 + '\\\\' + p2;
@@ -471,10 +413,10 @@ createApp({
                 return '\\\\' + p1;
             });
 
-            // 🌟 【防呆】強制將所有的 # 轉為空格 (防 AI 亂塞 Markdown 井字號)
-            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
-            placeholderText = placeholderText.replace(/#+/g, ' '); 
+            // 防呆：強制轉換不等於、移除亂碼符號
+            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-').replace(/#+/g, ' '); 
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
+            placeholderText = placeholderText.replace(/`/g, '');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
@@ -484,7 +426,7 @@ createApp({
                 cleanTex = cleanTex.replace(/\\(text|mbox|mathrm|textbf)\s*\{([^{}\\]+)\}/g, '$2');
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
-                // 🌟 【智慧向量引擎 V9.0】單向單邊、置中、且能加長不破圖的最佳解！
+                // 🌟 【智慧向量引擎 V9.0】單字母用 \vec，雙字母強制用 \overset{\rightharpoonup}
                 const convertVector = (m, p1) => {
                     let inner = p1.trim();
                     return inner.length > 1 ? `\\overset{\\rightharpoonup}{${inner}}` : `\\vec{${inner}}`;
@@ -496,22 +438,21 @@ createApp({
                 cleanTex = cleanTex.replace(/\\vec\s+([a-zA-Z0-9]+)/g, convertVector);
                 cleanTex = cleanTex.replace(/\\vec([a-zA-Z])/g, convertVector);
                 
-                // 🌟 【外積/長度單直線】強制將雙直線 || 或 \lVert 降級為單直線 |，避免破壞 |a||b|
+                // 外積/長度單直線
                 cleanTex = cleanTex.replace(/\\lVert([^|]+)\\rVert/g, '|$1|');
                 cleanTex = cleanTex.replace(/\|\|([^|]+)\|\|/g, '|$1|');
                 cleanTex = cleanTex.replace(/\\left\\\|([^|]+)\\right\\\|/g, '\\left|$1\\right|');
 
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
-                cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
-                cleanTex = cleanTex.replace(/\^\\circ\b/g, '^{\\circ}');
+                cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}').replace(/\^\\circ\b/g, '^{\\circ}');
 
-                // 🌟 【防呆】自動幫 AI 忘記的三角函數加上反斜線
+                // 補齊三角函數反斜線
                 cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
 
-                // 🌟 【防破圖】過濾公式中的中文標點符號
+                // 過濾中文標點
                 cleanTex = cleanTex.replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
 
-                // 🌟 【防破圖】若分數 \frac 內含中文字，強制降級為純文字斜線表示
+                // 防破圖：處理分數內的中文
                 let prevMath;
                 do {
                     prevMath = cleanTex;
@@ -519,7 +460,7 @@ createApp({
                     cleanTex = cleanTex.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]*[\u4e00-\u9fa5][^{}]*)\}/g, '($1) / ($2)');
                 } while (cleanTex !== prevMath);
 
-                // 🌟 【防破圖】自動補齊遺漏的成對括號
+                // 自動補齊成對括號
                 let cleanTexForBraces = cleanTex.replace(/\\\{/g, '').replace(/\\\}/g, '');
                 let openBraces = (cleanTexForBraces.match(/\{/g) || []).length;
                 let closeBraces = (cleanTexForBraces.match(/\}/g) || []).length;
@@ -531,10 +472,7 @@ createApp({
                 if (leftCount > rightCount) cleanTex += '\\right.'.repeat(leftCount - rightCount);
                 if (rightCount > leftCount) cleanTex = '\\left.'.repeat(rightCount - leftCount) + cleanTex;
 
-                cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_');
-                cleanTex = cleanTex.replace(/\\sum\s*_/g, '\\sum\\limits_');
-                cleanTex = cleanTex.replace(/\\max\s*_/g, '\\max\\limits_');
-                cleanTex = cleanTex.replace(/\\min\s*_/g, '\\min\\limits_');
+                cleanTex = cleanTex.replace(/\\lim\s*_/g, '\\lim\\limits_').replace(/\\sum\s*_/g, '\\sum\\limits_');
 
                 if (!isBlock && !cleanTex.includes('\\textstyle') && !cleanTex.includes('\\displaystyle')) {
                     cleanTex = '\\textstyle ' + cleanTex;
@@ -546,13 +484,13 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 1. 提取公式
+            // 1. 提取大公式
             placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([\s\S]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 2. 【自動包裹系統】拯救 AI 忘記加 $$ 的孤兒 LaTeX 指令
+            // 🌟 2. 拯救孤兒 LaTeX 指令
             const orphanRegexes = [
                 /(^|[^A-Za-z0-9_])(\\overset\{\\rightharpoonup\}\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
                 /(^|[^A-Za-z0-9_])(\\overrightharpoon\s*\{?[A-Za-z0-9]+\}?)(?=[^A-Za-z0-9_]|$)/g,
@@ -571,17 +509,9 @@ createApp({
                 }); 
             });
 
-            // 🌟 步驟 3：【純文字雜訊大掃除】
-            placeholderText = placeholderText.replace(/\\_+/g, '');
-            placeholderText = placeholderText.replace(/_{2,}/g, '');
-            placeholderText = placeholderText.replace(/\(\s*\)/g, '');
-            placeholderText = placeholderText.replace(/（\s*）/g, '');
-            placeholderText = placeholderText.replace(/^[-]{3,}\s*$/gm, '');
-
-            placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '');
-            placeholderText = placeholderText.replace(/\\\\n(?!\w)/g, '\n');
-            placeholderText = placeholderText.replace(/\\n/g, '\n');
-            placeholderText = placeholderText.replace(/\\\\/g, '<br>');
+            // 3. 純文字雜訊大掃除
+            placeholderText = placeholderText.replace(/\\_+/g, '').replace(/_{2,}/g, '').replace(/\(\s*\)/g, '').replace(/（\s*）/g, '').replace(/^[-]{3,}\s*$/gm, '');
+            placeholderText = placeholderText.replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '').replace(/\\\\n(?!\w)/g, '\n').replace(/\\n/g, '\n').replace(/\\\\/g, '<br>');
 
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
@@ -599,12 +529,7 @@ createApp({
                         let cells = line.split('|').slice(1, -1);
                         tableHtml += '<tr>' + cells.map(c => `<td style="border: 1px solid black; padding: 8px;">${c.trim()}</td>`).join('') + '</tr>';
                     } else {
-                        if (inTable) {
-                            inTable = false;
-                            tableHtml += '</table>';
-                            out.push(tableHtml);
-                            tableHtml = "";
-                        }
+                        if (inTable) { inTable = false; tableHtml += '</table>'; out.push(tableHtml); tableHtml = ""; }
                         out.push(lines[i]);
                     }
                 }
@@ -612,16 +537,11 @@ createApp({
                 return out.join('\n');
             };
             placeholderText = parseMarkdownTables(placeholderText);
-
             placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
-            // 🌟 步驟 4：【公式轉譯與歸位】
+            // 4. 公式轉譯與歸位
             const renderMath = (tex) => {
-                let mathPart = tex.trim();
-                mathPart = mathPart.replace(/\n/g, ' ').replace(/\r/g, '');
-                mathPart = mathPart.replace(/(^|[^\\])%/g, '$1\\%');
-                mathPart = mathPart.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
-
+                let mathPart = tex.trim().replace(/\n/g, ' ').replace(/\r/g, '').replace(/(^|[^\\])%/g, '$1\\%').replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 let encoded = encodeURIComponent(mathPart);
                 return `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle;" alt="math" />`;
             };
@@ -638,9 +558,7 @@ createApp({
                     if (result.includes(token)) {
                         hasReplacement = true;
                         let imgHtml = renderMath(block.tex);
-                        if (block.isBlock) {
-                            imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
-                        }
+                        if (block.isBlock) imgHtml = `<div style="text-align: center; margin: 2px 0;">${imgHtml}</div>`;
                         result = result.split(token).join(imgHtml);
                     }
                 });
@@ -728,18 +646,12 @@ createApp({
 
         async replenishQuestions() {
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
-            
             this.isReplenishing = true;
             try {
                 let contentsParts = [];
-                const missingTypes = Object.entries(this.missingQuestions.details)
-                                           .map(([k, v]) => `${k}: 需要補充 ${v} 題`)
-                                           .join('，');
+                const missingTypes = Object.entries(this.missingQuestions.details).map(([k, v]) => `${k}: 需要補充 ${v} 題`).join('，');
                                            
-                const promptText = `你現在是一位專業的數學出題助理。我們目前正在進行「二次補充出題」。
-【指定範圍】：${this.targetUnit || '無'}
-【補充題型與數量】：${missingTypes} (⚠️務必「精準」依照此數量的題型出題！)
-【要求】：這是一次補充出題，出題請與之前不同。${this.examRules}\n\n` + SYSTEM_PROMPT;
+                const promptText = `我們正在進行「二次補充出題」。\n【補充題型與數量】：${missingTypes} (⚠️務必「精準」依照此數量的題型出題！)\n【要求】：這是一次補充出題，請修改數據。${this.examRules}\n\n` + SYSTEM_PROMPT;
 
                 contentsParts.push({ text: promptText });
                 
@@ -761,30 +673,19 @@ createApp({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
-                        generationConfig: { 
-                            responseMimeType: "application/json",
-                            maxOutputTokens: 8192
-                        }
+                        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 8192 }
                     })
                 });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`API 請求失敗 (${response.status})，請確認金鑰正確或網路連線正常。`);
-                }
+                if (!response.ok) throw new Error(`API 請求失敗 (${response.status})，請確認金鑰正確。`);
 
                 const data = await response.json();
-                
                 if (data.candidates && data.candidates[0].finishReason === 'MAX_TOKENS') {
-                    throw new Error("AI 產生的內容太多，超過了系統輸出上限！請減少一次要求的題數，或分批上傳圖片。");
+                    throw new Error("AI 產生的題目太多，超過了系統字數上限(斷尾)！請減少題數或分批上傳。");
                 }
-                
                 if (data.error) throw new Error(data.error.message);
-                if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content.parts[0].text) {
-                    throw new Error("AI 回傳了空白資料，請重試！");
-                }
+                if (!data.candidates || data.candidates.length === 0) throw new Error("AI 回傳了空白資料，請重試！");
 
-                // 🌟 【終極 JSON 剝殼術】精準提取 JSON，徹底解決 AI 包裝 Markdown 導致的無盡轉圈當機 Bug！
                 let rawText = data.candidates[0].content.parts[0].text;
                 let startIndex = rawText.indexOf('{');
                 let endIndex = rawText.lastIndexOf('}');
@@ -796,13 +697,11 @@ createApp({
                 try {
                     quizData = JSON.parse(rawText);
                 } catch (parseError) {
-                    console.error("JSON解析失敗，原始字串：", rawText);
-                    throw new Error("AI 產出的資料不完整或超出字數限制，請點擊按鈕重新生成！");
+                    console.error("JSON解析失敗：", rawText);
+                    throw new Error("AI 產出的資料不完整或遭遇字數截斷，請減少題數後點擊按鈕重新生成！");
                 }
                 
-                if (!quizData.questions || quizData.questions.length === 0) {
-                    throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
-                }
+                if (!quizData.questions || quizData.questions.length === 0) throw new Error("AI 未能成功生成題目，請重試！");
                 
                 quizData.questions.forEach(q => {
                     let tName = q.type || '';
@@ -810,16 +709,12 @@ createApp({
                     
                     if (tName === '選擇題') {
                         if (!q.options) q.options = [];
-                        
                         let tempOptions = [];
                         q.options.forEach(opt => {
                             let cleanedOpt = opt.replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
                             let parts = cleanedOpt.split(/(?=\([A-E]\)|[A-E]\.)/);
-                            parts.forEach(p => {
-                                if (p.trim()) tempOptions.push(p.trim());
-                            });
+                            parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                         });
-                        
                         q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
                         while (q.options.length < 4) { q.options.push(`選項待補`); }
                         
@@ -836,23 +731,19 @@ createApp({
                         q.question = q.question.replace(/[。，、：；\s]*$/, ''); 
                         if (!q.question.endsWith('？') && !q.question.endsWith('?')) q.question += '？';
                     }
-                    
                     this.finalGroupedQs[tName].push(q);
                     this.previewQuestions.push(q);
                 });
-
                 this.isReplenishing = false;
-                
             } catch (error) {
                 console.error(error);
-                alert(`補題發生錯誤：${error.message}`);
+                alert(`發生錯誤：${error.message}`);
                 this.isReplenishing = false;
             }
         },
 
         async generateExam(event) {
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
-            
             this.isGenerating = true; 
             const status = document.getElementById('status-message');
             status.innerHTML = '';
@@ -862,11 +753,7 @@ createApp({
                 let contentsParts = [];
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 
-                const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
-【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes} (⚠️務必精準產出此題數)
-【要求】：${this.examRules}\n\n` + SYSTEM_PROMPT;
-
+                const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。\n【題型配置】：${activeTypes} (⚠️務必精準產出此題數)\n【要求】：${this.examRules}\n\n` + SYSTEM_PROMPT;
                 contentsParts.push({ text: promptText });
                 
                 if(this.scopeFiles.length > 0) {
@@ -887,31 +774,20 @@ createApp({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         contents: [{ parts: contentsParts }],
-                        generationConfig: { 
-                            responseMimeType: "application/json",
-                            maxOutputTokens: 8192
-                        }
+                        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 8192 }
                     })
                 });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`API 請求失敗 (${response.status})，請確認金鑰正確或網路連線正常。`);
-                }
+                if (!response.ok) throw new Error(`API 請求失敗 (${response.status})，請確認金鑰。`);
 
                 const data = await response.json();
                 
-                // 🌟 精準偵測並提示「字數超過上限」
                 if (data.candidates && data.candidates[0].finishReason === 'MAX_TOKENS') {
-                    throw new Error("AI 產生的內容太多，超過了系統輸出上限！請減少一次要求的題數，或分批上傳圖片。");
+                    throw new Error("AI 產生的題目太多，超過了系統輸出上限(斷尾)！請減少要求題數，或分批上傳。");
                 }
-                
                 if (data.error) throw new Error(data.error.message);
-                if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content.parts[0].text) {
-                    throw new Error("AI 回傳了空白資料，請重試！");
-                }
+                if (!data.candidates || data.candidates.length === 0) throw new Error("AI 回傳了空白資料，請重試！");
 
-                // 🌟 【終極 JSON 剝殼與跳脫修復術】
                 let rawText = data.candidates[0].content.parts[0].text;
                 let startIndex = rawText.indexOf('{');
                 let endIndex = rawText.lastIndexOf('}');
@@ -923,24 +799,19 @@ createApp({
                 try {
                     quizData = JSON.parse(rawText);
                 } catch (parseError) {
-                    console.error("JSON解析失敗，原始字串：", rawText);
-                    throw new Error("AI 產出的資料不完整或超出字數限制，請點擊按鈕重新生成！");
+                    console.error("JSON解析失敗：", rawText);
+                    throw new Error("AI 產出的資料不完整或遭遇字數截斷，請減少題數後點擊按鈕重新生成！");
                 }
                 
-                if (!quizData.questions || quizData.questions.length === 0) {
-                    throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
-                }
+                if (!quizData.questions || quizData.questions.length === 0) throw new Error("AI 未能成功生成題目，請檢查設定！");
                 
                 const groupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
                 quizData.questions.forEach(q => {
                     let t = q.type || '';
-                    if(t.includes('選擇') || t.includes('單選')) {
-                        groupedQs['選擇題'].push(q);
-                    } else if(t.includes('填')) {
-                        groupedQs['填充題'].push(q);
-                    } else if(t.includes('算') || t.includes('問答')) {
-                        groupedQs['計算題'].push(q);
-                    } else {
+                    if(t.includes('選擇') || t.includes('單選')) groupedQs['選擇題'].push(q);
+                    else if(t.includes('填')) groupedQs['填充題'].push(q);
+                    else if(t.includes('算') || t.includes('問答')) groupedQs['計算題'].push(q);
+                    else {
                         if(q.options && q.options.length > 0) groupedQs['選擇題'].push(q);
                         else groupedQs['填充題'].push(q); 
                     }
@@ -969,14 +840,11 @@ createApp({
                     this.finalGroupedQs[tName].forEach(q => {
                         if (tName === '選擇題') {
                             if (!q.options) q.options = [];
-                            
                             let tempOptions = [];
                             q.options.forEach(opt => {
                                 let cleanedOpt = opt.replace(/\\\\n(?!\w)/g, ' ').replace(/\n/g, ' ').trim();
                                 let parts = cleanedOpt.split(/(?=\([A-E]\)|[A-E]\.)/);
-                                parts.forEach(p => {
-                                    if (p.trim()) tempOptions.push(p.trim());
-                                });
+                                parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                             });
                             
                             q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
@@ -1011,13 +879,13 @@ createApp({
         },
 
         downloadWord() {
-            this.showPreviewConsole = false;
+            this.showPreviewConsole = false; 
             const status = document.getElementById('status-message');
             status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在打包 Word 檔案...';
             status.className = "mt-4 font-bold text-lg text-teal-600";
 
-            this.isDownloading = true;
-            this.showPreviewConsole = true;
+            this.isDownloading = true; 
+            this.showPreviewConsole = true; 
 
             setTimeout(() => {
                 try {
@@ -1029,12 +897,11 @@ createApp({
                     <meta charset="utf-8">
                     <title>數學考卷</title>
                     <style>
-                        /* 🌟 調整為上下 1.5cm，左右 1.5cm */
                         @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 1.5cm; }
                         div.WordSection1 { page: WordSection1; }
                         body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
                         p { margin: 0 0 10px 0; }
-                        img { max-width: 100%; height: auto; } /* 防爆版保險，避免公式圖片衝出邊界 */
+                        img { max-width: 100%; height: auto; }
                     </style>
                     </head><body><div class="WordSection1">`;
 
@@ -1077,11 +944,8 @@ createApp({
 
                         allQuestions.forEach(q => {
                             if (!q.isHeader) qCount++;
-                            if (qCount <= midPoint || (q.isHeader && qCount < midPoint)) {
-                                part1HTML += q.html;
-                            } else {
-                                part2HTML += q.html;
-                            }
+                            if (qCount <= midPoint || (q.isHeader && qCount < midPoint)) part1HTML += q.html;
+                            else part2HTML += q.html;
                         });
 
                         docHTML += this.getHeaderPage2();
@@ -1119,12 +983,9 @@ createApp({
                             docHTML += `</table>`;
                         }
                         docHTML += `</div>`;
-                        
                         docHTML += `<p style="text-align: center; letter-spacing: 2px; font-size: 12pt; margin-top: 10px; margin-bottom: 15px;">------------------------------------- 以下為題目區 ------------------------------------</p>`;
 
-                        allQuestions.forEach(q => {
-                            docHTML += q.html;
-                        });
+                        allQuestions.forEach(q => { docHTML += q.html; });
                     }
 
                     if (this.exportOptions.correctAnswers) {
@@ -1146,9 +1007,7 @@ createApp({
                                         let matchAns = rawAns.match(/[A-D]/i);
                                         let shortAns = matchAns ? matchAns[0].toUpperCase() : rawAns;
                                         docHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${shortAns}</td>`; 
-                                    } else {
-                                        docHTML += `<td style="border: 1px solid blue;"></td>`; 
-                                    }
+                                    } else { docHTML += `<td style="border: 1px solid blue;"></td>`; }
                                 }
                                 docHTML += `</tr>`;
                             }
@@ -1177,7 +1036,6 @@ createApp({
                                 docHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                                 finalQs.forEach((q, idx) => {
                                     let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                    // 🌟 詳解區加入「單元觀念標示」
                                     docHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                                 });
                             }
@@ -1202,7 +1060,6 @@ createApp({
 
                     status.className = "mt-4 font-bold text-lg text-green-600";
                     status.innerHTML = `✅ 考卷生成成功！已下載檔案。`;
-                    
                     this.isDownloading = false;
 
                 } catch (error) {
