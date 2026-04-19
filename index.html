@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.5 終極排版與全域除錯版 byKC</title>
+    <title>數學出題小幫手 - V9.6 矩陣防切與滿血還原版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.5 終極排版與全域除錯版 byKC -->
+    <!-- 🌟 落款升級為 V9.6 矩陣防切與滿血還原版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.5 終極排版與全域除錯版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.6 矩陣防切與滿血還原版 byKC</span>
     </footer>
 </div>
 
@@ -411,7 +411,7 @@ createApp({
 2. 向量強制規範：表示向量時，【一律強制使用】\\overset{\\rightharpoonup}{AB} 或 \\overset{\\rightharpoonup}{a}。絕對禁止使用 \\vec{} 或 \\overrightarrow{}！
 3. 線段與距離強制規範：表示兩點間的距離或線段長度時（如 AB 線段），【一律強制使用】\\overline{AB}，上面必須要有橫線，絕對禁止只寫 AB！
 4. 分數強制規範：分數【絕對禁止】使用斜線（如 1/2 或 x/y），必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
-5. 聯立方程組（防 Unbalanced Eqn）：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。絕對禁止用 array，且 cases 內禁止放中文！
+5. 矩陣與聯立方程防破圖：矩陣 \\begin{bmatrix} 與聯立方程組 \\begin{cases} 【絕對必須】獨立一行，並用 $$ 包覆（例如 $$ \\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix} $$）！【絕對禁止】與中文字寫在同一行內，否則會導致排版重疊切斷！且每行結尾必須加上 \\\\\\\\ 來換行。絕對禁止用 array。
 6. 🚫 嚴禁使用 Align 環境：【絕對禁止】使用 \\begin{align} 或 \\begin{eqnarray} 等對齊環境！這會導致整張考卷破圖！若需換行，請直接把算式切斷，分成多個 $ $ 區塊！
 7. 長公式強制換行：詳解中的長連等式（如多項式展開），【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
    - ✅ 正確：$\\int (x+1)^2 dx$ = $\\int (x^2+2x+1) dx$ = $\\frac{1}{3}x^3 + C$
@@ -431,7 +431,7 @@ createApp({
 === 📝 四、題目與詳解內容要求 ===
 1. 數據變更強制要求：擷取素材題目時，【絕對不可照抄原題數據】！必須修改數字、座標或係數，產出考點相同但【數據完全不同】的新題目，並確實重新計算新答案與新詳解！
 2. 選項同步更新：修改數據後，【絕對必須】將重新計算的「全新選項」填入 options 陣列中！答案 (answer) 也必須對應新選項！
-3. 🔴 嚴禁任何英文碎碎念（核彈級防爆）：'solution' 欄位【絕對只准】放純中文的最終詳解與數學公式！如果出現 "Let's use", "Here is", "Step 1" 等任何英文單字或句子，系統會直接崩潰！所有計算邏輯推演請全部丟進 'thought_process' 裡！
+3. 🔴 嚴禁任何英文碎碎念（核彈級防爆）：'solution' 欄位【絕對只准】放純中文的最終詳解與數學公式！如果出現 "Let's use", "Here is", "Step 1", "We can" 等任何英文單字或句子，系統會直接崩潰！所有計算邏輯推演請全部丟進 'thought_process' 裡！
 4. 詳解換行：解答與詳解中若需換行（例如換行解說不同選項），請直接使用 HTML 的 <br> 標籤！`;
         }
     },
@@ -558,13 +558,29 @@ createApp({
             placeholderText = placeholderText.replace(/(^|[^\\])sqrt\{/g, '$1\\sqrt{');
             
             // 🌟 新增：針對漏掉反斜線的希臘字母與運算符號自動修復
-            placeholderText = placeholderText.replace(/(^|[^\\])\b(alpha|beta|gamma|pi|tau|omega|mu|sigma|times|cdot)\b/g, '$1\\$2');
+            const safeMathKeywords = [
+                'overset', 'overline', 'frac', 'sqrt', 'rightharpoonup', 'rightarrow', 
+                'times', 'cdot', 'theta', 'alpha', 'beta', 'gamma', 'pi', 
+                'triangle', 'angle', 'sin', 'cos', 'tan', 'log', 'ln', 'neq', 'approx'
+            ];
+            safeMathKeywords.forEach(kw => {
+                const reg = new RegExp(`(^|[^\\\\])\\b${kw}\\b`, 'g');
+                placeholderText = placeholderText.replace(reg, `$1\\${kw}`);
+            });
 
             // 🌟 【等號防呆修復 V8.10】修正 AI 聽從錯誤指令產生的單引號等號與奇怪的逗號
             placeholderText = placeholderText.replace(/['"]=/g, ' =');
             placeholderText = placeholderText.replace(/=['"]/g, '= ');
             placeholderText = placeholderText.replace(/','='?\s*/g, ' = ');
             placeholderText = placeholderText.replace(/','/g, '<br>');
+
+            // 🌟 孤兒矩陣與公式強力補救 (在轉交給渲染前強制加上 $$)
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, '$1$$$$$2$$$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\overline\s*\{[^{}]+\})/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\})/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*[a-zA-Z0-9_]\s*[a-zA-Z0-9_])/g, '$1$$$2$$');
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\sqrt\s*\{[^{}]+\})/g, '$1$$$2$$');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
