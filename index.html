@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.2 距離橫線與全域除錯版 byKC</title>
+    <title>數學出題小幫手 - V9.3 排列組合C符號校正版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -207,7 +207,7 @@
                     </tr>
                 </table>
                 <div class="w-full max-w-4xl text-left mt-2 text-xs font-bold text-gray-500">
-                    依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準 গঠন,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
+                    依據三重商工校內考試規定:若使用答案卡作答者,答案卡需劃記清楚、準確,並不得使用修正液或塗改,若因而影響成績核算結果者均自行負責。
                 </div>
             </div>
         </div>
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.2 距離橫線與全域除錯版 byKC -->
+    <!-- 🌟 落款升級為 V9.3 排列組合C符號校正版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.2 距離橫線與全域除錯版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V9.3 排列組合C符號校正版 byKC</span>
     </footer>
 </div>
 
@@ -393,7 +393,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，並新增距離橫線與禁止亂碼指令！
+        // 🌟 【史詩級重構】將原本雜亂的防呆規則重新歸納為四大結構，並新增距離橫線與排列組合C符號指令！
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
@@ -420,6 +420,7 @@ createApp({
    - 減號請正常使用「-」，絕對不可寫成「##」！
    - 不等於請用 $\\neq$（不可寫 AeqO）。
    - 絕對值、向量長度、外積一律使用單直線 $| |$，絕對禁止使用雙直線 $|| ||$ 或 \\lVert \\rVert！
+8. 排列組合符號規範：表示組合數時，【絕對禁止】使用 C(n,k) 的格式！請一律使用台灣高中標準寫法 C^{n}_{k}（總數 n 在上，取出數 k 在下，例如 C(4,2) 必須寫成 C^{4}_{2}）。排列數 P 與重複組合 H 亦同。
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
 1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}, \\\\theta, \\\\begin{cases}）。所有的 LaTeX 環境（矩陣、分數、根號）前都必須有反斜線！
@@ -583,6 +584,11 @@ createApp({
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
+                // 🌟 【排列組合符號防呆 V9.3】將 C(n,k) 轉換為台灣高中標準 C^{n}_{k} (n在上、k在下)
+                cleanTex = cleanTex.replace(/C\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'C^{$1}_{$2}');
+                cleanTex = cleanTex.replace(/P\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'P^{$1}_{$2}');
+                cleanTex = cleanTex.replace(/H\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, 'H^{$1}_{$2}');
+
                 // 🌟 【分數防呆深度修復 V9.1】自動將 \frac12 修復為 \frac{1}{2}，並支援簡單變數 (如 x)
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
 
