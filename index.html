@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V8.8 向量回歸與方程防爆版 byKC</title>
+    <title>數學出題小幫手 - V8.9 方程分數與破圖極致修復版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -216,7 +216,7 @@
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-xl font-bold text-gray-800 flex items-center shrink-0">
-                    <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
+                    <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">2</span>
                     分區匯入素材與出題要求
                     <button @click="showImageTutorial = true" class="text-red-500 hover:text-red-700 text-sm flex items-center bg-red-50 px-3 py-1 rounded-full transition ml-4 border border-red-200 shadow-sm">
                         <i class="fas fa-question-circle mr-1"></i>圖形題說明
@@ -343,9 +343,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V8.8 向量回歸與方程防爆版 byKC -->
+    <!-- 🌟 落款升級為 V8.9 方程分數與破圖極致修復版 byKC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.8 向量回歸與方程防爆版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.3em] text-lg">V8.9 方程分數與破圖極致修復版 byKC</span>
     </footer>
 </div>
 
@@ -393,13 +393,13 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【重構】將長達 34 點的防呆規則集中在這裡，加入破圖還原與方程組防爆防呆！
+        // 🌟 【重構】將長達 35 點的防呆規則集中在這裡，加入破圖還原與方程分數極致防呆！
         aiFormatRules() {
             return `【重要輸出格式警告】：
 請將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下格式，以利後續程式解析：
-1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 3x-4y=0）、座標點（如 A(a_1, a_2)）、角度等，【無論在題目、選項或解答中】，【絕對必須】用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！
-   ❌ 錯誤示範：當角度 \\theta 由 20^circ 增加到 70^circ。已知點 A(1, 2)。
-   ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知點 $A(1, 2)$。
+1. ⚠️數學公式全面包覆（極度重要）⚠️：真正的數學式、所有數字、變數、向量、根號、幾何符號（如 \\triangle ABC）、方程式（如 $3x-4y=0$）、座標點（如 $A(a_1, a_2)$）、角度等，【無論在題目、選項或解答中】，【絕對必須】完整連同代號用 $ $ 符號前後成對包住！如果漏掉 $ 系統會無法轉換公式，印出亂碼！
+   ❌ 錯誤示範：當角度 \\theta 由 20^circ 增加到 70^circ。已知平面 E_1: 2x+y=1。
+   ✅ 正確示範：當角度 $\\theta$ 由 $20^{\\circ}$ 增加到 $70^{\\circ}$。已知平面 $E_1: 2x+y=1$。
    ⚠️ 【絕對禁止】在 $ $ 裡面放入中文字！數字與單位請分開，例如「$3$人」，絕對不可寫成「$3人$」或「$3\\text{人}$」！
 2. ❌ 致命防呆：【中文說明文字】絕對禁止放進 $ $ 裡面！若有「或」、「且」等中文，請務必移到 $ $ 之外。
 3. ❌ 符號防呆：嚴禁在字串或數學式中使用「#」或「##」符號！若需表示「或」，請直接寫中文「或」。數學方程式中的減號請正常使用「-」，絕對不可以寫成「##」！
@@ -416,7 +416,7 @@ createApp({
 14. ⚠️ 嚴格題數限制 ⚠️：請你在產出 JSON 前自己算好題數，設定要求幾題，你就只能輸出幾題，多一題或少一題都算失敗！
 15. ⚠️ 表格排版 ⚠️：若原題目包含表格，請務必使用標準 Markdown 表格語法繪製，且【每一行都必須以 | 開頭與結尾】（例如：|項目|數值|\\n|---|---|），系統將自動為您轉換為漂亮表格。
 16. ⚠️ 嚴禁分隔線 ⚠️：除了表格的框線外，【絕對禁止】在題目或解答中使用「---」或「___」等連續符號作為分隔線。但數學運算中的【減號「-」】必須正常使用！絕對不可以將減號寫成「##」！
-17. ⚠️ 向量符號完美回歸 ⚠️：表示向量時，【絕對必須】一律強制使用 \overset{\rightharpoonup}{AB} 或是 \overset{\rightharpoonup}{a} 寫法！這是為了保證單向單邊長箭頭且置中對齊！【絕對禁止】使用 \vec{} 或是 \overrightarrow{}，否則會發生長度異常或破圖！
+17. ⚠️ 向量符號完美回歸 ⚠️：表示向量時，【絕對必須】一律強制使用 \\overset{\\rightharpoonup}{AB} 或是 \\overset{\\rightharpoonup}{a} 寫法！這是為了保證單向單邊長箭頭且置中對齊！【絕對禁止】使用 \\vec{} 或是 \\overrightarrow{}，否則會發生長度異常或破圖！
 18. ⚠️ 矩陣與增廣矩陣防破圖 ⚠️：【絕對禁止】使用 \\begin{array}{cc|c} 或 \\begin{bmatrix}[cc|c] 等帶有直線參數的排版！若為增廣矩陣，請一律使用最單純的 \\begin{bmatrix} 1 & 2 & | & 3 \\\\ 4 & 5 & | & 6 \\end{bmatrix}。
 19. ⚠️ 嚴禁輸出換行符號亂碼 ⚠️：所有的 JSON 字串中【絕對禁止】包含「\\n」、「\\\\n」、「\\r」或「\\\\r」等純文字換行代碼。所有文字敘述請直接以單行字串輸出，網頁系統會為您處理好所有排版。
 20. ⚠️ 分數規範與防呆 ⚠️：所有的分數【必須】嚴格使用 LaTeX 的 \\frac{分子}{分母} 語法，且分子與分母【絕對必須】用大括號 { } 包覆完整！例如 \\frac{1}{2}，絕對不可省略括號寫成 \\frac12，也請再三檢查括號是否有成對閉合，否則會導致破圖顯示不出來！
@@ -431,9 +431,10 @@ createApp({
 29. ⚠️ 漏加 $號防呆 ⚠️：AI 常忘記將 \\triangle、\\angle 等符號包覆在 $$ 內，導致考卷印出 \\triangle 等英文亂碼！請再三檢查所有反斜線 \\ 開頭的數學指令，【絕對必須】包在 $ $ 內！
 30. ⚠️ 詳解換行防呆 ⚠️：在解答與詳解中，若需針對不同選項進行換行解說（例如從 (A) 換行到 (B)），請直接使用 HTML 的 <br> 標籤，【絕對禁止】使用 \\\\ 或 \\n 來換行！
 31. ⚠️ 三角函數防呆 ⚠️：所有的 \\cos、\\sin、\\tan、\\log 等數學函數，【絕對必須】包覆在 $ $ 內！如果漏掉 $ 符號，考卷上會直接印出 \\cos 等英文亂碼！
-32. ⚠️ 影像破損還原（極度重要） ⚠️：上傳的圖片中可能含有「無法顯示的亂碼圖示」（例如含有紅色叉叉的框框、或是顯示為亂碼的分數）。請你發揮專業數學能力，根據前後文、方程式與選項邏輯，【完美推理並還原出原本的數字、分數或方程式】！絕對不可以偷懶跳過或照抄亂碼！例如問兩平面距離，請自己算出距離並將正確解答放在選項中！
+32. ⚠️ 影像破損極致還原（核彈級指令） ⚠️：上傳的圖片中含有大量「無法顯示的亂碼圖示」（紅色叉叉框框）。【絕對禁止】在 JSON 輸出中留下「[無法顯示]」、「[?]」、「[圖]」等字眼！你必須發揮頂尖數學老師的直覺，從上下文（如平行平面的法向量、垂直條件）【完美反推並填補】出原本遺失的方程式、數字或選項！
 33. ⚠️ 嚴格反斜線防呆 ⚠️：所有的 LaTeX 環境（如矩陣 \\begin{bmatrix}、分數 \\frac{}{}、根號 \\sqrt{}）前面【絕對必須】加上反斜線 \！絕不允許輸出 begin{bmatrix} 這種殘缺語法！
-34. ⚠️ 聯立方程組防破圖（Unbalanced Eqn） ⚠️：若題目或詳解中出現線性方程組（聯立方程式），【絕對必須】使用 \\begin{cases} ... \\end{cases} 來排版！並且每一行的結尾【絕對必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行！絕對禁止使用 array 或是 align 環境，也不可以把中文塞進 cases 裡面！`;
+34. ⚠️ 聯立方程組防破圖（Unbalanced Eqn） ⚠️：若題目或詳解中出現線性方程組（聯立方程式），【絕對必須】使用 \\begin{cases} ... \\end{cases} 來排版！並且每一行的結尾【絕對必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行！絕對禁止使用 array 或是 align 環境，也不可以把中文塞進 cases 裡面！
+35. ⚠️ 方程式與分數強制規範 ⚠️：所有的方程式（例如 $E_1: 3x-4y+5z+2=0$）與點座標（例如 $P(1,2,3)$）必須【完整且連同代號】被 $ $ 完整包覆內！分數【絕對禁止】使用斜線（例如 1/2 或 x/y），必須一律轉換為標準且帶有大括號的 \\frac{1}{2} 格式！`;
         }
     },
     methods: {
@@ -553,6 +554,9 @@ createApp({
             placeholderText = placeholderText.replace(/(^|[^\\])end\{/g, '$1\\end{');
             placeholderText = placeholderText.replace(/(^|[^\\])frac\{/g, '$1\\frac{');
             placeholderText = placeholderText.replace(/(^|[^\\])sqrt\{/g, '$1\\sqrt{');
+            
+            // 🌟 新增：針對漏掉反斜線的希臘字母與運算符號自動修復
+            placeholderText = placeholderText.replace(/(^|[^\\])\b(alpha|beta|gamma|pi|tau|omega|mu|sigma|times|cdot)\b/g, '$1\\$2');
 
             let mathBlocks = [];
             const saveMath = (tex, isBlock) => {
@@ -567,6 +571,9 @@ createApp({
                 // 修復大括號
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 
+                // 🌟 【分數防呆修復】自動將 \frac12 修復為 \frac{1}{2}
+                cleanTex = cleanTex.replace(/\\frac\s*(\d)\s*(\d)/g, '\\frac{$1}{$2}');
+
                 // 🌟 【向量強制轉換系統 V8.8 完美回歸】應使用者要求，退回最美觀的 \overset{\rightharpoonup}{AB}
                 const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
                 
