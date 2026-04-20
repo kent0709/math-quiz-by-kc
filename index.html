@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.7 完美排錯大師版 byKC</title>
+    <title>數學出題小幫手 - V9.8 終極防線版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -340,9 +340,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.7 -->
+    <!-- 🌟 落款升級為 V9.8 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.7 完美排錯大師版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.8 終極防線版 byKC</span>
     </footer>
 </div>
 
@@ -390,15 +390,15 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【V9.7 殺手級提示詞升級】：杜絕長篇算式擠壓、嚴禁 P() 內中文、強制中括號矩陣
+        // 🌟 【V9.8 終極防線提示詞】：最嚴格規範 AI 行為，徹底消滅擠壓破圖與中文亂碼
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
 === 💡 一、破圖與亂碼「終極自癒」機制 ===
-1. 【嚴禁中文入公式】：公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文會變成 ###### 亂碼或 Unbalanced Eqn)
-   - ❌ 致命錯誤：$P(紅球) = \\frac{3}{5}$、$袋中有3個$
-   - ✅ 正確寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、袋中有 $3$ 個
-   - P() 括號內【只能放英文字母】(如 P(A), P(B))，請在文字敘述中說明代號意義。
+1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰變成 ###### 亂碼或 Unbalanced Eqn)
+   - ❌ 致命錯誤：$P(紅球) = \\frac{3}{5}$、$男生=18$
+   - ✅ 正確寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、男生有 $18$ 人
+   - P() 括號內【只能放英文字母】(如 P(A), P(B))。
 2. 影像破損極致還原：【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」。
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
@@ -406,7 +406,7 @@ createApp({
 2. 【長篇計算排版強制要求（防擠壓破圖）】：
    解答的計算過程，【絕對禁止】把多個步驟的算式全部塞進同一個 $ $ 裡面！這會導致公式過長而崩潰！
    必須把每一個算式「獨立分開包覆」，並且用 <br> 換行！
-   ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破圖)
+   ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破壞排版)
    ✅ 正確排版：$A=1$<br>$B=2$<br>$C=3$<br>$\\implies D=4$
 3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！
 4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
@@ -514,7 +514,7 @@ createApp({
             return q;
         },
 
-        // 🌟 【V9.7 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
+        // 🌟 【V9.8 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
         formatMath(text) {
             if (!text) return '';
             
@@ -523,6 +523,10 @@ createApp({
             // 🌟 1. 抽離中文：強制將 P(中文) 轉為純文字，避免送入公式引擎變成 ###### 亂碼
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
+
+            // 🌟 2. 全域替換 < 與 >，徹底消滅 Word HTML 解析崩潰產生的 ########### 亂碼
+            // 由於這時還沒有生成真正的 HTML（如 <br>, <table>），所以可以安全轉譯，不會破壞結構
+            placeholderText = placeholderText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
             // 基礎字元修復與防呆
             placeholderText = placeholderText.replace(/#+/g, '');
@@ -536,7 +540,7 @@ createApp({
             placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
             placeholderText = placeholderText.replace(/`/g, '');
             
-            // 🌟 2. 矩陣修復：強制把所有小括號矩陣 pmatrix 轉為中括號矩陣 bmatrix
+            // 🌟 3. 矩陣修復：強制把所有小括號矩陣 pmatrix 轉為中括號矩陣 bmatrix
             placeholderText = placeholderText.replace(/pmatrix/g, 'bmatrix');
             placeholderText = placeholderText.replace(/\\left\(\s*\\begin\{array\}([\s\S]+?)\\end\{array\}\s*\\right\)/g, '\\left[ \\begin{array}$1\\end{array} \\right]');
             
@@ -555,6 +559,12 @@ createApp({
             
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
+
+                // 🌟 還原剛剛轉譯的大於小於符號給公式引擎，確保公式內顯示正常
+                cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+                // 🌟 終極防呆：強制移除送往圖片引擎的中文字符，這是 CodeCogs 產生 Unbalanced Eqn 或無效圖片的最大元凶
+                cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
@@ -583,6 +593,7 @@ createApp({
                 let openBraces = (cleanTex.match(/\{/g) || []).length;
                 let closeBraces = (cleanTex.match(/\}/g) || []).length;
                 if (openBraces > closeBraces) cleanTex += '}'.repeat(openBraces - closeBraces);
+                if (closeBraces > openBraces) cleanTex = '{'.repeat(closeBraces - openBraces) + cleanTex;
                 
                 let leftCount = (cleanTex.match(/\\left\b/g) || []).length;
                 let rightCount = (cleanTex.match(/\\right\b/g) || []).length;
@@ -614,16 +625,14 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 🌟 3. 捕捉正規公式區塊 (防止 $ 跨越表格線 | 導致 Unbalanced Eqn)
-            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
+            // 🌟 4. 捕捉正規公式區塊 (允許 | 以支援絕對值 $|x-5| < |8-5|$，但絕不跨越換行避免 Unbalanced)
+            placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            // 💡 安全捕捉：絕不跨越 | (表格) 或換行，從根源消滅 Unbalanced Eqn
-            placeholderText = placeholderText.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 🌟 4. 自動搶救裸奔公式 (解決 AI 忘記加 $ 的 \frac 導致文字裸奔)
-            // 支援一層巢狀括號 (如 \frac{\sqrt{3}}{2})，並強制轉換為圖片公式
-            placeholderText = placeholderText.replace(/\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m, false));
+            // 🌟 5. 自動搶救裸奔公式 (解決 AI 忘記加 $ 的 \frac 導致文字裸奔與破圖)
+            placeholderText = placeholderText.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
             placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
             placeholderText = placeholderText.replace(/\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m, true));
@@ -671,13 +680,10 @@ createApp({
             placeholderText = parseMarkdownTables(placeholderText);
             placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
-            // 🌟 5. 圖片渲染回歸與最後保護
+            // 🌟 6. 圖片渲染回歸與最後保護
             let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
-                
-                // 即使 AI 還是用了中文，我們盡量用 \text 包起來防止語法報錯 (這是最後一道保險)
-                tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 // 防破圖：過濾換行符號與未跳脫的 % 符號
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
