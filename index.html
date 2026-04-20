@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.9 完美排錯大師版 byKC</title>
+    <title>數學出題小幫手 - V10.0 滿分排錯大師版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -340,9 +340,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.9 -->
+    <!-- 🌟 落款升級為 V10.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.9 完美排錯大師版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.0 滿分排錯大師版 byKC</span>
     </footer>
 </div>
 
@@ -390,7 +390,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【V9.9 終極防線提示詞】：最嚴格規範 AI 行為，徹底消滅擠壓破圖與中英混雜
+        // 🌟 【V10.0 終極防線提示詞】：最嚴格規範 AI 行為，徹底消滅擠壓破圖與中英混雜
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
@@ -413,7 +413,7 @@ createApp({
 4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
 5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。
 6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。
-7. 絕對值與長度一律使用單直線 $| |$。
+7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
 1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。
@@ -516,7 +516,7 @@ createApp({
             return q;
         },
 
-        // 🌟 【V9.9 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
+        // 🌟 【V10.0 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
         formatMath(text) {
             if (!text) return '';
             
@@ -525,6 +525,12 @@ createApp({
             // 🌟 1. 抽離中文：強制將 P(中文) 轉為純文字，避免送入公式引擎變成 ###### 亂碼
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
+
+            // 🌟 1.2 統一減號：將各種全形減號、長短破折號、數學專用減號統一轉為 ASCII 標準減號，避免 CodeCogs 渲染出 ## 缺字亂碼
+            placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
+            
+            // 先把 AI 可能當作減號的連續井字號 ## 轉換為 -
+            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
 
             // 🌟 1.5 保護 AI 可能生成的 <br> 標籤，避免被轉譯為 &lt;br&gt; 變成純文字顯示
             placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
@@ -537,7 +543,7 @@ createApp({
             placeholderText = placeholderText.replace(/@@BR@@/g, '<br>');
 
             // 基礎字元修復與防呆
-            placeholderText = placeholderText.replace(/#+/g, '');
+            placeholderText = placeholderText.replace(/#+/g, ''); // 清除剩下的孤兒 # (如 Markdown 標題)
             placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
             placeholderText = placeholderText.replace(/\x0Dightharpoonup/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\x0Dightarrow/g, '\\rightarrow');
@@ -545,7 +551,6 @@ createApp({
             placeholderText = placeholderText.replace(/\x0Crac\b/g, '\\frac'); 
             placeholderText = placeholderText.replace(/\x08eta\b/g, '\\beta');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
-            placeholderText = placeholderText.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
             placeholderText = placeholderText.replace(/`/g, '');
             
             // 🌟 3. 矩陣修復：強制把所有小括號矩陣 pmatrix 轉為中括號矩陣 bmatrix
