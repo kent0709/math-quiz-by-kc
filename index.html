@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.1 byKC_Test</title>
+    <title>數學出題小幫手 - V10.1 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -261,7 +261,7 @@
             
             <div class="mb-6 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
-                    <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小
+                    <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小 <span class="text-gray-400 ml-2 font-normal text-xs">(可留空不填)</span>
                 </label>
                 <div class="flex flex-col md:flex-row gap-3 items-center">
                     <input v-model="targetUnit" type="text" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white">
@@ -351,7 +351,7 @@
     
     <!-- 🌟 落款升級為 V10.1 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.1 byKC_Test</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.1 byKC</span>
     </footer>
 </div>
 
@@ -439,19 +439,31 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        // 🌟 進度條動畫邏輯
+        // 🌟 修正後的進度條動畫邏輯 (平滑的前中後節奏)
         startLoadingProgress() {
             this.loadingProgress = 0;
             this.progressInterval = setInterval(() => {
-                if (this.loadingProgress < 95) {
-                    this.loadingProgress += Math.floor(Math.random() * 3) + 1;
-                    if (this.loadingProgress > 95) this.loadingProgress = 95;
+                if (this.loadingProgress < 60) {
+                    this.loadingProgress += Math.floor(Math.random() * 2) + 1; // 1~2% 穩步上升
+                } else if (this.loadingProgress < 85) {
+                    this.loadingProgress += Math.floor(Math.random() * 2); // 0~1% 稍微放慢
+                } else if (this.loadingProgress < 95) {
+                    if (Math.random() > 0.5) this.loadingProgress += 1; // 偶爾加 1%，營造快完成的等待感
                 }
-            }, 300);
+            }, 400); // 拉長間隔，不要一開始就衝到95%
         },
         finishLoadingProgress() {
             clearInterval(this.progressInterval);
-            this.loadingProgress = 100;
+            // 95% 到 100% 快速衝刺
+            let fastForward = setInterval(() => {
+                if (this.loadingProgress < 100) {
+                    this.loadingProgress += 2;
+                    if (this.loadingProgress >= 100) {
+                        this.loadingProgress = 100;
+                        clearInterval(fastForward);
+                    }
+                }
+            }, 20); // 極快間隔，爽快收尾
         },
 
         handleTextbookUpload(event) { 
