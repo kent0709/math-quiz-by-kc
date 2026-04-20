@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.4 圖片公式穩定版 byKC</title>
+    <title>數學出題小幫手 - V9.5 圖片公式完美排錯版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -340,9 +340,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.4 -->
+    <!-- 🌟 落款升級為 V9.5 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.4 圖片公式穩定版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.5 圖片公式完美排錯版 byKC</span>
     </footer>
 </div>
 
@@ -390,6 +390,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
+        // 🌟 【V9.5 殺手級提示詞修正】：杜絕 P(中文)、強調分數格式與矩陣括號
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下分類規範，以利系統解析：
@@ -399,20 +400,20 @@ createApp({
 2. 邏輯反推：你必須發揮數學專業，從前後文「完美反推並填補」遺失的方程式或變數！絕對不准偷懶跳過！
 3. 嚴禁任何雜訊：【絕對禁止】在解答或題目中輸出「#」、「###」等亂碼符號！
 
-=== 📐 二、數學公式與符號規範 ===
-1. $ 符號全面包覆（拒絕代碼裸奔）：所有數學式、數字、變數、方程式，【必須且完整連同代號】用 $ $ 符號前後成對包住！
-   - ✅ 正確包覆：法向量為 $\\overset{\\rightharpoonup}{n_1}=(1,1,0)$
-2. 向量強制規範：表示向量時，【一律強制使用】\\overset{\\rightharpoonup}{AB} 或 \\overset{\\rightharpoonup}{a}。
-3. 線段與距離強制規範：表示兩點間的距離或線段長度時，【一律強制使用】\\overline{AB}，上面必須要有橫線！
-4. 分數強制規範：分數【絕對禁止】使用斜線，必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆！
-5. 聯立方程組：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。禁止用 array 或 align！
-6. 長公式強制換行：詳解中的長連等式，【絕對禁止】全部塞在同一個 $ $ 內！必須在等號處斷開，等號直接寫在外面。
-7. 符號防呆：
-   - 減號請正常使用「-」，絕對不可寫成「##」！
-   - 絕對值、向量長度、外積一律使用單直線 $| |$，絕對禁止使用雙直線 $|| ||$ 或 \\lVert \\rVert！
+=== 📐 二、數學公式與符號規範（防破圖核心） ===
+1. $ 符號全面包覆：所有數學式、數字、變數、方程式，【必須且完整連同代號】用 $ $ 符號前後成對包住！
+2. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(渲染引擎遇到中文會變成 ###### 亂碼或 Unbalanced Eqn 破圖！)
+   - ❌ 錯誤寫法：$P(紅球)$、$\\frac{男生}{全班}$、$3人$
+   - ✅ 正確寫法：抽出紅球的機率 $P(R)$、$\\frac{18}{50}$、$3$ 人
+   - 機率的 P() 裡面只能放英文字母代號，並在文字中定義代號！表格內的數字請直接輸出純數字，不要加 $ $。
+3. 方陣與矩陣：表示矩陣時，【強制使用】 bmatrix（中括號 $\\begin{bmatrix} ... \\end{bmatrix}$），絕對禁止使用 pmatrix（小括號）！
+4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
+5. 分數強制規範：分數【絕對禁止】使用斜線，必須一律轉換為標準的 \\frac{1}{2} 格式，且分子分母【必須】用大括號 {} 完整包覆（例如：$\\frac{7}{25}$）！
+6. 聯立方程組：遇到聯立方程式，【絕對必須】使用 \\begin{cases} ... \\end{cases}！且每行結尾【必須】加上 \\\\\\\\ (JSON雙跳脫) 來換行。禁止用 array 或 align！
+7. 符號防呆：絕對值、向量長度、外積一律使用單直線 $| |$，絕對禁止使用雙直線 $|| ||$ 或 \\lVert \\rVert！
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
-1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}, \\\\theta, \\\\begin{cases}）。
+1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須跳脫寫成雙反斜線 \\\\（例如：\\\\frac{1}{2}, \\\\theta, \\\\begin{bmatrix}）。
 2. 換行符號清零：所有字串中【絕對禁止】包含純文字換行代碼（\\n, \\\\n, \\r, \\\\r）。文字敘述請直接以單行字串輸出。
 3. 選項 (options)：選擇題【強制】在 'options' 陣列中提供四個選項，並加上 (A)(B)(C)(D) 標號。
 
@@ -512,7 +513,7 @@ createApp({
             return q;
         },
 
-        // 🌟 【V9.4】保留了 V9.3 強大的正則修復，但完全退回使用穩定的 CodeCogs 圖片輸出，不再強求 Word 原生。
+        // 🌟 【V9.5 圖片公式排錯核心】
         formatMath(text) {
             if (!text) return '';
             
@@ -541,6 +542,12 @@ createApp({
             placeholderText = placeholderText.replace(/','='?\s*/g, ' = ');
             placeholderText = placeholderText.replace(/','/g, '<br>');
 
+            // 🌟 自動搶救 1：防止 AI 忘記為 \frac 分數加 $$ (解決裸奔分數破圖)
+            placeholderText = placeholderText.replace(/(^|[^$\\])(\\frac\s*\{[^{}]+\}\s*\{[^{}]+\})(?!\$)/g, '$1$$$2$$');
+            
+            // 🌟 自動搶救 2：如果 AI 不聽話硬是在公式中寫 P(中文字)，強制把中文抽離公式，避免 ###### 破圖
+            placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)\)\$/g, 'P($1)');
+
             let mathBlocks = [];
             
             const saveMath = (tex, isBlock) => {
@@ -552,6 +559,9 @@ createApp({
                 
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
+                
+                // 🌟 自動搶救 3：方陣括號修正，強制把小括號矩陣轉為中括號矩陣
+                cleanTex = cleanTex.replace(/pmatrix/g, 'bmatrix');
 
                 const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
@@ -666,11 +676,11 @@ createApp({
             placeholderText = parseMarkdownTables(placeholderText);
             placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
-            // 🌟 回歸：使用穩定的 CodeCogs 圖片渲染，並保留對中文字的自動 \text{} 防護
+            // 圖片渲染回歸與最後保護
             let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
-                // 加入 \text 包覆保護中文，避免 CodeCogs 解析失敗
+                // 加入 \text 包覆保護中文，雖然這只是最後一道防線 (主要靠 Prompt 跟正則把中文抽出)
                 tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 // 防破圖：過濾換行符號與未跳脫的 % 符號
@@ -943,7 +953,7 @@ ${this.aiFormatRules}`;
             }
         },
 
-        // 🌟 【V9.4 核心降級修復】移除複雜的 DOM 轉換，純粹寫入 HTML 讓 Word 抓取圖片，確保零報錯！
+        // 🌟 退回原版穩定的打包機制，並保留對齊與無報錯優勢
         downloadWord() {
             this.showPreviewConsole = true; 
             const status = document.getElementById('status-message');
@@ -971,7 +981,7 @@ ${this.aiFormatRules}`;
                     </style>
                     </head><body><div class="WordSection1">`;
 
-                    let contentHTML = ""; // 暫存所有考卷結構
+                    let contentHTML = ""; 
                     let allQuestions = [];
                     let sectionNum = ['一', '二', '三'];
                     let sectionIdx = 0;
@@ -1114,7 +1124,6 @@ ${this.aiFormatRules}`;
                         });
                     }
 
-                    // 🌟 簡單粗暴：直接將 HTML 寫入 Word，不再進行複雜 DOM 解析
                     docHTML += contentHTML;
                     docHTML += `</div></body></html>`;
 
