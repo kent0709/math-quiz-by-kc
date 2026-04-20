@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V9.8 終極防線版 byKC</title>
+    <title>數學出題小幫手 - V9.9 完美排錯大師版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -284,7 +284,7 @@
         <!-- 區塊 3：題型與配分設定 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
+                <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">3</span>
                 題型與配分設定
             </h2>
             <div class="space-y-4">
@@ -340,9 +340,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V9.8 -->
+    <!-- 🌟 落款升級為 V9.9 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.8 終極防線版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V9.9 完美排錯大師版 byKC</span>
     </footer>
 </div>
 
@@ -390,7 +390,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【V9.8 終極防線提示詞】：最嚴格規範 AI 行為，徹底消滅擠壓破圖與中文亂碼
+        // 🌟 【V9.9 終極防線提示詞】：最嚴格規範 AI 行為，徹底消滅擠壓破圖與中英混雜
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
@@ -407,7 +407,8 @@ createApp({
    解答的計算過程，【絕對禁止】把多個步驟的算式全部塞進同一個 $ $ 裡面！這會導致公式過長而崩潰！
    必須把每一個算式「獨立分開包覆」，並且用 <br> 換行！
    ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破壞排版)
-   ✅ 正確排版：$A=1$<br>$B=2$<br>$C=3$<br>$\\implies D=4$
+   ✅ 正確排版：由已知可得 $A=1$，<br>代入公式得到 $B=2$，<br>進而推導出 $C=3$，<br>最後得出 $D=4$。
+   (請確實把長算式切斷，並用繁體中文與 <br> 串接！)
 3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！
 4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
 5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。
@@ -421,7 +422,8 @@ createApp({
 
 === 📝 四、題目與詳解內容要求 ===
 1. 數據變更強制要求：擷取素材題目時，必須修改數字重新出題，並重新計算正確答案。
-2. 純中文詳解：'solution' 欄位只准放純中文與排版好的公式。所有的思考與草稿請丟入 'thought_process'！`;
+2. 【嚴禁英文敘述】：解答與詳解中，除了數學變數 (如 x, y, k, P, A) 之外，【絕對禁止】出現任何英文單字或句子 (例如 Let, Therefore, Then, Ans, step 等)！請全部使用純繁體中文說明。
+3. 純中文詳解：'solution' 欄位只准放純中文與排版好的公式。所有的思考與草稿請丟入 'thought_process'！`;
         }
     },
     methods: {
@@ -514,7 +516,7 @@ createApp({
             return q;
         },
 
-        // 🌟 【V9.8 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
+        // 🌟 【V9.9 圖片公式排錯核心】徹底消滅裸奔 frac、Unbalanced Eqn 與 ###### 亂碼
         formatMath(text) {
             if (!text) return '';
             
@@ -524,9 +526,15 @@ createApp({
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
 
+            // 🌟 1.5 保護 AI 可能生成的 <br> 標籤，避免被轉譯為 &lt;br&gt; 變成純文字顯示
+            placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
+
             // 🌟 2. 全域替換 < 與 >，徹底消滅 Word HTML 解析崩潰產生的 ########### 亂碼
-            // 由於這時還沒有生成真正的 HTML（如 <br>, <table>），所以可以安全轉譯，不會破壞結構
+            // 由於這時還沒有生成真正的 HTML（如 <table>），所以可以安全轉譯，不會破壞結構
             placeholderText = placeholderText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // 🌟 2.5 恢復被保護的 <br> 標籤
+            placeholderText = placeholderText.replace(/@@BR@@/g, '<br>');
 
             // 基礎字元修復與防呆
             placeholderText = placeholderText.replace(/#+/g, '');
@@ -684,6 +692,9 @@ createApp({
             let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
+                
+                // 即使 AI 還是用了中文，我們盡量用 \text 包起來防止語法報錯 (這是最後一道保險)
+                tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 // 防破圖：過濾換行符號與未跳脫的 % 符號
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
