@@ -264,7 +264,7 @@
                     <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小 <span class="text-gray-400 ml-2 font-normal text-xs">(可留空不填)</span>
                 </label>
                 <div class="flex flex-col md:flex-row gap-3 items-center">
-                    <input v-model="targetUnit" type="text" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white">
+                    <textarea v-model="targetUnit" rows="3" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white resize-y min-h-[80px]"></textarea>
                     <span class="text-gray-400 font-bold text-sm">或</span>
                     <div class="relative overflow-hidden w-full md:w-auto border border-dashed border-yellow-400 bg-white rounded-lg px-4 py-2 hover:bg-yellow-100 transition cursor-pointer flex items-center justify-center">
                         <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".jpg,.png,.jpeg" @change="handleScopeUpload">
@@ -443,14 +443,14 @@ createApp({
         startLoadingProgress() {
             this.loadingProgress = 0;
             this.progressInterval = setInterval(() => {
-                if (this.loadingProgress < 60) {
-                    this.loadingProgress += Math.floor(Math.random() * 2) + 1; // 1~2% 穩步上升
+                if (this.loadingProgress < 50) {
+                    if (Math.random() > 0.2) this.loadingProgress += 1; // 前半段刻意放慢
                 } else if (this.loadingProgress < 85) {
-                    this.loadingProgress += Math.floor(Math.random() * 2); // 0~1% 稍微放慢
+                    if (Math.random() > 0.5) this.loadingProgress += 1; // 中半段繼續緩步
                 } else if (this.loadingProgress < 95) {
-                    if (Math.random() > 0.5) this.loadingProgress += 1; // 偶爾加 1%，營造快完成的等待感
+                    if (Math.random() > 0.7) this.loadingProgress += 1; // 逼近 95% 時極慢，避免卡住感
                 }
-            }, 400); // 拉長間隔，不要一開始就衝到95%
+            }, 600); // 整體間隔從 400 拉長到 600，讓進度條跑得更均衡
         },
         finishLoadingProgress() {
             clearInterval(this.progressInterval);
