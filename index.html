@@ -401,7 +401,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【升級】引入選擇題先解題後生選項與答案平均分佈規則
+        // 🌟 【升級】新增第 9 點：排列組合符號 C/P 的強制排版指令，杜絕上下顛倒
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
@@ -426,6 +426,7 @@ createApp({
 6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。
 7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！
 8. 角度符號：角度請一律使用 ^{\\circ}，絕對禁止使用中文「度」或符號「°」！(例如：$30^{\\circ}$)
+9. 排列組合符號：台灣標準表示法為「n 在上、k 在下」。請一律強制寫成 C^{n}_{k} 或 P^{n}_{k}（例如 C 6 取 3 必須寫成 C^{6}_{3}），絕對禁止上下顛倒！
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
 1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。
@@ -443,22 +444,20 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        // 🌟 修正後的進度條動畫邏輯 (平滑的前中後節奏)
         startLoadingProgress() {
             this.loadingProgress = 0;
             this.progressInterval = setInterval(() => {
                 if (this.loadingProgress < 50) {
-                    if (Math.random() > 0.2) this.loadingProgress += 1; // 前半段刻意放慢
+                    if (Math.random() > 0.2) this.loadingProgress += 1; 
                 } else if (this.loadingProgress < 85) {
-                    if (Math.random() > 0.5) this.loadingProgress += 1; // 中半段繼續緩步
+                    if (Math.random() > 0.5) this.loadingProgress += 1; 
                 } else if (this.loadingProgress < 95) {
-                    if (Math.random() > 0.7) this.loadingProgress += 1; // 逼近 95% 時極慢，避免卡住感
+                    if (Math.random() > 0.7) this.loadingProgress += 1; 
                 }
-            }, 600); // 整體間隔從 400 拉長到 600，讓進度條跑得更均衡
+            }, 600); 
         },
         finishLoadingProgress() {
             clearInterval(this.progressInterval);
-            // 95% 到 100% 快速衝刺
             let fastForward = setInterval(() => {
                 if (this.loadingProgress < 100) {
                     this.loadingProgress += 2;
@@ -467,7 +466,7 @@ createApp({
                         clearInterval(fastForward);
                     }
                 }
-            }, 20); // 極快間隔，爽快收尾
+            }, 20); 
         },
 
         handleTextbookUpload(event) { 
@@ -572,7 +571,6 @@ createApp({
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
             
-            // 🌟 處理 30度 或是 45° 的自動轉譯，避免 CodeCogs 顯示 # 亂碼
             placeholderText = placeholderText.replace(/°/g, '^{\\circ}');
             placeholderText = placeholderText.replace(/(\d+)\s*度(?!\w)/g, '$1^{\\circ}');
 
@@ -594,6 +592,9 @@ createApp({
             
             placeholderText = placeholderText.replace(/pmatrix/g, 'bmatrix');
             placeholderText = placeholderText.replace(/\\left\(\s*\\begin\{array\}([\s\S]+?)\\end\{array\}\s*\\right\)/g, '\\left[ \\begin{array}$1\\end{array} \\right]');
+            
+            // 🌟 終極防呆：強制將 C_n^k 或 P_n^k 上下顛倒的錯誤寫法，修復為 C^n_k (n在上，k在下)
+            placeholderText = placeholderText.replace(/\\?([CP])_\{?([0-9a-zA-Z]+)\}?\^\{?([0-9a-zA-Z]+)\}?/g, '$1^{$2}_{$3}');
             
             placeholderText = placeholderText.replace(/(^|[^\\])begin\{/g, '$1\\begin{');
             placeholderText = placeholderText.replace(/(^|[^\\])end\{/g, '$1\\end{');
