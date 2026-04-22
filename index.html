@@ -535,6 +535,10 @@ createApp({
                     parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                 });
                 q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
+                
+                // 🌟 【自動過濾】防呆清除 AI 輸出的 "string" 佔位符
+                q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.trim() !== '');
+                
                 while (q.options.length < 4) { q.options.push(`選項待補`); }
                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                 q.options = q.options.map((opt, i) => {
@@ -889,6 +893,11 @@ createApp({
         },
 
         processAIFeedback(quizData, isReplenish = false) {
+            // 🌟 【自動過濾】先剔除 AI 偷懶回傳的 string 佔位符題型
+            if (quizData.questions && Array.isArray(quizData.questions)) {
+                quizData.questions = quizData.questions.filter(q => q.question && q.question.toLowerCase() !== 'string' && q.question.trim() !== '');
+            }
+            
             const tempGroupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
             
             quizData.questions.forEach(q => {
@@ -946,6 +955,7 @@ createApp({
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️若要求總題數超過 10 題，為了確保出題品質與避免伺服器超時，你可以先產出部分題目，後續我會透過系統「繼續分段出題」補齊！)
 【要求】：${this.examRules}
+⚠️絕對警告：【嚴禁】在題目或選項中回傳 "string" 等佔位符字眼，必須是真正的數學題目與算式！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -988,6 +998,7 @@ ${this.aiFormatRules}`;
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
 【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
+⚠️絕對警告：【嚴禁】在題目或選項中回傳 "string" 等 JSON Schema 佔位符字眼，這會導致系統崩潰，請務必給出真實的數學題目！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1029,7 +1040,8 @@ ${this.aiFormatRules}`;
                     <meta charset="utf-8">
                     <title>數學考卷</title>
                     <style>
-                        @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 1.5cm; }
+                        /* 🌟 加入 mso-footer 設定，讓頁碼順利顯示 */
+                        @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 1.5cm; mso-footer-margin: 1.0cm; mso-footer: f1; }
                         div.WordSection1 { page: WordSection1; }
                         body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
                         p { margin: 0 0 10px 0; }
@@ -1181,7 +1193,15 @@ ${this.aiFormatRules}`;
                         });
                     }
 
+                    // 🌟 加入 Word 頁尾區塊（利用 mso-element:footer 與 mso-field-code 自動編碼頁數）
                     docHTML += contentHTML;
+                    docHTML += `
+                    <div style="mso-element:footer" id="f1">
+                        <p style="text-align: center; font-size: 11pt; font-family: 'Times New Roman', serif;">
+                            - <span style="mso-field-code:' PAGE '"></span> -
+                        </p>
+                    </div>`;
+                    
                     docHTML += `</div></body></html>`;
 
                     const blob = new Blob(['\ufeff', docHTML], { type: 'application/msword' });
