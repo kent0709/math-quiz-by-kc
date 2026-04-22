@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.1 byKC</title>
+    <title>數學出題小幫手 - V10.2 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -75,8 +75,8 @@
                         <i class="fas fa-list-check mr-2 text-teal-600"></i>本次出題總覽 (目前共 {{ previewQuestions.length }} 題)
                     </h4>
                     <div class="flex gap-3">
-                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-red-500 bg-red-50 px-3 py-1 rounded-lg border border-red-100">
-                            ⚠️ 距離預設題數還缺 {{ missingQuestions.total }} 題
+                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-red-500 bg-red-50 px-3 py-1 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" @click="replenishQuestions">
+                            ⚠️ 距離預設題數還缺 {{ missingQuestions.total }} 題 (可點擊繼續出題)
                         </span>
                         <span v-else class="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
                             ✅ 題數符合設定
@@ -117,15 +117,15 @@
                     <i class="fas fa-arrow-left mr-2"></i>返回修改設定
                 </button>
                 <div class="flex gap-4">
-                    <!-- 🌟 補題按鈕加上進度條特效 -->
+                    <!-- 🌟 分段補題按鈕升級 -->
                     <button v-if="missingQuestions.total > 0" @click="replenishQuestions" :disabled="isReplenishing" class="relative overflow-hidden px-6 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition shadow-md disabled:opacity-90 disabled:cursor-not-allowed flex items-center">
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
-                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-magic mr-2"></i>補足刪除的 {{ missingQuestions.total }} 題</span>
+                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>繼續分段出題 (還缺 {{ missingQuestions.total }} 題)</span>
                         <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out" :style="{ transform: 'scale(' + (0.95 + loadingProgress * 0.001) + ')' }">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 補題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
+                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
                         </span>
                     </button>
-                    <!-- 升級版按鈕：顯示打包狀態且不會關閉視窗 -->
+                    <!-- 打包按鈕 -->
                     <button @click="downloadWord" :disabled="isDownloading" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
                         <span v-if="!isDownloading"><i class="fas fa-file-word mr-2 text-xl"></i>確認無誤，打包下載</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2 text-xl"></i>打包中...</span>
@@ -349,9 +349,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.1 -->
+    <!-- 🌟 落款升級為 V10.2 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.1 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.2 byKC</span>
     </footer>
 </div>
 
@@ -424,6 +424,7 @@ createApp({
 5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。
 6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。
 7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！
+8. 角度符號：角度請一律使用 ^{\\circ}，絕對禁止使用中文「度」或符號「°」！(例如：$30^{\\circ}$)
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
 1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。
@@ -563,6 +564,10 @@ createApp({
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
+            
+            // 🌟 處理 30度 或是 45° 的自動轉譯，避免 CodeCogs 顯示 # 亂碼
+            placeholderText = placeholderText.replace(/°/g, '^{\\circ}');
+            placeholderText = placeholderText.replace(/(\d+)\s*度(?!\w)/g, '$1^{\\circ}');
 
             placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
 
@@ -936,7 +941,7 @@ createApp({
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes} (⚠️請你務必「精準」依照此數量的題型出題！絕對不可多出或少於指定題數！)
+【題型配置】：${activeTypes} (⚠️若要求總題數超過 10 題，為了確保出題品質與避免伺服器超時，你可以先產出部分題目，後續我會透過系統「繼續分段出題」補齊！)
 【要求】：${this.examRules}
 ${this.aiFormatRules}`;
 
@@ -976,10 +981,10 @@ ${this.aiFormatRules}`;
                                            .map(([k, v]) => `${k}: 需要補充 ${v} 題`)
                                            .join('，');
                                            
-                const promptText = `你現在是一位專業的數學出題助理。我們目前正在進行「二次補充出題」。
+                const promptText = `你現在是一位專業的數學出題助理。我們目前正在進行「後續分段補題」。
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
-【要求】：請務必出【全新、不同考點】的題目，不要跟之前出過的類似。${this.examRules}
+【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
