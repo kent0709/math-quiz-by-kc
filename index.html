@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.8 極速提效版 byKC</title>
+    <title>數學出題小幫手 - V11.9 終極修復版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -347,9 +347,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.8 -->
+    <!-- 🌟 落款升級為 V11.9 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.8 極速提效版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.9 終極修復版 byKC</span>
     </footer>
 </div>
 
@@ -712,11 +712,11 @@ createApp({
             t = t.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             t = t.replace(/\$([^\$]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 3. 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機
-            t = t.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m.trim(), false));
-            t = t.replace(/(^|[^\$\\])\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
-            t = t.replace(/(^|[^\$\\])\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
-            t = t.replace(/(^|[^\$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
+            // 3. 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機 (修復 p2.trim 錯誤)
+            t = t.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            t = t.replace(/(^|[^\$\\])(\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            t = t.replace(/(^|[^\$\\])(\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            t = t.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
 
             // 4. 清理無意義標籤
             t = t.replace(/\\_+/g, '').replace(/_{2,}/g, '')
