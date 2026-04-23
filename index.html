@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.1 完美無雷版 byKC</title>
+    <title>數學出題小幫手 - V11.2 完美流暢版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -280,6 +280,7 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
+                <!-- 🌟 高度加大的設定：確保要求都能清楚顯示，不會被切斷一半 -->
                 <textarea v-model="examRules" rows="8" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
@@ -349,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.1 -->
+    <!-- 🌟 落款升級為 V11.2 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 完美無雷版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.2 完美版 byKC</span>
     </footer>
 </div>
 
@@ -406,35 +407,35 @@ createApp({
                 "【請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下規範】",
                 "",
                 "=== 💡 一、破圖與亂碼「終極自癒」機制 ===",
-                "1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰變成 ###### 亂碼或 Unbalanced Eqn)",
-                "   - ❌ 致命錯誤：$P(紅球) = \\frac{3}{5}$、$男生=18$",
-                "   - ✅ 正確寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、男生有 $18$ 人",
-                "   - P() 括號內【只能放英文字母】(如 P(A), P(B))。",
-                "2. 影像破損極致還原：【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」。",
+                "1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰變成 ###### 亂碼)",
+                "   - ❌ 錯誤：$P(紅球) = \\frac{3}{5}$",
+                "   - ✅ 正確：抽出紅球的機率 $P(R) = \\frac{3}{5}$",
+                "2. 影像破損極致還原：【絕對禁止】留下「[無法顯示]」、「[?]」、「[圖]」。",
                 "",
-                "=== 📐 二、數學公式與符號規範（防破圖核心） ===",
-                "1. $ 符號全面且獨立包覆：所有數學式、數字、方程式，甚至單獨的 $S_n$ 或 $\\frac{1}{2}$，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！",
-                "2. 【長篇計算排版強制要求（防擠壓破圖）】：",
-                "   解答的計算過程，【絕對禁止】把多個獨立的步驟、推導、不等式或變數定義全部塞進同一個 $ $ 裡面！這會導致公式過長而崩潰！",
-                "   必須把每一個算式「獨立分開包覆」，並且用中文或 <br> 換行串接！",
-                "   ❌ 致命錯誤 1：$|3x-6| < 12 -12 < 3x-6 < 12 -6 < 3x < 18 -2 < x < 6$ (連鎖推導全部擠在一起)",
-                "   ✅ 正確排版 1：由 $|3x-6| < 12$，<br>可得 $-12 < 3x-6 < 12$，<br>同加 $6$ 得到 $-6 < 3x < 18$，<br>除以 $3$ 得 $-2 < x < 6$。",
-                "   ❌ 致命錯誤 2：$d = \\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}} A=3 B=-4 C_1=k C_2=5 d=2$ (公式與多個變數定義全擠在一起)",
-                "   ✅ 正確排版 2：公式為 $d = \\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}}$。<br>代入 $A=3$、$B=-4$、$C_1=k$、$C_2=5$、$d=2$。",
-                "3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！",
-                "4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。",
-                "5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。",
-                "6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。",
-                "7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！",
+                "=== 📐 二、數學公式與連續變數防擠壓規範（核心） ===",
+                "1. $ 符號獨立包覆：所有數學式、數字、方程式，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！",
+                "2. 【連續變數與數值隔離】：絕對禁止在一個 $ $ 裡面用「空白鍵」隔開多個獨立算式、座標或數字！這會導致字母全部黏在一起破圖！",
+                "   ❌ 致命錯誤 1：$A(x) C(8) |x-8| < |x-5|$ (全部擠在一起)",
+                "   ✅ 正確排版 1：已知點 $A(x)$ 與點 $C(8)$，且滿足 $|x-8| < |x-5|$。",
+                "   ❌ 致命錯誤 2：$\\sigma' = 1.2(8) = 9.6  73  9.6$",
+                "   ✅ 正確排版 2：$\\sigma' = 1.2(8) = 9.6$，新數值為 $73$。",
+                "3. 【長篇計算切斷】：計算過程絕對禁止把多個推導步驟全塞進同一個 $ $！",
+                "   ❌ 致命錯誤：$|3x-6| < 12 -12 < 3x-6 < 12 -2 < x < 6$",
+                "   ✅ 正確排版：由 $|3x-6| < 12$，<br>可得 $-12 < 3x-6 < 12$，<br>進而得出 $-2 < x < 6$。",
+                "4. 方陣與矩陣：強制使用中括號 $\\begin{bmatrix} ... \\end{bmatrix}$，嚴禁 pmatrix！",
+                "5. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。",
+                "6. 分數規範：【絕對禁止】使用斜線，強制轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。",
+                "7. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ 換行。",
+                "8. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」。",
                 "",
                 "=== ⚙️ 三、系統 JSON 格式與跳脫要求 ===",
                 "1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。",
-                "2. 換行符號清零：字串中【絕對禁止】包含純文字換行代碼（\\n, \\r）。文字敘述請直接以單行字串輸出，需要換行處請填入 HTML 的 <br> 標籤。",
+                "2. 換行符號清零：字串中【絕對禁止】包含純文字換行代碼（\\n, \\r）。需要換行處請填入 HTML 的 <br> 標籤。",
                 "3. 選項 (options)：選擇題強制提供 (A)(B)(C)(D) 四個選項。",
                 "",
                 "=== 📝 四、題目與詳解內容要求 ===",
                 "1. 數據變更強制要求：擷取素材題目時，必須修改數字重新出題，並重新計算正確答案。",
-                "2. 【嚴禁英文敘述】：解答與詳解中，除了數學變數 (如 x, y, k, P, A) 之外，【絕對禁止】出現任何英文單字或句子 (例如 Let, Therefore, Then, Ans, step 等)！請全部使用純繁體中文說明。",
+                "2. 【嚴禁英文敘述】：解答與詳解中，【絕對禁止】出現任何英文單字或句子 (例如 Let, Therefore, Then, Ans 等)！請全部使用純繁體中文說明。",
                 "3. 純中文詳解：'solution' 欄位只准放純中文與排版好的公式。所有的思考與草稿請丟入 'thought_process'！"
             ].join('\n');
         }
@@ -442,33 +443,34 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
 
-        // 🌟 擬真級別進度條：流暢、真實、緩步逼近
+        // 🌟 擬真級別進度條：修復過快飆升的問題，增加真實運算節奏感
         startLoadingProgress() {
             this.loadingProgress = 0;
             if (this.progressInterval) clearInterval(this.progressInterval);
             
             this.progressInterval = setInterval(() => {
-                if (this.loadingProgress < 30) {
-                    this.loadingProgress += Math.floor(Math.random() * 3) + 1; // 1~3% (傳輸感)
-                } else if (this.loadingProgress < 60) {
-                    this.loadingProgress += Math.floor(Math.random() * 2) + 1; // 1~2% (AI 思考感)
+                if (this.loadingProgress < 50) {
+                    // 前段：穩定傳輸感
+                    this.loadingProgress = Math.min(100, this.loadingProgress + Math.floor(Math.random() * 4) + 2); 
                 } else if (this.loadingProgress < 85) {
-                    if (Math.random() > 0.3) this.loadingProgress += 1; // 慢慢推進
+                    // 中段：模擬 AI 大腦計算中
+                    this.loadingProgress = Math.min(100, this.loadingProgress + Math.floor(Math.random() * 3) + 1); 
                 } else if (this.loadingProgress < 96) {
-                    if (Math.random() > 0.8) this.loadingProgress += 1; // 幾近暫停，營造真實運算等待
+                    // 尾段：高潮前的懸念等待，不會卡在 98 不動，但會變慢
+                    if (Math.random() > 0.4) this.loadingProgress = Math.min(96, this.loadingProgress + 1); 
                 }
-            }, 300); // 放慢刷新頻率，總歷程更符合真實 AI 出題所需時間 (約 20~30 秒)
+            }, 500); // 調整為 500 毫秒一次，讓總體時間落在合理範圍
         },
         finishLoadingProgress() {
             if (this.progressInterval) clearInterval(this.progressInterval);
             let fastForward = setInterval(() => {
                 if (this.loadingProgress < 100) {
-                    this.loadingProgress = Math.min(100, this.loadingProgress + 3);
+                    this.loadingProgress = Math.min(100, this.loadingProgress + 2);
                     if (this.loadingProgress >= 100) {
                         clearInterval(fastForward);
                     }
                 }
-            }, 10); 
+            }, 20); 
         },
 
         handleTextbookUpload(event) { 
@@ -562,7 +564,7 @@ createApp({
             return q;
         },
 
-        // 🌟 數學引擎：邏輯收斂與徹底避免正則迴圈地雷 (O(N) 線性安全提取)
+        // 🌟 數學引擎：徹底避免正則迴圈地雷與重疊字元
         formatMath(text) {
             if (!text) return '';
             let t = String(text);
@@ -582,7 +584,7 @@ createApp({
             t = t.replace(/\x0Dight\b/g, '\\right');
             t = t.replace(/\x08eta\b/g, '\\beta'); 
             
-            // 處理 FRAC/frac 漏掉反斜線的災難 (避開 Regex 陷阱，直接用精準替換)
+            // 處理 FRAC/frac 漏掉反斜線的災難
             t = t.replace(/\x0Crac\b/gi, '\\frac');
             t = t.replace(/(^|[^\w\\])FRAC\b/gi, '$1\\frac');
             t = t.replace(/(^|[^\w\\])frac\b/gi, '$1\\frac');
@@ -605,6 +607,9 @@ createApp({
                            .replace(/<\s*br\s*\/?>/gi, ' \\\\ ').replace(/@@BR@@/g, ' \\\\ ')
                            .replace(/\n/g, ' \\\\ ').replace(/(\\\\\s*){2,}/g, '\\\\ ')
                            .replace(/["']/g, '').replace(/&quot;/g, '');
+
+                // 🌟 【超級防呆】：如果 AI 還是偷懶把數字/變數用多個空白隔開，強制轉換為 LaTeX 的 \quad 空格，保證絕對不黏在一起破圖
+                c = c.replace(/ {2,}/g, '\\quad ');
 
                 c = c.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}')
                      .replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
@@ -681,8 +686,7 @@ createApp({
                  .replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false))
                  .replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 3. 🌟 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機 (Catastrophic Backtracking)
-            // 將過度寬鬆的 * 匹配改為限定抓取一組大括號內文的結構，保證一瞬間完成解析不卡死
+            // 3. 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機
             t = t.replace(/(^|[^\$\\])(\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
             t = t.replace(/(^|[^\$\\])(\\overset\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
             t = t.replace(/(^|[^\$\\])(\\overline\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
