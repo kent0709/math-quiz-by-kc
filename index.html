@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.10 終極無報錯版 byKC</title>
+    <title>數學出題小幫手 - V11.1 完美無雷版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -54,7 +54,7 @@
                 </p>
                 <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
                     <p class="font-bold mb-1"><i class="fas fa-lightbulb mr-2"></i>建議解決方案：</p>
-                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
+                    <p class="text-sm">遇到必須有圖形的題目，建議您在匯出 Word 考卷後，使用電腦內建的截圖工具，從原題目手動截圖並貼上到 Word 中，這是目前最完美的做法！</p>
                 </div>
             </div>
             <button @click="showImageTutorial = false" class="mt-6 w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">我明白了</button>
@@ -225,6 +225,7 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- 🌟 教科書上傳區 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
@@ -240,6 +241,7 @@
                     </div>
                 </div>
 
+                <!-- 🌟 考卷上傳區 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
@@ -332,14 +334,14 @@
                 </label>
             </div>
 
-            <!-- 🌟 產生試題按鈕 -->
+            <!-- 🌟 產生試題按鈕：滿血沈浸式載入，帶有適度的小變大縮放特效 -->
             <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-90 disabled:cursor-not-allowed">
                 <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-teal-800 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                 <span v-if="!isGenerating" class="relative z-10"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
-                <span v-else class="relative z-10 flex items-center justify-center transition-all duration-300 ease-out text-yellow-300 drop-shadow-md">
+                <span v-else class="relative z-10 flex items-center justify-center transition-all duration-300 ease-out text-yellow-300 drop-shadow-md" :style="{ transform: 'scale(' + (1 + loadingProgress * 0.001) + ')' }">
                     <i class="fas fa-spinner fa-spin mr-3 text-2xl"></i> 
                     <span class="font-bold">AI 出題中...</span> 
-                    <span class="ml-2 font-black transition-all duration-300">{{ loadingProgress }}%</span>
+                    <span class="ml-2 font-black transition-all duration-300" :style="{ fontSize: (1.1 + loadingProgress * 0.003) + 'rem' }">{{ loadingProgress }}%</span>
                 </span>
             </button>
             
@@ -347,9 +349,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.10 -->
+    <!-- 🌟 落款升級為 V11.1 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.10 終極防護修復版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 完美無雷版 byKC</span>
     </footer>
 </div>
 
@@ -440,29 +442,33 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
 
+        // 🌟 擬真級別進度條：流暢、真實、緩步逼近
         startLoadingProgress() {
             this.loadingProgress = 0;
             if (this.progressInterval) clearInterval(this.progressInterval);
+            
             this.progressInterval = setInterval(() => {
-                if (this.loadingProgress < 40) {
-                    this.loadingProgress = Math.min(100, this.loadingProgress + Math.floor(Math.random() * 5) + 2); 
-                } else if (this.loadingProgress < 80) {
-                    this.loadingProgress = Math.min(100, this.loadingProgress + Math.floor(Math.random() * 3) + 1); 
-                } else if (this.loadingProgress < 98) {
-                    this.loadingProgress = Math.min(98, this.loadingProgress + 1); 
+                if (this.loadingProgress < 30) {
+                    this.loadingProgress += Math.floor(Math.random() * 3) + 1; // 1~3% (傳輸感)
+                } else if (this.loadingProgress < 60) {
+                    this.loadingProgress += Math.floor(Math.random() * 2) + 1; // 1~2% (AI 思考感)
+                } else if (this.loadingProgress < 85) {
+                    if (Math.random() > 0.3) this.loadingProgress += 1; // 慢慢推進
+                } else if (this.loadingProgress < 96) {
+                    if (Math.random() > 0.8) this.loadingProgress += 1; // 幾近暫停，營造真實運算等待
                 }
-            }, 100); 
+            }, 300); // 放慢刷新頻率，總歷程更符合真實 AI 出題所需時間 (約 20~30 秒)
         },
         finishLoadingProgress() {
             if (this.progressInterval) clearInterval(this.progressInterval);
             let fastForward = setInterval(() => {
                 if (this.loadingProgress < 100) {
-                    this.loadingProgress = Math.min(100, this.loadingProgress + 2);
+                    this.loadingProgress = Math.min(100, this.loadingProgress + 3);
                     if (this.loadingProgress >= 100) {
                         clearInterval(fastForward);
                     }
                 }
-            }, 20); 
+            }, 10); 
         },
 
         handleTextbookUpload(event) { 
@@ -556,19 +562,19 @@ createApp({
             return q;
         },
 
+        // 🌟 數學引擎：邏輯收斂與徹底避免正則迴圈地雷 (O(N) 線性安全提取)
         formatMath(text) {
             if (!text) return '';
             let t = String(text);
 
+            // 1. 全域字元清洗與修復
             t = t.split('$P(').join('P(').split(')$').join(')');
             t = t.split('P(').join('P(');
             t = t.replace(/[－—–−─]/g, '-');
             t = t.replace(/(?:\\?#){2,}/g, '-');
-
             t = t.replace(/<br\s*\/?>/gi, '@@BR@@')
                  .replace(/</g, '&lt;').replace(/>/g, '&gt;')
                  .replace(/@@BR@@/g, '<br>');
-
             t = t.replace(/#+/g, '');
             t = t.replace(/\x09heta\b/g, '\\theta'); 
             t = t.replace(/\x0Dightharpoonup/g, '\\rightharpoonup'); 
@@ -576,25 +582,23 @@ createApp({
             t = t.replace(/\x0Dight\b/g, '\\right');
             t = t.replace(/\x08eta\b/g, '\\beta'); 
             
-            // 🌟 徹底解決 FRAC 與 \frac 亂碼 (使用純字串取代防止 Regex 解析錯誤)
+            // 處理 FRAC/frac 漏掉反斜線的災難 (避開 Regex 陷阱，直接用精準替換)
             t = t.replace(/\x0Crac\b/gi, '\\frac');
             t = t.replace(/(^|[^\w\\])FRAC\b/gi, '$1\\frac');
             t = t.replace(/(^|[^\w\\])frac\b/gi, '$1\\frac');
             
             t = t.replace(/\bAeqO\b/g, '$A \\neq O$').replace(/\baeqO\b/g, '$a \\neq O$');
             t = t.replace(/`/g, '');
-                 
             t = t.replace(/\$?線段\s*([A-Za-z]{2})\$?/g, '$\\overline{$1}$');
-            
             t = t.replace(/pmatrix/g, 'bmatrix')
                  .replace(/\\left\(\s*\\begin\{array\}([\s\S]+?)\\end\{array\}\s*\\right\)/g, '\\left[ \\begin{array}$1\\end{array} \\right]');
-            
             t = t.replace(/(^|[^\\])\b(begin|end|frac|sqrt)\{/g, '$1\\$2{')
                  .replace(/(^|[^\\])\b(alpha|beta|gamma|pi|tau|omega|mu|sigma|times|cdot|sin|cos|tan|log|ln)\b/g, '$1\\$2');
-
             t = t.replace(/['"]=/g, ' =').replace(/=['"]/g, '= ').replace(/','='?\s*/g, ' = ').replace(/','/g, '<br>');
 
             let mathBlocks = [];
+
+            // 公式保險箱：專門處理並安全封裝所有數學式
             const saveMath = (tex, isBlock) => {
                 let c = tex.trim().replace(/&lt;/g, '<').replace(/&gt;/g, '>')
                            .replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '')
@@ -618,6 +622,7 @@ createApp({
 
                 c = c.replace(/\\?([CP])_\{?([0-9a-zA-Z]+)\}?\^\{?([0-9a-zA-Z]+)\}?/g, '$1^{$2}_{$3}');
 
+                // 括號對稱修復
                 let openB = (c.match(/\{/g) || []).length, closeB = (c.match(/\}/g) || []).length;
                 if (openB > closeB) c += '}'.repeat(openB - closeB);
                 if (closeB > openB) c = '{'.repeat(closeB - openB) + c;
@@ -637,7 +642,7 @@ createApp({
                     c = '\\textstyle ' + c;
                 }
 
-                // 🌟 智慧分流：單純英數字與簡單等式，不經圖片引擎
+                // 🌟 智慧分流：分離簡單變數，減少圖片請求提速
                 let coreTex = c.replace(/\\(?:text|display)style\s*/g, '').trim();
                 let checkTex = coreTex.replace(/[{}]/g, ''); 
                 
@@ -669,23 +674,28 @@ createApp({
                 }
                 return '@@MATHBLOCK' + (mathBlocks.length - 1) + '@@';
             };
-
+            
+            // 2. 首先擷取已經完整包好的公式，避免被後續邏輯誤傷
             t = t.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true))
                  .replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true))
                  .replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false))
                  .replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            t = t.replace(/(?:^|[^\$\\])\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m.trim(), false))
-                 .replace(/(^|[^\$\\])\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false))
-                 .replace(/(^|[^\$\\])\\overline\s*\{[^{}]+\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false))
-                 .replace(/(^|[^\$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
+            // 3. 🌟 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機 (Catastrophic Backtracking)
+            // 將過度寬鬆的 * 匹配改為限定抓取一組大括號內文的結構，保證一瞬間完成解析不卡死
+            t = t.replace(/(^|[^\$\\])(\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
+            t = t.replace(/(^|[^\$\\])(\\overset\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
+            t = t.replace(/(^|[^\$\\])(\\overline\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
+            t = t.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2, true));
 
+            // 4. 清理無意義標籤
             t = t.replace(/\\_+/g, '').replace(/_{2,}/g, '')
                  .replace(/\(\s*\)/g, '').replace(/（\s*）/g, '')
                  .replace(/^[-]{3,}\s*$/gm, '').replace(/(\\-){3,}/g, '')
                  .replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '')
                  .replace(/\\\\n(?!\w)/g, '\n').replace(/\\\\/g, '<br>');
 
+            // 5. 繪製 Markdown 表格
             let parseMarkdownTables = (textStr) => {
                 let lines = textStr.split('\n');
                 let out = [];
@@ -716,6 +726,7 @@ createApp({
             };
             t = parseMarkdownTables(t).replace(/\n+/g, '<br>');
 
+            // 6. 安全回填公式區塊
             let result = t.trim();
             mathBlocks.forEach((block, idx) => {
                 result = result.split('@@MATHBLOCK' + idx + '@@').join(block.html);
@@ -984,6 +995,7 @@ createApp({
                         '    div.WordSection1 { page: WordSection1; }',
                         '    body { font-family: \'標楷體\', \'Times New Roman\', serif; font-size: 14pt; }',
                         '    p { margin: 0 0 10px 0; }',
+                        '    /* 防止圖片公式超出邊界 */',
                         '    img { max-width: 100%; height: auto; }',
                         '</style>',
                         '</head><body><div class="WordSection1">'
@@ -1050,7 +1062,7 @@ createApp({
                                 contentHTML += '<tr>';
                                 for (let j = 0; j < 5; j++) { if (i + j < count) contentHTML += '<td width="20%" style="font-size:14pt; height:35px;">' + (i + j + 1) + '.</td>'; else contentHTML += '<td width="20%"></td>'; }
                                 contentHTML += '</tr><tr>';
-                                for (let j = 0; j < 5; j++) contentHTML += '<td style="height:35px;"></td>';
+                                for (let j = 0; j < 5; j++) { contentHTML += '<td style="height:35px;"></td>'; }
                                 contentHTML += '</tr>';
                             }
                             contentHTML += '</table>';
@@ -1065,7 +1077,7 @@ createApp({
                                 contentHTML += '<tr>';
                                 for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += '<td width="25%" style="font-size:14pt; height:35px;">(' + (i + j + 1) + ')</td>'; else contentHTML += '<td width="25%"></td>'; }
                                 contentHTML += '</tr><tr>';
-                                for (let j = 0; j < 4; j++) contentHTML += '<td style="height:35px;"></td>';
+                                for (let j = 0; j < 4; j++) { contentHTML += '<td style="height:35px;"></td>'; }
                                 contentHTML += '</tr>';
                             }
                             contentHTML += '</table>';
