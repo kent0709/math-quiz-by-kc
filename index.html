@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.3 終極防護流暢版 byKC</title>
+    <title>數學出題小幫手 - V11.4 完美抗殘版 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -121,7 +121,7 @@
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                         <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>繼續分段出題 (還缺 {{ missingQuestions.total }} 題)</span>
                         <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out" :style="{ transform: 'scale(' + (0.95 + loadingProgress * 0.001) + ')' }">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ Math.floor(loadingProgress) }}%</span>
+                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ displayProgress }}%</span>
                         </span>
                     </button>
                     <!-- 打包按鈕 -->
@@ -225,7 +225,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 🌟 教科書上傳區 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
@@ -241,7 +240,6 @@
                     </div>
                 </div>
 
-                <!-- 🌟 考卷上傳區 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
@@ -280,7 +278,6 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
-                <!-- 🌟 放大輸入框，完整顯示要求不被遮擋 -->
                 <textarea v-model="examRules" rows="10" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
@@ -335,14 +332,15 @@
                 </label>
             </div>
 
-            <!-- 🌟 產生試題按鈕：滿血沈浸式載入，帶有適度的小變大縮放特效 -->
+            <!-- 🌟 產生試題按鈕：滿血沈浸式載入，帶有適度的小變大縮放特效 (修復 Vue 報錯) -->
             <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-90 disabled:cursor-not-allowed">
                 <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-teal-800 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                 <span v-if="!isGenerating" class="relative z-10"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
                 <span v-else class="relative z-10 flex items-center justify-center transition-all duration-300 ease-out text-yellow-300 drop-shadow-md" :style="{ transform: 'scale(' + (1 + loadingProgress * 0.001) + ')' }">
                     <i class="fas fa-spinner fa-spin mr-3 text-2xl"></i> 
                     <span class="font-bold">{{ loadingText }}</span> 
-                    <span class="ml-2 font-black transition-all duration-300" :style="{ fontSize: (1.1 + loadingProgress * 0.003) + 'rem' }">{{ Math.floor(loadingProgress) }}%</span>
+                    <!-- 使用 displayProgress 解決 Vue Template 抓不到 Math.floor 的致命錯誤 -->
+                    <span class="ml-2 font-black transition-all duration-300" :style="{ fontSize: (1.1 + loadingProgress * 0.003) + 'rem' }">{{ displayProgress }}%</span>
                 </span>
             </button>
             
@@ -350,9 +348,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.3 -->
+    <!-- 🌟 落款升級為 V11.4 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.3 終極防護流暢版 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.4 完美抗殘版 byKC</span>
     </footer>
 </div>
 
@@ -370,6 +368,7 @@ createApp({
             isDownloading: false,
             showPreviewConsole: false, 
             loadingProgress: 0,
+            displayProgress: 0, // 🌟 新增獨立變數，防止 Vue 畫面當機
             loadingText: "AI 正在出題中...", 
             progressInterval: null, 
             previewQuestions: [], 
@@ -403,7 +402,7 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 重新強化並梳理 AI 指令，強制要求公式切割，嚴禁大鍋炒
+        // 🌟 重新強化 AI 指令：明確禁止連鎖變數與無意義的排列
         aiFormatRules() {
             return [
                 "【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】",
@@ -417,13 +416,13 @@ createApp({
                 "",
                 "=== 📐 二、數學公式與連續變數防擠壓規範（防破圖核心） ===",
                 "1. $ 符號獨立包覆：所有數學式、數字、方程式，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！",
-                "2. 【連續變數與數值大鍋炒】：絕對禁止把多個獨立算式、座標或數字塞進同一個 $ $ 裡面！這會導致字母全部黏在一起破圖！",
-                "   ❌ 致命錯誤 1：$A(x) C(8) |x-8| < |x-5|$ (全部擠在一起)",
-                "   ✅ 正確排版 1：已知點 $A(x)$ 與點 $C(8)$，且滿足 $|x-8| < |x-5|$。",
+                "2. 【連續變數大鍋炒防線】：絕對禁止把多個獨立算式、選項代號或數字塞進同一個 $ $ 裡面！這會導致字母全部黏在一起破圖！",
+                "   ❌ 致命錯誤 1：$|x-5| A(x) C(8) |x-8|$ (選項或變數全擠在一起)",
+                "   ✅ 正確排版 1：$|x-5|$、$A(x)$、$C(8)$、$|x-8|$ (各自分開包覆)",
                 "   ❌ 致命錯誤 2：$\\sigma' = 1.2(8) = 9.6  73  9.6$",
                 "   ✅ 正確排版 2：$\\sigma' = 1.2(8) = 9.6$，新數值為 $73$。",
-                "   ❌ 致命錯誤 3：$|E| = 45  |J| = 38  |E \\cap J| = 15$",
-                "   ✅ 正確排版 3：$|E| = 45$，$|J| = 38$，且 $|E \\cap J| = 15$。",
+                "   ❌ 致命錯誤 3：$A=3 B=-4 C_1=k C_2=5 d=2$",
+                "   ✅ 正確排版 3：代入 $A=3$、$B=-4$、$C_1=k$、$C_2=5$、$d=2$。",
                 "3. 【長篇計算切斷】：計算過程絕對禁止把多個推導步驟全塞進同一個 $ $！",
                 "   ❌ 致命錯誤：$|3x-6| < 12 -12 < 3x-6 < 12 -2 < x < 6$",
                 "   ✅ 正確排版：由 $|3x-6| < 12$，<br>可得 $-12 < 3x-6 < 12$，<br>進而得出 $-2 < x < 6$。",
@@ -450,6 +449,7 @@ createApp({
         // 🌟 擬真級別進度條：流暢、真實、解決卡頓當機
         startLoadingProgress() {
             this.loadingProgress = 0;
+            this.displayProgress = 0;
             this.loadingText = "連線至 AI 伺服器...";
             if (this.progressInterval) clearInterval(this.progressInterval);
             
@@ -469,6 +469,7 @@ createApp({
                     this.loadingText = "排版整理即將完成...";
                 }
                 this.loadingProgress = parseFloat(p.toFixed(1));
+                this.displayProgress = Math.floor(this.loadingProgress); // 🌟 獨立變數供畫面讀取
             }, 200); 
         },
         finishLoadingProgress() {
@@ -477,6 +478,7 @@ createApp({
             let fastForward = setInterval(() => {
                 if (this.loadingProgress < 100) {
                     this.loadingProgress = Math.min(100, this.loadingProgress + 2);
+                    this.displayProgress = Math.floor(this.loadingProgress);
                     if (this.loadingProgress >= 100) {
                         clearInterval(fastForward);
                     }
@@ -575,7 +577,7 @@ createApp({
             return q;
         },
 
-        // 🌟 數學引擎：徹底斬斷連鎖公式，避免破圖，確保渲染順暢
+        // 🌟 數學引擎：徹底避免正則無限迴圈，快速又安全
         formatMath(text) {
             if (!text) return '';
             let t = String(text);
@@ -611,11 +613,11 @@ createApp({
 
             // 🌟 核心防禦：如果 AI 偷懶把多個變數或數字全部塞進一個 $ $ 中，我們強制將其切開成獨立區塊！
             t = t.replace(/\$([^\$]+?)\$/g, (match, p1) => {
-                if (p1.includes('\\begin') || p1.includes('\\cases') || p1.includes('\\text')) return match; 
-                // 只要公式內出現 3 個以上的連續空白，代表 AI 極可能把不同變數大鍋炒了，強制切斷！
-                if (p1.match(/ {3,}/)) {
-                    let parts = p1.split(/ {2,}/).map(x => x.trim()).filter(x => x);
-                    return parts.map(x => '$' + x + '$').join(' &nbsp; ');
+                if (p1.includes('\\begin') || p1.includes('\\cases') || p1.includes('\\text') || p1.includes('array')) return match; 
+                // 只要公式內出現 2 個以上的連續空白，代表 AI 把不同變數大鍋炒了，強制切斷成各自獨立的 $ $！
+                if (p1.match(/\s{2,}/)) {
+                    let parts = p1.split(/\s{2,}/).map(x => x.trim()).filter(x => x);
+                    return parts.map(x => '$' + x + '$').join(' ');
                 }
                 return match;
             });
@@ -706,10 +708,10 @@ createApp({
             t = t.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
 
             // 3. 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機
-            t = t.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
-            t = t.replace(/(^|[^\$\\])(\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
-            t = t.replace(/(^|[^\$\\])(\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2, false));
-            t = t.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2, true));
+            t = t.replace(/(^|[^$\\])\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m, p1) => saveMath(m.trim(), false));
+            t = t.replace(/(^|[^$\\])\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m, p1) => saveMath(m.trim(), false));
+            t = t.replace(/(^|[^$\\])\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g, (m, p1) => saveMath(m.trim(), false));
+            t = t.replace(/(^|[^$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m, p1) => saveMath(m.trim(), true));
 
             // 4. 清理無意義標籤
             t = t.replace(/\\_+/g, '').replace(/_{2,}/g, '')
@@ -938,8 +940,9 @@ createApp({
                     throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
                 }
 
-                // 🌟 讓出執行緒，確保 Vue 能先更新 96% 進度與「繪製中...」的文字
+                // 🌟 讓出執行緒更新狀態
                 this.loadingProgress = 96;
+                this.displayProgress = 96;
                 this.loadingText = "正在處理並繪製數學公式...";
                 await new Promise(r => setTimeout(r, 150));
 
@@ -988,6 +991,7 @@ createApp({
 
                 // 🌟 讓出執行緒更新狀態
                 this.loadingProgress = 96;
+                this.displayProgress = 96;
                 this.loadingText = "正在處理並繪製數學公式...";
                 await new Promise(r => setTimeout(r, 150));
 
