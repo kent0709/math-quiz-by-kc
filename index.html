@@ -429,10 +429,10 @@ createApp({
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
 === 💡 一、破圖與亂碼「終極自癒」機制 ===
-1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰變成 ###### 亂碼或 Unbalanced Eqn)
+1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰)
    - ❌ 致命錯誤：$P(紅球) = \\frac{3}{5}$、$男生=18$
-   - ✅ 正寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、男生有 $18$ 人
-   - P() 括號內【只能放英文字母】(如 P(A), P(B))。
+   - ✅ 正確寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、男生有 $18$ 人
+   - 機率 P() 括號內【只能放英文字母】(如 P(A), P(B))。絕對禁止使用 # 或其他亂碼當作代號！
 2. 影像破損極致還原：【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」。
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
@@ -440,11 +440,10 @@ createApp({
 2. 【長篇計算排版強制要求（防擠壓破圖）】：
    解答的計算過程，【絕對禁止】把多個步驟的算式全部塞進同一個 $ $ 裡面！這會導致公式過長而崩潰！
    必須把每一個算式「獨立分開包覆」，並且用 <br> 換行！
-   ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破壞排版)
+   ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$
    ✅ 正確排版：由已知可得 $A=1$，<br>代入公式得到 $B=2$，<br>進而推導出 $C=3$，<br>最後得出 $D=4$。
-   (請確實把長算式切斷，並用繁體中文與 <br> 串接！)
 3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！
-4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
+4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。絕對禁止使用 ||[y]|| 這種非標準符號！線段長度強制使用 \\overline{AB}。
 5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。
 6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。
 7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！
@@ -649,6 +648,10 @@ createApp({
 
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
+                // 🌟 新增：將公式內不小心混入的 HTML 換行標籤轉為 LaTeX 換行，避免切斷 \left \right 造成 Unbalanced Eqn
+                cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
+                cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
+
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
@@ -704,15 +707,22 @@ createApp({
                     cleanTex = '\\displaystyle ' + cleanTex;
                 }
 
-                // 🌟 【智慧分流引擎】：單一變數或數字使用原生字體渲染，不呼叫圖片引擎，解決破圖與提速
+                // 🌟 【智慧分流引擎升級】：涵蓋單一變數、數字、簡單等式，解決破圖與大幅提速
                 let coreTex = cleanTex.replace(/\\(?:text|display)style\s*/g, '').trim();
-                
-                // 更嚴謹的正則：確保不抓到帶有 $ 的邊界字元
-                if (/^[a-zA-Z]$/.test(coreTex)) {
-                    let html = `<span style="font-family: 'Times New Roman', serif; font-style: italic; padding: 0 2px;">${coreTex}</span>`;
+                let checkTex = coreTex.replace(/[{}]/g, ''); // 移除外層大括號方便比對
+
+                let simpleVarMatch = checkTex.match(/^([a-zA-Z])([,.;:]?)$/);
+                let simpleNumMatch = checkTex.match(/^(-?[0-9]+(?:\.[0-9]+)?)([,.;:]?)$/);
+                let simpleEqMatch = checkTex.match(/^([a-zA-Z])\s*=\s*(-?[0-9]+(?:\.[0-9]+)?)([,.;:]?)$/);
+
+                if (simpleVarMatch) {
+                    let html = `<span style="font-family: 'Times New Roman', serif; font-style: italic; padding: 0 2px;">${simpleVarMatch[1]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleVarMatch[2]}</span>`;
                     return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (/^-?[0-9]+(\.[0-9]+)?$/.test(coreTex)) {
-                    let html = `<span style="font-family: 'Times New Roman', serif; padding: 0 2px;">${coreTex}</span>`;
+                } else if (simpleNumMatch) {
+                    let html = `<span style="font-family: 'Times New Roman', serif; padding: 0 2px;">${simpleNumMatch[1]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleNumMatch[2]}</span>`;
+                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
+                } else if (simpleEqMatch) {
+                    let html = `<span style="font-family: 'Times New Roman', serif; font-style: italic; padding: 0 2px;">${simpleEqMatch[1]}</span> = <span style="font-family: 'Times New Roman', serif; padding: 0 2px;">${simpleEqMatch[2]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleEqMatch[3]}</span>`;
                     return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
                 }
 
@@ -720,10 +730,11 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
+            // 🌟 修正：確保匹配不跨越表格線或換行符，避免產生 Unbalanced Eqn
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
 
             placeholderText = placeholderText.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
@@ -775,6 +786,7 @@ createApp({
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
                 
+                // 即使 AI 還是用了中文，盡量用 \text 包起來防止語法報錯 (這是最後一道保險)
                 tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
