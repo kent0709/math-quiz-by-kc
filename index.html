@@ -85,9 +85,8 @@
                 </div>
                 
                 <div class="space-y-4">
-                    <!-- 🌟 使用 paginatedQuestions 代替 previewQuestions -->
-                    <div v-for="(q, idx) in paginatedQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
-                        <button @click="deleteQuestion((currentPage - 1) * pageSize + idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
+                    <div v-for="(q, idx) in previewQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
+                        <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
 
@@ -98,7 +97,7 @@
                                     <i class="fas fa-tag mr-1 opacity-70"></i>單元：{{ q.unit || '未分類' }}
                                 </span>
                             </div>
-                            <span class="text-gray-400 text-sm font-bold shrink-0 bg-gray-50 px-3 py-1 rounded-full">第 {{ (currentPage - 1) * pageSize + idx + 1 }} 題</span>
+                            <span class="text-gray-400 text-sm font-bold shrink-0 bg-gray-50 px-3 py-1 rounded-full">第 {{ idx + 1 }} 題</span>
                         </div>
                         <div class="text-base text-gray-800 leading-relaxed font-bold break-words" v-html="formatMath(q.question)"></div>
                         
@@ -111,19 +110,6 @@
                         <i class="fas fa-inbox text-4xl mb-3"></i><br>目前沒有題目，請補足題目。
                     </div>
                 </div>
-
-                <!-- 🌟 網頁版：最下方的分頁按鈕 (1 2 3 4 5 的頁碼) -->
-                <div v-if="totalPages > 1" class="flex justify-center items-center space-x-2 mt-8 mb-4">
-                    <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="px-3 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button v-for="p in totalPages" :key="p" @click="goToPage(p)" class="px-3.5 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === p ? 'bg-teal-600 text-white shadow-md' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        {{ p }}
-                    </button>
-                    <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="px-3 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
             </div>
             
             <div class="p-6 border-t bg-white flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
@@ -131,6 +117,7 @@
                     <i class="fas fa-arrow-left mr-2"></i>返回修改設定
                 </button>
                 <div class="flex gap-4">
+                    <!-- 🌟 分段補題按鈕升級 -->
                     <button v-if="missingQuestions.total > 0" @click="replenishQuestions" :disabled="isReplenishing" class="relative overflow-hidden px-6 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition shadow-md disabled:opacity-90 disabled:cursor-not-allowed flex items-center">
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                         <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>繼續分段出題 (還缺 {{ missingQuestions.total }} 題)</span>
@@ -383,8 +370,6 @@ createApp({
             showPreviewConsole: false, 
             loadingProgress: 0, // 🌟 新增進度條變數
             progressInterval: null, // 🌟 新增進度條計時器
-            currentPage: 1, // 🌟 分頁系統：目前頁碼
-            pageSize: 10,   // 🌟 分頁系統：每頁題數
             previewQuestions: [], 
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
@@ -416,39 +401,35 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 【升級】引入選擇題先解題後生選項與答案平均分佈規則，及不等式連鎖排版規則
+        // 🌟 【升級】新增第 9 點：排列組合符號 C/P 的強制排版指令，杜絕上下顛倒
         aiFormatRules() {
             return `【！！！最高指導原則：絕對嚴格遵守的 JSON 與排版規範！！！】
 
 === 💡 一、破圖與亂碼「終極自癒」機制 ===
-1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰)
+1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！(遇到中文渲染引擎會直接崩潰變成 ###### 亂碼或 Unbalanced Eqn)
    - ❌ 致命錯誤：$P(紅球) = \\frac{3}{5}$、$男生=18$
    - ✅ 正確寫法：抽出紅球的機率 $P(R) = \\frac{3}{5}$、男生有 $18$ 人
-   - 機率 P() 括號內【只能放英文字母】(如 P(A), P(B))。絕對禁止使用 # 或其他亂碼當作代號！
+   - P() 括號內【只能放英文字母】(如 P(A), P(B))。
 2. 影像破損極致還原：【絕對禁止】在輸出中留下「[無法顯示]」、「[?]」、「[圖]」。
 
 === 📐 二、數學公式與符號規範（防破圖核心） ===
 1. $ 符號全面且獨立包覆：所有數學式、數字、方程式，甚至單獨的 $S_n$ 或 $\\frac{1}{2}$，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！
-2. 【題目與算式排版強制要求（防擠壓破圖）】：
-   無論是題目還是計算過程，【絕對禁止】把多個獨立的數學式、不等式或變數全部塞進同一個 $ $ 裡面！
-   必須把每一個算式「獨立分開包覆」，並且用中文或標點符號隔開！
-   ❌ 致命錯誤 1：$\\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}} A=3, B=-4, C_1=k, C_2=-12 \\implies k=-2$ (變數、公式全部擠在一起會嚴重破壞排版！)
-   ✅ 正確排版 1：已知 $A=3$，$B=-4$，$C_1=k$，$C_2=-12$。<br>代入距離公式 $\\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}}$，解得 $k=-2$。
-   ❌ 致命錯誤 2：$|3x-6| < 12 -12 < 3x-6 < 12 -6 < 3x < 18 -2 < x < 6$ (連鎖推導或解不等式全部擠在一起！)
-   ✅ 正確排版 2：由 $|3x-6| < 12$，<br>可得 $-12 < 3x-6 < 12$，<br>同加 $6$ 得到 $-6 < 3x < 18$，<br>除以 $3$ 得 $-2 < x < 6$。
-   ❌ 致命錯誤 3：sin(theta)=4/5 求sin2theta
-   ✅ 正確排版 3：已知 $\\sin \\theta = \\frac{4}{5}$，求 $\\sin 2\\theta$ 的值。
+2. 【長篇計算排版強制要求（防擠壓破圖）】：
+   解答的計算過程，【絕對禁止】把多個步驟的算式全部塞進同一個 $ $ 裡面！這會導致公式過長而崩潰！
+   必須把每一個算式「獨立分開包覆」，並且用 <br> 換行！
+   ❌ 致命錯誤：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破壞排版)
+   ✅ 正確排版：由已知可得 $A=1$，<br>代入公式得到 $B=2$，<br>進而推導出 $C=3$，<br>最後得出 $D=4$。
+   (請確實把長算式切斷，並用繁體中文與 <br> 串接！)
 3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！
-4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。絕對禁止使用 ||[y]|| 這種非標準符號！線段長度強制使用 \\overline{AB}。
+4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。線段長度強制使用 \\overline{AB}。
 5. 分數強制規範：分數【絕對禁止】使用斜線，必須轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。
 6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ (雙跳脫) 換行。
 7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」，絕對不可使用全形減號「－」或「−」！
 8. 角度符號：角度請一律使用 ^{\\circ}，絕對禁止使用中文「度」或符號「°」！(例如：$30^{\\circ}$)
 9. 排列組合符號：台灣標準表示法為「n 在上、k 在下」。請一律強制寫成 C^{n}_{k} 或 P^{n}_{k}（例如 C 6 取 3 必須寫成 C^{6}_{3}），絕對禁止上下顛倒！
-10. 三角函數與希臘字母：三角函數與角度必須使用 LaTeX 語法加上反斜線（如 \\sin, \\cos, \\tan, \\theta），絕對禁止直接寫英文 sin(theta)。
 
 === ⚙️ 三、系統 JSON 格式與跳脫要求 ===
-1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}, \\\\sin \\\\theta）。
+1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。
 2. 換行符號清零：字串中【絕對禁止】包含純文字換行代碼（\\n, \\r）。文字敘述請直接以單行字串輸出，需要換行處請填入 HTML 的 <br> 標籤。
 3. 選項 (options)：選擇題強制提供 (A)(B)(C)(D) 四個選項。
 
@@ -456,20 +437,13 @@ createApp({
 1. 數據變更強制要求：擷取素材題目時，必須修改數字重新出題，並重新計算正確答案。
 2. 【選擇題出題邏輯（極度重要）】：請先將所有題目當作「填充題」來解題，務必先寫出完整正確的「詳解 (solution)」，確定最終答案後，**最後再回頭生成選擇題的 (A)(B)(C)(D) 選項**！確保選項與詳解完全對齊，並依據易錯觀念設計誘答選項。
 3. 【選擇題答案分佈】：整份考卷的正確答案 (A, B, C, D) 總數量必須平均分佈，且【絕對禁止】連續三題出現同一個答案（例如不能連續 AAA 或 BBB）！
-4. 【嚴禁英文敘述】：解答與詳解中，除了數學變數 (如 x, y, k, P, A, \\sin, \\theta) 之外，【絕對禁止】出現任何英文單字或句子 (例如 Let, Therefore, Then, Ans, step 等)！請全部使用純繁體中文說明。
+4. 【嚴禁英文敘述】：解答與詳解中，除了數學變數 (如 x, y, k, P, A) 之外，【絕對禁止】出現任何英文單字或句子 (例如 Let, Therefore, Then, Ans, step 等)！請全部使用純繁體中文說明。
 5. 純中文詳解：'solution' 欄位只准放純中文與排版好的公式。所有的思考與草稿請丟入 'thought_process'！`;
         }
     },
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        // 🌟 分頁切換功能
-        goToPage(p) {
-            if (p >= 1 && p <= this.totalPages) {
-                this.currentPage = p;
-            }
-        },
-
         startLoadingProgress() {
             this.loadingProgress = 0;
             this.progressInterval = setInterval(() => {
@@ -532,18 +506,14 @@ createApp({
             return t && t.enabled ? parseInt(t.count) || 0 : 0;
         },
 
-        deleteQuestion(globalIdx) {
-            const q = this.previewQuestions[globalIdx];
-            this.previewQuestions.splice(globalIdx, 1);
+        deleteQuestion(idx) {
+            const q = this.previewQuestions[idx];
+            this.previewQuestions.splice(idx, 1);
             if (this.finalGroupedQs[q.type]) {
                 const gIdx = this.finalGroupedQs[q.type].findIndex(item => item.question === q.question);
                 if (gIdx !== -1) {
                     this.finalGroupedQs[q.type].splice(gIdx, 1);
                 }
-            }
-            // 刪除後若當前頁數超過總頁數，自動退回上一頁
-            if (this.currentPage > this.totalPages) {
-                this.currentPage = this.totalPages || 1;
             }
         },
 
@@ -566,7 +536,7 @@ createApp({
                 q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
                 
                 // 🌟 【自動過濾】防呆清除 AI 輸出的 "string" 佔位符
-                q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.toLowerCase() !== 'null' && opt.toLowerCase() !== '選項待補' && opt.trim() !== '');
+                q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.trim() !== '');
                 
                 while (q.options.length < 4) { q.options.push(`選項待補`); }
                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
@@ -600,6 +570,9 @@ createApp({
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
+            
+            placeholderText = placeholderText.replace(/°/g, '^{\\circ}');
+            placeholderText = placeholderText.replace(/(\d+)\s*度(?!\w)/g, '$1^{\\circ}');
 
             placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
 
@@ -620,6 +593,7 @@ createApp({
             placeholderText = placeholderText.replace(/pmatrix/g, 'bmatrix');
             placeholderText = placeholderText.replace(/\\left\(\s*\\begin\{array\}([\s\S]+?)\\end\{array\}\s*\\right\)/g, '\\left[ \\begin{array}$1\\end{array} \\right]');
             
+            // 🌟 終極防呆：強制將 C_n^k 或 P_n^k 上下顛倒的錯誤寫法，修復為 C^n_k (n在上，k在下)
             placeholderText = placeholderText.replace(/\\?([CP])_\{?([0-9a-zA-Z]+)\}?\^\{?([0-9a-zA-Z]+)\}?/g, '$1^{$2}_{$3}');
             
             placeholderText = placeholderText.replace(/(^|[^\\])begin\{/g, '$1\\begin{');
@@ -697,47 +671,19 @@ createApp({
                     cleanTex = '\\displaystyle ' + cleanTex;
                 }
 
-                let coreTex = cleanTex.replace(/\\(?:text|display)style\s*/g, '').trim();
-                let checkTex = coreTex.replace(/[{}]/g, ''); // 移除外層大括號方便比對
-
-                let varP = "([a-zA-Z](?:_[a-zA-Z0-9]+)?)";
-                let numP = "(-?[0-9]+(?:\\.[0-9]+)?)";
-
-                let mVar = checkTex.match(new RegExp('^' + varP + '([,.;:]?)$'));
-                let mNum = checkTex.match(new RegExp('^' + numP + '([,.;:]?)$'));
-                let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
-                let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
-
-                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>')}</span>`;
-
-                if (mVar) {
-                    let html = `${toSpan(mVar[1], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mVar[2]}</span>`;
-                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (mNum) {
-                    let html = `${toSpan(mNum[1], false)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mNum[2]}</span>`;
-                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (mEqNum) {
-                    let html = `${toSpan(mEqNum[1], true)} = ${toSpan(mEqNum[2], false)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mEqNum[3]}</span>`;
-                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (mEqVar) {
-                    let html = `${toSpan(mEqVar[1], true)} = ${toSpan(mEqVar[2], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mEqVar[3]}</span>`;
-                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                }
-
                 mathBlocks.push({ tex: cleanTex, isBlock: isBlock });
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 🌟 修正：確保匹配不跨越表格線或換行符，避免產生 Unbalanced Eqn ( Lookbehind 防治前面的字元被吞掉 )
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            placeholderText = placeholderText.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m.trim(), true));
+            placeholderText = placeholderText.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\}/g, (m) => saveMath(m.trim(), false));
+            placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
+            placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
+            placeholderText = placeholderText.replace(/\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m, true));
 
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
@@ -784,7 +730,6 @@ createApp({
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
                 
-                // 即使 AI 還是用了中文，盡量用 \text 包起來防止語法報錯 (這是最後一道保險)
                 tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
@@ -951,11 +896,7 @@ createApp({
         processAIFeedback(quizData, isReplenish = false) {
             // 🌟 【自動過濾】先剔除 AI 偷懶回傳的 string 佔位符題型
             if (quizData.questions && Array.isArray(quizData.questions)) {
-                quizData.questions = quizData.questions.filter(q => {
-                    if (!q.question) return false;
-                    let text = q.question.toString().trim().toLowerCase();
-                    return text !== 'string' && text !== 'null' && text !== '選項待補' && text !== '';
-                });
+                quizData.questions = quizData.questions.filter(q => q.question && q.question.toLowerCase() !== 'string' && q.question.trim() !== '');
             }
             
             const tempGroupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
@@ -997,11 +938,6 @@ createApp({
                     this.previewQuestions.push(...this.finalGroupedQs[tName]);
                 }
             });
-            
-            // 重新計算頁碼，確保不會停在空白頁
-            if (this.currentPage > this.totalPages) {
-                this.currentPage = this.totalPages || 1;
-            }
         },
 
         async generateExam() {
@@ -1018,9 +954,9 @@ createApp({
                 const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題`).join(', ');
                 const promptText = `請出一份數學考卷。必須嚴格依照設定的 JSON 格式回傳。
 【指定範圍】：${this.targetUnit || '無'}
-【題型配置】：${activeTypes} (⚠️請你務必「精準」依照此數量的題型出題！絕對不可多出或少於指定題數！)
+【題型配置】：${activeTypes} (⚠️若要求總題數超過 10 題，為了確保出題品質與避免伺服器超時，你可以先產出部分題目，後續我會透過系統「繼續分段出題」補齊！)
 【要求】：${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在題目或選項中回傳 "string" 等佔位符字眼，必須是真正的數學題目與算式！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1063,7 +999,7 @@ ${this.aiFormatRules}`;
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
 【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在題目或選項中回傳 "string" 等 JSON Schema 佔位符字眼，這會導致系統崩潰，請務必給出真實的數學題目！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
