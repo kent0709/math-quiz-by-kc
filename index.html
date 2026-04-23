@@ -24,7 +24,6 @@
 <body class="text-gray-800 pb-10">
 
 <div id="app" class="max-w-5xl mx-auto pt-10 px-4">
-    <!-- API 申請說明 Modal -->
     <div v-if="showApiTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
         <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
             <button @click="showApiTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
@@ -43,7 +42,6 @@
         </div>
     </div>
 
-    <!-- 🌟 圖形題說明 Modal -->
     <div v-if="showImageTutorial" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity">
         <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
             <button @click="showImageTutorial = false" class="absolute top-4 right-5 text-gray-400 hover:text-gray-700 text-2xl"><i class="fas fa-times"></i></button>
@@ -61,7 +59,6 @@
         </div>
     </div>
 
-    <!-- 🌟 智慧出題控制台 (預覽與編輯 Modal) -->
     <div v-if="showPreviewConsole" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 transition-opacity">
         <div class="bg-white rounded-2xl flex flex-col max-w-5xl w-full h-[90vh] shadow-2xl relative overflow-hidden">
             <div class="p-6 border-b flex justify-between items-center bg-teal-50">
@@ -132,8 +129,9 @@
                     <button v-if="missingQuestions.total > 0" @click="replenishQuestions" :disabled="isReplenishing" class="relative overflow-hidden px-6 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition shadow-md disabled:opacity-90 disabled:cursor-not-allowed flex items-center">
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                         <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>繼續分段出題 (還缺 {{ missingQuestions.total }} 題)</span>
-                        <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out" :style="{ transform: 'scale(' + (0.95 + loadingProgress * 0.001) + ')' }">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
+                        <span v-else class="relative z-10 flex items-center transition-all duration-300 ease-out drop-shadow-md text-yellow-200" :style="{ transform: 'scale(' + (1 + loadingProgress * 0.003) + ')' }">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... 
+                            <span class="ml-1 font-black" :style="{ fontSize: (1 + loadingProgress * 0.01) + 'rem' }">{{ loadingProgress }}%</span>
                         </span>
                     </button>
                     <button @click="downloadWord" :disabled="isDownloading" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
@@ -145,14 +143,12 @@
         </div>
     </div>
 
-    <!-- 大標題 -->
     <div class="text-center mb-8">
         <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
             <i class="fas fa-cube text-teal-500 mr-3 text-4xl"></i>數學出題小幫手
         </h1>
     </div>
 
-    <!-- API Key 設定區 -->
     <div class="glass-card flex items-center bg-white border-l-4 border-amber-400">
         <i class="fas fa-key text-amber-500 text-xl mr-3"></i>
         <div class="flex-grow">
@@ -168,7 +164,6 @@
     </div>
 
     <div class="space-y-6">
-        <!-- 區塊 1：考卷表頭 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">1</span>
@@ -223,7 +218,6 @@
             </div>
         </div>
 
-        <!-- 區塊 2：分區匯入素材與指定範圍 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-xl font-bold text-gray-800 flex items-center shrink-0">
@@ -236,7 +230,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 🌟 教科書上傳區 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
@@ -252,7 +245,6 @@
                     </div>
                 </div>
 
-                <!-- 🌟 考卷上傳區 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
@@ -295,7 +287,6 @@
             </div>
         </div>
 
-        <!-- 區塊 3：題型與配分設定 -->
         <div class="glass-card bg-white border-l-8 border-l-teal-500">
             <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
                 <span class="bg-teal-100 text-teal-700 rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-sm">3</span>
@@ -334,7 +325,6 @@
             </div>
         </div>
 
-        <!-- 區塊 4：生成與下載 -->
         <div class="mt-8 text-center bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
             <div class="flex justify-center gap-6 mb-6">
                 <label class="cursor-pointer font-bold flex items-center text-teal-800">
@@ -345,16 +335,20 @@
                 </label>
             </div>
 
-            <button @click="generateExam" :disabled="isGenerating" class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="!isGenerating"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
-                <span v-else><i class="fas fa-spinner fa-spin mr-3 text-2xl"></i> AI 正在努力出題中...</span>
+            <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-90 disabled:cursor-not-allowed">
+                <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-teal-800 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
+                <span v-if="!isGenerating" class="relative z-10"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
+                <span v-else class="relative z-10 flex items-center justify-center transition-all duration-300 ease-out text-yellow-300 drop-shadow-md" :style="{ transform: 'scale(' + (1 + loadingProgress * 0.005) + ')' }">
+                    <i class="fas fa-spinner fa-spin mr-3 text-2xl"></i> 
+                    <span class="font-bold">AI 出題中...</span> 
+                    <span class="ml-2 font-black transition-all duration-300" :style="{ fontSize: (1.5 + loadingProgress * 0.01) + 'rem' }">{{ loadingProgress }}%</span>
+                </span>
             </button>
             
             <div id="status-message" class="mt-4 font-bold text-lg"></div>
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.2 -->
     <footer class="mt-12 mb-6 text-center">
         <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.2 byKC</span>
     </footer>
@@ -373,10 +367,10 @@ createApp({
             isReplenishing: false, 
             isDownloading: false,
             showPreviewConsole: false, 
-            loadingProgress: 0, // 🌟 新增進度條變數
-            progressInterval: null, // 🌟 新增進度條計時器
-            currentPage: 1, // 🌟 分頁系統：目前頁碼
-            pageSize: 10,   // 🌟 分頁系統：每頁題數
+            loadingProgress: 0, 
+            progressInterval: null, 
+            currentPage: 1, 
+            pageSize: 10,   
             previewQuestions: [], 
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
@@ -408,7 +402,15 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 系統化濃縮提詞：減少無意義負面表述，改為條列式強制指令，避免觸發 Token 上限
+        paginatedQuestions() {
+            let start = (this.currentPage - 1) * this.pageSize;
+            let end = start + this.pageSize;
+            return this.previewQuestions.slice(start, end);
+        },
+        totalPages() {
+            return Math.ceil(this.previewQuestions.length / this.pageSize) || 1;
+        },
+        // 🌟 新增第 11 點：強制要求使用 Markdown 繪製表格
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -423,13 +425,13 @@ createApp({
 5. 內容限制：
    - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
-   - 必須修改原題數字重新出題。`;
+   - 必須修改原題數字重新出題。
+6. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！`;
         }
     },
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        // 🌟 分頁切換功能
         goToPage(p) {
             if (p >= 1 && p <= this.totalPages) {
                 this.currentPage = p;
@@ -507,7 +509,6 @@ createApp({
                     this.finalGroupedQs[q.type].splice(gIdx, 1);
                 }
             }
-            // 刪除後若當前頁數超過總頁數，自動退回上一頁
             if (this.currentPage > this.totalPages) {
                 this.currentPage = this.totalPages || 1;
             }
@@ -531,7 +532,6 @@ createApp({
                 });
                 q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
                 
-                // 🌟 【自動過濾】防呆清除 AI 輸出的 "string" 佔位符
                 q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.toLowerCase() !== 'null' && opt.toLowerCase() !== '選項待補' && opt.trim() !== '');
                 
                 while (q.options.length < 4) { q.options.push(`選項待補`); }
@@ -611,7 +611,6 @@ createApp({
 
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
-                // 🌟 新增：將公式內不小心混入的 HTML 換行標籤轉為 LaTeX 換行，避免切斷 \left \right 造成 Unbalanced Eqn
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
                 cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
 
@@ -670,8 +669,9 @@ createApp({
                     cleanTex = '\\displaystyle ' + cleanTex;
                 }
 
+                // 🌟 【智慧分流引擎】: 攔截純字母、純數字，使用原生字體渲染避免破圖
                 let coreTex = cleanTex.replace(/\\(?:text|display)style\s*/g, '').trim();
-                let checkTex = coreTex.replace(/[{}]/g, ''); // 移除外層大括號方便比對
+                let checkTex = coreTex.replace(/[{}]/g, ''); 
 
                 let varP = "([a-zA-Z](?:_[a-zA-Z0-9]+)?)";
                 let numP = "(-?[0-9]+(?:\\.[0-9]+)?)";
@@ -701,16 +701,16 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 🌟 修正：確保匹配不跨越表格線或換行符，避免產生 Unbalanced Eqn ( Lookbehind 防治前面的字元被吞掉 )
+            // 🌟 修正：移除 (?<!) Lookbehind，使用安全分組以避免舊版 Safari 與 iOS 崩潰 (白畫面殺手)
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\overset\s*\{[^{}]+\}\s*\{[^{}]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\overline\s*\{[^{}]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
+            
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
-
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/(?<![\$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m.trim(), true));
 
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
@@ -757,7 +757,6 @@ createApp({
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
                 
-                // 即使 AI 還是用了中文，盡量用 \text 包起來防止語法報錯 (這是最後一道保險)
                 tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
@@ -770,6 +769,13 @@ createApp({
                     renderedHtml = `<div style="text-align: center; margin: 2px 0;">${renderedHtml}</div>`;
                 }
                 result = result.replaceAll(`@@MATHBLOCK${idx}@@`, renderedHtml);
+            });
+
+            // 🌟 最終防護：如果 AI 直接噴出 HTML table 標籤，將其解碼避免消失
+            const tableTags = ['table', 'thead', 'tbody', 'tr', 'th', 'td', '/table', '/thead', '/tbody', '/tr', '/th', '/td'];
+            tableTags.forEach(tag => {
+                let re = new RegExp(`&lt;${tag}(.*?)&gt;`, 'gi');
+                result = result.replace(re, `<${tag}$1>`);
             });
 
             return result;
@@ -922,7 +928,6 @@ createApp({
         },
 
         processAIFeedback(quizData, isReplenish = false) {
-            // 🌟 【自動過濾】先剔除 AI 偷懶回傳的 string 佔位符題型
             if (quizData.questions && Array.isArray(quizData.questions)) {
                 quizData.questions = quizData.questions.filter(q => {
                     if (!q.question) return false;
@@ -971,7 +976,6 @@ createApp({
                 }
             });
             
-            // 重新計算頁碼，確保不會停在空白頁
             if (this.currentPage > this.totalPages) {
                 this.currentPage = this.totalPages || 1;
             }
@@ -981,7 +985,7 @@ createApp({
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
             this.isGenerating = true; 
-            this.startLoadingProgress(); // 🌟 啟動進度條
+            this.startLoadingProgress(); 
             
             const status = document.getElementById('status-message');
             status.innerHTML = '';
@@ -1004,9 +1008,8 @@ ${this.aiFormatRules}`;
 
                 this.processAIFeedback(quizData, false);
 
-                this.finishLoadingProgress(); // 🌟 滿載進度
+                this.finishLoadingProgress(); 
                 
-                // 稍微延遲一下讓使用者看到 100%
                 setTimeout(() => {
                     this.isGenerating = false;
                     this.showPreviewConsole = true; 
@@ -1025,7 +1028,7 @@ ${this.aiFormatRules}`;
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
             this.isReplenishing = true;
-            this.startLoadingProgress(); // 🌟 啟動進度條
+            this.startLoadingProgress(); 
             
             try {
                 const missingTypes = Object.entries(this.missingQuestions.details)
@@ -1046,7 +1049,7 @@ ${this.aiFormatRules}`;
                 }
 
                 this.processAIFeedback(quizData, true);
-                this.finishLoadingProgress(); // 🌟 滿載進度
+                this.finishLoadingProgress(); 
                 
                 setTimeout(() => {
                     this.isReplenishing = false;
@@ -1078,12 +1081,10 @@ ${this.aiFormatRules}`;
                     <meta charset="utf-8">
                     <title>數學考卷</title>
                     <style>
-                        /* 🌟 加入 mso-footer 設定，讓頁碼順利顯示 */
                         @page WordSection1 { size: 25.7cm 36.4cm; margin: 1.5cm 1.5cm; mso-footer-margin: 1.0cm; mso-footer: f1; }
                         div.WordSection1 { page: WordSection1; }
                         body { font-family: '標楷體', 'Times New Roman', serif; font-size: 14pt; }
                         p { margin: 0 0 10px 0; }
-                        /* 防止圖片公式超出邊界 */
                         img { max-width: 100%; height: auto; }
                     </style>
                     </head><body><div class="WordSection1">`;
@@ -1231,7 +1232,6 @@ ${this.aiFormatRules}`;
                         });
                     }
 
-                    // 🌟 加入 Word 頁尾區塊（利用 mso-element:footer 與 mso-field-code 自動編碼頁數）
                     docHTML += contentHTML;
                     docHTML += `
                     <div style="mso-element:footer" id="f1">
