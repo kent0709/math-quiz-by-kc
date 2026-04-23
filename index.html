@@ -225,7 +225,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- 🌟 教科書上傳區 -->
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-5 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleTextbookUpload">
                     <div v-if="textbookFiles.length === 0" class="text-center pointer-events-none">
@@ -241,7 +240,6 @@
                     </div>
                 </div>
 
-                <!-- 🌟 考卷上傳區 -->
                 <div class="border-2 border-dashed border-green-300 rounded-xl p-5 flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 transition cursor-pointer relative min-h-[130px]">
                     <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".pdf,.jpg,.png,.jpeg" @change="handleExamUpload">
                     <div v-if="examFiles.length === 0" class="text-center pointer-events-none">
@@ -260,10 +258,10 @@
             
             <div class="mb-6 bg-yellow-50 p-4 rounded-xl border border-yellow-200">
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
-                    <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小 <span class="text-gray-400 ml-2 font-normal text-xs">(可留空不填)</span>
+                    <i class="fas fa-bullseye text-red-500 mr-2"></i> 指定出題單元 / 範圍縮小
                 </label>
                 <div class="flex flex-col md:flex-row gap-3 items-center">
-                    <textarea v-model="targetUnit" rows="3" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white resize-y min-h-[80px]"></textarea>
+                    <input v-model="targetUnit" type="text" placeholder="文字描述 (例如：只考第三單元 矩陣)" class="flex-grow w-full text-sm border border-gray-300 rounded-lg p-2.5 outline-none focus:border-yellow-400 bg-white">
                     <span class="text-gray-400 font-bold text-sm">或</span>
                     <div class="relative overflow-hidden w-full md:w-auto border border-dashed border-yellow-400 bg-white rounded-lg px-4 py-2 hover:bg-yellow-100 transition cursor-pointer flex items-center justify-center">
                         <input type="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".jpg,.png,.jpeg" @change="handleScopeUpload">
@@ -280,7 +278,6 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
-                <!-- 🌟 高度加大的設定：確保七點要求都能清楚顯示，不會被切斷一半 -->
                 <textarea v-model="examRules" rows="8" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
@@ -564,10 +561,10 @@ createApp({
             let t = String(text);
 
             // 1. 中文 P() 抽離與全域字元標準化
-            t = t.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)')
-                 .replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)')
-                 .replace(/[－—–−─]/g, '-')
-                 .replace(/(?:\\?#){2,}/g, '-');
+            t = t.split('$P(').join('P(').split(')$').join(')');
+            t = t.split('P(').join('P(');
+            t = t.replace(/[－—–−─]/g, '-');
+            t = t.replace(/(?:\\?#){2,}/g, '-');
 
             // 2. HTML 標籤保護與轉譯 (保護 <br>，轉譯 < > 防止 Word 崩潰)
             t = t.replace(/<br\s*\/?>/gi, '@@BR@@')
@@ -576,11 +573,11 @@ createApp({
 
             // 3. 🌟 安全無痛的 LaTeX 語法防呆 (移除所有容易報錯的 Regex 跳脫)
             t = t.replace(/#+/g, '');
-            t = t.replace(/\x09heta\b/g, '\\theta'); 
-            t = t.replace(/\x0Dightharpoonup/g, '\\rightharpoonup'); 
-            t = t.replace(/\x0Dightarrow/g, '\\rightarrow');
-            t = t.replace(/\x0Dight\b/g, '\\right');
-            t = t.replace(/\x08eta\b/g, '\\beta'); 
+            t = t.replace(/\\x09heta\b/g, '\\theta'); 
+            t = t.replace(/\\x0Dightharpoonup/g, '\\rightharpoonup'); 
+            t = t.replace(/\\x0Dightarrow/g, '\\rightarrow');
+            t = t.replace(/\\x0Dight\b/g, '\\right');
+            t = t.replace(/\\x08eta\b/g, '\\beta'); 
             
             // 🌟 徹底解決 FRAC 與 \frac 亂碼 (使用精準捕捉，確保必定加上 backslash)
             t = t.replace(/\x0Crac\b/gi, '\\frac');
@@ -932,6 +929,8 @@ createApp({
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
             this.isGenerating = true; 
+            this.startLoadingProgress(); 
+            
             const status = document.getElementById('status-message');
             status.innerHTML = '';
             status.className = "mt-4 font-bold text-lg text-teal-600";
@@ -952,11 +951,16 @@ ${this.aiFormatRules}`;
 
                 this.processAIFeedback(quizData, false);
 
-                this.isGenerating = false;
-                this.showPreviewConsole = true; 
+                this.finishLoadingProgress(); 
+                
+                setTimeout(() => {
+                    this.isGenerating = false;
+                    this.showPreviewConsole = true; 
+                }, 500);
 
             } catch (error) {
                 console.error(error);
+                clearInterval(this.progressInterval);
                 this.isGenerating = false;
                 status.className = "mt-4 font-bold text-lg text-red-600";
                 status.innerText = `❌ 發生錯誤：${error.message}`;
@@ -967,6 +971,8 @@ ${this.aiFormatRules}`;
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
             this.isReplenishing = true;
+            this.startLoadingProgress(); 
+            
             try {
                 const missingTypes = Object.entries(this.missingQuestions.details)
                                            .map(([k, v]) => `${k}: 需要補充 ${v} 題`)
@@ -985,10 +991,15 @@ ${this.aiFormatRules}`;
                 }
 
                 this.processAIFeedback(quizData, true);
-                this.isReplenishing = false;
+                this.finishLoadingProgress(); 
+                
+                setTimeout(() => {
+                    this.isReplenishing = false;
+                }, 500);
                 
             } catch (error) {
                 console.error(error);
+                clearInterval(this.progressInterval);
                 alert(`補題發生錯誤：${error.message}`);
                 this.isReplenishing = false;
             }
