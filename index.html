@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.5 byKC</title>
+    <title>數學出題小幫手 - V11.6 byKC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -124,6 +124,7 @@
                             <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ displayProgress }}%</span>
                         </span>
                     </button>
+                    <!-- 打包按鈕 -->
                     <button @click="downloadWord" :disabled="isDownloading" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
                         <span v-if="!isDownloading"><i class="fas fa-file-word mr-2 text-xl"></i>確認無誤，打包下載</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2 text-xl"></i>打包中...</span>
@@ -279,7 +280,7 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
-                <textarea v-model="examRules" rows="10" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
+                <textarea v-model="examRules" rows="6" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
 
@@ -333,6 +334,7 @@
                 </label>
             </div>
 
+            <!-- 🌟 產生試題按鈕：滿血沈浸式載入，帶有適度的小變大縮放特效 -->
             <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-90 disabled:cursor-not-allowed">
                 <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-teal-800 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                 <span v-if="!isGenerating" class="relative z-10"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
@@ -347,8 +349,9 @@
         </div>
     </div>
     
+    <!-- 🌟 落款升級為 V11.6 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.5 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.6 byKC</span>
     </footer>
 </div>
 
@@ -406,30 +409,28 @@ createApp({
                 "請你將所有產出的內容放入單一個『程式碼區塊 (Code block)』中輸出，並嚴格遵守以下規範：",
                 "",
                 "=== 💡 一、破圖與亂碼「終極自癒」機制 ===",
-                "1. $ 符號獨立包覆：所有數學式、數字、方程式，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！",
-                "   - ❌ 致命錯誤：2x^2-(m+n)x+5=0 的兩根和為何？",
-                "   - ✅ 正確排版：$2x^2-(m+n)x+5=0$ 的兩根和為何？",
-                "2. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！",
+                "1. 【嚴禁中文入公式】：數學公式 $ $ 內【絕對禁止】出現任何中文字！",
                 "   - ❌ 錯誤：$P(紅球) = \\frac{3}{5}$",
                 "   - ✅ 正確：抽出紅球的機率 $P(R) = \\frac{3}{5}$",
-                "3. 影像破損還原：【絕對禁止】留下「[無法顯示]」、「[?]」。",
+                "2. 影像破損還原：【絕對禁止】留下「[無法顯示]」、「[?]」。",
                 "",
                 "=== 📐 二、數學公式與連續變數防擠壓規範（防破圖核心） ===",
-                "1. 【連續變數大鍋炒防線】：絕對禁止把多個獨立算式、選項代號或數字塞進同一個 $ $ 裡面！這會導致字母全部黏在一起破圖！",
+                "1. $ 符號獨立包覆：所有數學式、數字、方程式，【絕對必須】用 $ $ 獨立包覆！不允許算式裸奔！",
+                "2. 【連續變數大鍋炒防線】：絕對禁止把多個獨立算式、選項代號或數字塞進同一個 $ $ 裡面！這會導致字母全部黏在一起破圖！",
                 "   ❌ 致命錯誤 1：$|x-5| A(x) C(8) |x-8|$ (選項或變數全擠在一起)",
                 "   ✅ 正排版 1：$|x-5|$、$A(x)$、$C(8)$、$|x-8|$ (各自分開包覆)",
                 "   ❌ 致命錯誤 2：$\\sigma' = 1.2(8) = 9.6  73  9.6$",
                 "   ✅ 正確排版 2：$\\sigma' = 1.2(8) = 9.6$，新數值為 $73$。",
                 "   ❌ 致命錯誤 3：$A=3 B=-4 C_1=k C_2=5 d=2$",
                 "   ✅ 正確排版 3：代入 $A=3$、$B=-4$、$C_1=k$、$C_2=5$、$d=2$。",
-                "2. 【長篇計算切斷】：計算過程絕對禁止把多個推導步驟全塞進同一個 $ $！",
+                "3. 【長篇計算切斷】：計算過程絕對禁止把多個推導步驟全塞進同一個 $ $！",
                 "   ❌ 致命錯誤：$|3x-6| < 12 -12 < 3x-6 < 12 -2 < x < 6$",
                 "   ✅ 正確排版：由 $|3x-6| < 12$，<br>可得 $-12 < 3x-6 < 12$，<br>進而得出 $-2 < x < 6$。",
-                "3. 方陣與矩陣：強制使用中括號 $\\begin{bmatrix} ... \\end{bmatrix}$，嚴禁 pmatrix！",
-                "4. 分數規範：【絕對禁止】使用斜線，強制轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。",
-                "5. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ 換行。",
-                "6. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」。",
-                "7. 排列組合：台灣標準為「n 在上、k 在下」。遇到 C n 取 k，【絕對禁止】寫作 C(n,k) 或 C_n^k，必須強制寫成 C^{n}_{k}（例如 C 3 取 2 必須寫成 C^{3}_{2}，3在上面，2在下面）。同樣的，P 3 取 2 必須寫作 P^{3}_{2}。",
+                "4. 方陣與矩陣：強制使用中括號 $\\begin{bmatrix} ... \\end{bmatrix}$，嚴禁 pmatrix！",
+                "5. 分數規範：【絕對禁止】使用斜線，強制轉換為 \\frac{1}{2}，且分子分母【必須】用大括號 {} 完整包覆。",
+                "6. 聯立方程組：必須使用 \\begin{cases} ... \\end{cases}！每行結尾加上 \\\\\\\\ 換行。",
+                "7. 絕對值與長度一律使用單直線 $| |$。減號請一律使用標準 ASCII 的「-」。",
+                "8. 排列組合：台灣標準為「n 在上、k 在下」。遇到 C n 取 k，【絕對禁止】寫作 C(n,k) 或 C_n^k，必須強制寫成 C^{n}_{k}（例如 C 3 取 2 必須寫成 C^{3}_{2}，3在上面，2在下面）。",
                 "",
                 "=== ⚙️ 三、系統 JSON 格式與跳脫要求 ===",
                 "1. 雙跳脫字元：所有 LaTeX 的反斜線 \\ 必須寫成雙反斜線 \\\\（如：\\\\frac{1}{2}）。",
@@ -611,9 +612,9 @@ createApp({
                  .replace(/(^|[^\\])\b(alpha|beta|gamma|pi|tau|omega|mu|sigma|times|cdot|sin|cos|tan|log|ln)\b/g, '$1\\$2');
             t = t.replace(/['"]=/g, ' =').replace(/=['"]/g, '= ').replace(/','='?\s*/g, ' = ').replace(/','/g, '<br>');
 
-            // 🌟 C/P 排列組合轉換 (保險防線：C(3,2) -> C^{3}_{2})
-            t = t.replace(/([CP])\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, '$1^{$2}_{$3}');
-
+            // 🌟 C/P 排列組合轉換 (強行將 C(3,2) 等格式轉換為 C^{3}_{2})
+            t = t.replace(/\\?([CP])\s*\(\s*([a-zA-Z0-9_{}]+)\s*,\s*([a-zA-Z0-9_{}]+)\s*\)/g, '$1^{$2}_{$3}');
+            
             // 🌟 搶救未包裝 $ 的多項式與方程式 (如 2x^2-3x+5=0 或 2x^2-(m+n)x+5=0)
             t = t.replace(/(^|[^\$a-zA-Z0-9_\\])([+-]?\d*[a-zA-Z]\^[\d]+[a-zA-Z0-9_+\-=\(\)]*)(?=[^\$a-zA-Z0-9_]|$)/g, '$1$$$2$$');
 
@@ -649,6 +650,8 @@ createApp({
                            .replace(/\n/g, ' \\\\ ').replace(/(\\\\\s*){2,}/g, '\\\\ ')
                            .replace(/["']/g, '').replace(/&quot;/g, '');
 
+                c = c.replace(/ {2,}/g, ' \\quad ');
+
                 c = c.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}')
                      .replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
 
@@ -663,6 +666,8 @@ createApp({
                      .replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2')
                      .replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
 
+                // 🌟 再確保底層的所有 C/P 轉換無誤
+                c = c.replace(/\\?([CP])\s*\(\s*([a-zA-Z0-9_{}]+)\s*,\s*([a-zA-Z0-9_{}]+)\s*\)/g, '$1^{$2}_{$3}');
                 c = c.replace(/\\?([CP])_\{?([0-9a-zA-Z]+)\}?\^\{?([0-9a-zA-Z]+)\}?/g, '$1^{$2}_{$3}');
 
                 // 括號對稱修復
@@ -718,20 +723,18 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
             
-            // 2. 首先擷取已經完整包好的公式，避免被後續邏輯誤傷
-            t = t.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
-            t = t.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
-            t = t.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            t = t.replace(/\$([^\$]+?)\$/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
+            placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
+            placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([^\$]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 3. 安全無痛擷取：絕對安全的 Regex，防止無限迴圈當機
-            t = t.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
-            t = t.replace(/(^|[^\$\\])(\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
-            t = t.replace(/(^|[^\$\\])(\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
-            t = t.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
+            placeholderText = placeholderText.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\overset\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\overline\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
+            placeholderText = placeholderText.replace(/(^|[^\$\\])(\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), true));
 
             // 4. 清理無意義標籤
-            t = t.replace(/\\_+/g, '').replace(/_{2,}/g, '')
+            placeholderText = placeholderText.replace(/\\_+/g, '').replace(/_{2,}/g, '')
                  .replace(/\(\s*\)/g, '').replace(/（\s*）/g, '')
                  .replace(/^[-]{3,}\s*$/gm, '').replace(/(\\-){3,}/g, '')
                  .replace(/\\\\r(?!\w)/g, '').replace(/\r/g, '')
@@ -766,10 +769,11 @@ createApp({
                 if (inTable) { tableHtml += '</table>'; out.push(tableHtml); }
                 return out.join('\n');
             };
-            t = parseMarkdownTables(t).replace(/\n+/g, '<br>');
+            placeholderText = parseMarkdownTables(placeholderText);
+            placeholderText = placeholderText.replace(/\n+/g, '<br>');
 
             // 6. 安全回填公式區塊
-            let result = t.trim();
+            let result = placeholderText.trim();
             mathBlocks.forEach((block, idx) => {
                 result = result.split(`@@MATHBLOCK${idx}@@`).join(block.html);
             });
