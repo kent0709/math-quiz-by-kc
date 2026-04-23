@@ -617,7 +617,7 @@ createApp({
                     if (line.startsWith('|') && line.endsWith('|') && line.includes('|', 1)) {
                         if (!inTable) {
                             inTable = true;
-                            tableHtml = '<table width="80%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin: 15px auto; font-family: \\'標楷體\\', \\'Times New Roman\\', serif;">';
+                            tableHtml = `<table width="80%" border="1" cellspacing="0" cellpadding="8" style="border-collapse: collapse; border: 2px solid black; text-align: center; margin: 15px auto; font-family: '標楷體', 'Times New Roman', serif;">`;
                         }
                         let cells = line.split('|').slice(1, -1);
                         tableHtml += '<tr>' + cells.map(c => `<td style="border: 1px solid black; padding: 8px;">${c.trim()}</td>`).join('') + '</tr>';
@@ -1185,4 +1185,73 @@ ${this.aiFormatRules}`;
 
                         const finalFillQs = this.finalGroupedQs['填充題'];
                         if (finalFillQs && finalFillQs.length > 0) {
-                            contentHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2
+                            contentHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid blue; text-align: center; margin-bottom: 15px;">`;
+                            let count = finalFillQs.length;
+                            for (let i = 0; i < count; i += 4) {
+                                contentHTML += `<tr>`;
+                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td width="25%" style="font-size:14pt; height:35px; border: 1px solid blue;">(${i + j + 1})</td>`; else contentHTML += `<td width="25%" style="border: 1px solid blue;"></td>`; }
+                                contentHTML += `</tr><tr>`;
+                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer)}</td>`; else contentHTML += `<td style="border: 1px solid blue;"></td>`; }
+                                contentHTML += `</tr>`;
+                            }
+                            contentHTML += `</table>`;
+                        }
+
+                        contentHTML += `<h2 style="text-align: center; color: red; margin-top: 20px; margin-bottom: 10px; font-weight: bold;">【教師版解答與解析】</h2><hr style="margin-bottom: 15px;">`;
+
+                        ['選擇題', '填充題', '計算題'].forEach(tName => {
+                            const finalQs = this.finalGroupedQs[tName];
+                            if (finalQs && finalQs.length > 0) {
+                                contentHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
+                                finalQs.forEach((q, idx) => {
+                                    let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
+                                    contentHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
+                                });
+                            }
+                        });
+                    }
+
+                    // 🌟 加入 Word 頁尾區塊（利用 mso-element:footer 與 mso-field-code 自動編碼頁數）
+                    docHTML += contentHTML;
+                    docHTML += `
+                    <div style="mso-element:footer" id="f1">
+                        <p style="text-align: center; font-size: 11pt; font-family: 'Times New Roman', serif;">
+                            - <span style="mso-field-code:' PAGE '"></span> -
+                        </p>
+                    </div>`;
+                    
+                    docHTML += `</div></body></html>`;
+
+                    const blob = new Blob(['\ufeff', docHTML], { type: 'application/msword' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    const deptShort = this.exam.dept.charAt(0);
+                    const gradeShort = this.exam.grade.charAt(1);
+                    a.download = `${this.exam.year}-${this.exam.semester} ${this.exam.name}數學考卷(${deptShort}${gradeShort}).doc`;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    status.className = "mt-4 font-bold text-lg text-green-600";
+                    status.innerHTML = `✅ 考卷生成成功！已下載檔案。`;
+                    
+                    this.isDownloading = false; 
+
+                } catch (error) {
+                    console.error(error);
+                    status.className = "mt-4 font-bold text-lg text-red-600";
+                    status.innerText = `❌ 發生錯誤：${error.message}`;
+                    this.isDownloading = false; 
+                }
+            }, 100);
+        }
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>
