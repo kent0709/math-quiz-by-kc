@@ -440,9 +440,9 @@ createApp({
 2. 【題目與算式排版強制要求（防擠壓破圖）】：
    無論是題目還是計算過程，【絕對禁止】把多個獨立的數學式、不等式或變數全部塞進同一個 $ $ 裡面！
    必須把每一個算式「獨立分開包覆」，並且用中文或標點符號隔開！
-   ❌ 致命錯誤 1：$A=1 B=2 C=3 \\implies D=4$ (全部擠在一起會破壞排版)
-   ✅ 正確排版 1：由已知可得 $A=1$，<br>代入公式得到 $B=2$，<br>進而推導出 $C=3$，<br>最後得出 $D=4$。
-   ❌ 致命錯誤 2：若不等式 $|2x-5| < 7 a < x < b a+b$ 的值為何？ (變數與不等式全擠在一起)
+   ❌ 致命錯誤 1：$\\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}} A=3, B=-4, C_1=k, C_2=-12 \\implies k=-2$ (變數、公式全部擠在一起會嚴重破壞排版！)
+   ✅ 正確排版 1：已知 $A=3$，$B=-4$，$C_1=k$，$C_2=-12$。<br>代入距離公式 $\\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}}$，解得 $k=-2$。
+   ❌ 致命錯誤 2：若不等式 $|2x-5| < 7 a < x < b a+b$ 的值為何？
    ✅ 正確排版 2：若不等式 $|2x-5| < 7$，其解為 $a < x < b$，則 $a+b$ 的值為何？
 3. 方陣與矩陣：表示矩陣時，【強制使用中括號】 $\\begin{bmatrix} ... \\end{bmatrix}$，絕對禁止使用 pmatrix（小括號）！
 4. 向量與線段：向量強制使用 \\overset{\\rightharpoonup}{AB}。絕對禁止使用 ||[y]|| 這種非標準符號！線段長度強制使用 \\overline{AB}。
@@ -713,18 +713,27 @@ createApp({
                 let coreTex = cleanTex.replace(/\\(?:text|display)style\s*/g, '').trim();
                 let checkTex = coreTex.replace(/[{}]/g, ''); // 移除外層大括號方便比對
 
-                let simpleVarMatch = checkTex.match(/^([a-zA-Z])([,.;:]?)$/);
-                let simpleNumMatch = checkTex.match(/^(-?[0-9]+(?:\.[0-9]+)?)([,.;:]?)$/);
-                let simpleEqMatch = checkTex.match(/^([a-zA-Z])\s*=\s*(-?[0-9]+(?:\.[0-9]+)?)([,.;:]?)$/);
+                let varP = "([a-zA-Z](?:_[a-zA-Z0-9]+)?)";
+                let numP = "(-?[0-9]+(?:\\.[0-9]+)?)";
 
-                if (simpleVarMatch) {
-                    let html = `<span style="font-family: 'Times New Roman', serif; font-style: italic; padding: 0 2px;">${simpleVarMatch[1]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleVarMatch[2]}</span>`;
+                let mVar = checkTex.match(new RegExp('^' + varP + '([,.;:]?)$'));
+                let mNum = checkTex.match(new RegExp('^' + numP + '([,.;:]?)$'));
+                let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
+                let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
+
+                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>')}</span>`;
+
+                if (mVar) {
+                    let html = `${toSpan(mVar[1], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mVar[2]}</span>`;
                     return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (simpleNumMatch) {
-                    let html = `<span style="font-family: 'Times New Roman', serif; padding: 0 2px;">${simpleNumMatch[1]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleNumMatch[2]}</span>`;
+                } else if (mNum) {
+                    let html = `${toSpan(mNum[1], false)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mNum[2]}</span>`;
                     return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
-                } else if (simpleEqMatch) {
-                    let html = `<span style="font-family: 'Times New Roman', serif; font-style: italic; padding: 0 2px;">${simpleEqMatch[1]}</span> = <span style="font-family: 'Times New Roman', serif; padding: 0 2px;">${simpleEqMatch[2]}</span><span style="font-family: 'Noto Sans TC', sans-serif;">${simpleEqMatch[3]}</span>`;
+                } else if (mEqNum) {
+                    let html = `${toSpan(mEqNum[1], true)} = ${toSpan(mEqNum[2], false)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mEqNum[3]}</span>`;
+                    return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
+                } else if (mEqVar) {
+                    let html = `${toSpan(mEqVar[1], true)} = ${toSpan(mEqVar[2], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mEqVar[3]}</span>`;
                     return isBlock ? `<div style="text-align: center; margin: 2px 0;">${html}</div>` : html;
                 }
 
@@ -732,16 +741,16 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            // 🌟 修正：確保匹配不跨越表格線或換行符，避免產生 Unbalanced Eqn
+            // 🌟 修正：確保匹配不跨越表格線或換行符，避免產生 Unbalanced Eqn ( Lookbehind 防治前面的字元被吞掉 )
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
             placeholderText = placeholderText.replace(/\$([^\$\n|]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            placeholderText = placeholderText.replace(/(?:^|[^\$\\])\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\}/g, (m) => saveMath(m.trim(), false));
-            placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
-            placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m, false));
-            placeholderText = placeholderText.replace(/\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m, true));
+            placeholderText = placeholderText.replace(/(?<![\$\\])\\d?frac\s*\{(?:[^{}]|\{[^{}]*\})*\}\s*\{(?:[^{}]|\{[^{}]*\})*\}/g, (m) => saveMath(m.trim(), false));
+            placeholderText = placeholderText.replace(/(?<![\$\\])\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
+            placeholderText = placeholderText.replace(/(?<![\$\\])\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
+            placeholderText = placeholderText.replace(/(?<![\$\\])\\begin\{[a-zA-Z*]+\}[\s\S]+?\\end\{[a-zA-Z*]+\}/g, (m) => saveMath(m.trim(), true));
 
             placeholderText = placeholderText.replace(/\\_+/g, '');
             placeholderText = placeholderText.replace(/_{2,}/g, '');
