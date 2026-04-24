@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.7 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.8 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.7 -->
+    <!-- 🌟 落款升級為 V11.8 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.7 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.8 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -423,8 +423,9 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式寫法：
-   - 【強制連接詞】：兩段獨立範圍之間【必須】寫出中文「或」、「且」來連接（例如：$x < 5 \\text{ 或 } x > 8$）。
+8. 集合與不等式精確寫法：
+   - 【強制連接詞】：兩段獨立範圍之間【絕對必須】使用「\\text{ 或 }」或「\\text{ 且 }」來連接（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$）。
+   - 【零容忍佔位符】：絕對禁止使用任何特殊符號（例如：#、_、?）來當作連接詞或佔位符，嚴禁條件沾黏。
    - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才要標 $x \\in \\mathbb{Z}$。`;
         }
     },
@@ -552,7 +553,7 @@ createApp({
             let placeholderText = text;
 
             // 🌟 優先把 AI 亂用的任何長度的 #、## 或 \#\# 強制淨化為 \text{ 或 }
-            placeholderText = placeholderText.replace(/(\\(?:#|＃)|[#＃])+/g, ' \\text{ 或 } ');
+            placeholderText = placeholderText.replace(/(?:\\*[#＃]+\s*)+/g, ' \\text{ 或 } ');
 
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
@@ -595,7 +596,7 @@ createApp({
                 let cleanTex = tex.trim();
 
                 // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 \text{ 或 }
-                cleanTex = cleanTex.replace(/(\\(?:#|＃)|[#＃])+/g, '\\text{ 或 }');
+                cleanTex = cleanTex.replace(/(?:\\*[#＃]+\s*)+/g, '\\text{ 或 }');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
