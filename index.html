@@ -136,7 +136,7 @@
                 <div class="flex gap-4">
                     <button v-if="missingQuestions.total > 0" @click="replenishQuestions" :disabled="isReplenishing" class="relative overflow-hidden px-6 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition shadow-md disabled:opacity-90 disabled:cursor-not-allowed flex items-center">
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
-                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-play mr-2"></i>強制手動補齊</span>
+                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-play mr-2"></i>強制手動接力</span>
                         <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out">
                             <i class="fas fa-spinner fa-spin mr-2"></i>系統自動分批接力中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
                         </span>
@@ -376,7 +376,7 @@
     <footer class="mt-16 mb-8 text-center">
         <div class="inline-flex items-center justify-center space-x-2 text-gray-400 font-bold text-sm tracking-widest bg-white px-6 py-2 rounded-full shadow-sm border border-gray-100">
             <i class="fas fa-code-branch"></i>
-            <span>v11.4 Powered by Gemini AI & KC</span>
+            <span>v11.5 Powered by Gemini AI & KC</span>
         </div>
     </footer>
 </div>
@@ -514,10 +514,10 @@ createApp({
             return t && t.enabled ? parseInt(t.count) || 0 : 0;
         },
 
-        // V11.4 智慧分批引擎：計算每一次最多送出 10 題
+        // V11.5 智慧分批引擎：減少批次量以防 Token 截斷
         getBatchRequestText() {
             let requestStr = [];
-            let remainingBatchCap = 10; // 每次安全數量，最高10題防截斷
+            let remainingBatchCap = 4; // 數學公式與詳解極度消耗 Token，降為每次安全請求 4 題
 
             this.questionTypes.forEach(t => {
                 if (t.enabled) {
@@ -904,6 +904,7 @@ createApp({
                     "【指定範圍】：" + (this.targetUnit || '根據提供的素材綜合出題'),
                     "【本次智慧分批題數分配】：" + batchTypes + " (⚠️為了避免系統字數截斷，這是智慧分批請求，請務必精準依照此數量出題，不要多也不要少！)",
                     "【特定要求】：" + this.examRules,
+                    "【重要】：`thought_process` 欄位請保持簡短（20字內），把所有字數額度留給題目與詳解。",
                     this.aiFormatRules
                 ].join('\n');
 
@@ -957,6 +958,7 @@ createApp({
                     "【指定範圍】：" + (this.targetUnit || '同上一次的範圍'),
                     "【本次補充題數分配】：" + batchTypes + " (⚠️為了避免系統字數截斷，這是智慧分批請求，請務必精準給出剛好數量的題目！)",
                     "【要求】：請出【全新、不同考點】的題目，絕對不要跟基礎題型重複。" + this.examRules,
+                    "【重要】：`thought_process` 欄位請保持簡短（20字內），把所有字數額度留給題目與詳解。",
                     this.aiFormatRules
                 ].join('\n');
 
