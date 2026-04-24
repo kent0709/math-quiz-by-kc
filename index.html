@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.1 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.2 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -363,9 +363,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款修正為 V11.1 Powered by Gemini & KC -->
+    <!-- 🌟 落款升級為 V11.2 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.2 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -425,7 +425,7 @@ createApp({
         totalPages() {
             return Math.ceil(this.previewQuestions.length / this.pageSize) || 1;
         },
-        // 🌟 退回 V11.1 的原版格式規範
+        // 🌟 更新第 8 點：強制要求分拆條件為獨立的數學式子，將連接詞寫在外面
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -446,7 +446,7 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式寫法：集合內的多條件範圍【必須】明確加入「或」、「且」等文字（例如：$B = \\{x \\mid x < 3 \\text{ 或 } x > 7\\}$），【嚴禁】漏掉連接詞導致式子沾黏出錯（❌ $x < 3 x > 7$）。若題目限定範圍為整數，【必須】在集合內完整標示條件（例如：$A = \\{x \\mid x \\ge -4, x \\in \\mathbb{Z}\\}$ 或寫明 $x$ 為整數），嚴禁文字或條件被截斷。`;
+8. 集合與不等式寫法：若有多個不等式條件包含「或」、「且」，【必須】分開成兩個獨立的數學式子，中間夾中文連接詞（✅ 正確示範：$x < 3$ 或 $x > 7$；❌ 錯誤示範：$x < 3 \\text{ 或 } x > 7$、❌ $B = \\{x \\mid x < 3 \\text{ 或 } x > 7\\}$）。【嚴禁】在同一個 $ $ 內使用 \\text{} 塞入中文。若為集合定義，請將範圍條件拉出集合外用文字描述（例如：✅ 集合 $A$ 包含所有滿足 $x < 3$ 或 $x > 7$ 的實數 $x$）。`;
         }
     },
     methods: {
@@ -721,8 +721,10 @@ createApp({
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
+            // 修正：移除對 | 的阻擋，讓絕對值能被正常包覆解析為單一區塊
             placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
+            // 修正：使用擷取群組保留 \frac 前面的字元，避免發生吞字元的現象
             placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
