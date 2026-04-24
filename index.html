@@ -235,6 +235,7 @@
                 <h2 class="text-xl font-bold text-gray-800 flex items-center shrink-0">
                     <span class="bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-base mr-3 shadow-md">2</span>
                     提供素材與出題指示
+                    <span class="ml-3 text-sm font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">佔 70%</span>
                 </h2>
                 <button @click="showImageTutorial = true" class="text-red-600 hover:text-red-800 text-sm flex items-center bg-red-50 px-4 py-1.5 rounded-full transition border border-red-200 shadow-sm font-bold">
                     <i class="fas fa-exclamation-triangle mr-2"></i>若有圖形題請點我
@@ -297,7 +298,7 @@
                 <label class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-600 mr-2 bg-teal-100 p-1.5 rounded-md"></i> AI 出題原則與進階要求
                 </label>
-                <textarea v-model="examRules" rows="5" class="w-full text-sm border border-gray-300 rounded-xl p-4 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-white transition leading-relaxed custom-scroll"></textarea>
+                <textarea v-model="examRules" rows="8" class="w-full text-sm border border-gray-300 rounded-xl p-4 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-white transition leading-relaxed custom-scroll"></textarea>
             </div>
         </div>
 
@@ -375,7 +376,7 @@
     <footer class="mt-16 mb-8 text-center">
         <div class="inline-flex items-center justify-center space-x-2 text-gray-400 font-bold text-sm tracking-widest bg-white px-6 py-2 rounded-full shadow-sm border border-gray-100">
             <i class="fas fa-code-branch"></i>
-            <span>v11.0 Powered by Gemini AI & KC</span>
+            <span>v11.1 Powered by Gemini AI & KC</span>
         </div>
     </footer>
 </div>
@@ -399,7 +400,7 @@ createApp({
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: new Date().getFullYear() - 1911, semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
-            examRules: "1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7.試題不能重複",
+            examRules: "1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7. 試題不能重複",
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
                 { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
@@ -745,7 +746,8 @@ createApp({
                     contents: [{ parts: contentsParts }],
                     generationConfig: { 
                         responseMimeType: "application/json",
-                        temperature: 0.7
+                        temperature: 0.7,
+                        maxOutputTokens: 8192 // 加入最大產出上限，防止大量題目導致 JSON 遭到截斷
                     }
                 })
             });
