@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.1 Power by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.1 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -363,9 +363,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.1 -->
+    <!-- 🌟 落款修正為 V11.1 Powered by Gemini & KC -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 Power by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -425,7 +425,7 @@ createApp({
         totalPages() {
             return Math.ceil(this.previewQuestions.length / this.pageSize) || 1;
         },
-        // 🌟 新增第 11 點：強制要求使用 Markdown 繪製表格，並在第 3, 4 點補上 sin(\theta) 與連鎖不等式的禁令
+        // 🌟 退回 V11.1 的原版格式規範
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -721,10 +721,8 @@ createApp({
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            // 修正：移除對 | 的阻擋，讓絕對值能被正常包覆解析為單一區塊
             placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 修正：使用擷取群組保留 \frac 前面的字元，避免發生吞字元的現象
             placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
