@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.4 Power by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.5 Power by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.4 -->
+    <!-- 🌟 落款升級為 V11.5 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.4 Power by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.5 Power by Gemini & KC</span>
     </footer>
 </div>
 
@@ -425,7 +425,7 @@ createApp({
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
 8. 集合與不等式寫法：
    - 【強制連接詞】：兩個不連續的範圍【絕對必須】用中文「或」或「且」連接，且必須用 \\text{} 包覆（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$）。
-   - 【嚴禁怪異符號】：【絕對禁止】使用「##」、「||」等任何非中文符號來代替連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。【嚴禁】條件沾黏不寫連接詞。
+   - 【嚴禁怪異符號】：【絕對禁止】使用「#」、「##」或「||」等任何非中文符號來代替連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。【嚴禁】條件沾黏不寫連接詞。若產生 # 符號將導致系統錯誤。
    - 【實數域省略】：一般實數範圍【不需要】寫出 $x \\in \\mathbb{R}$。只有在限定「整數」時，才需特別標明 $x \\in \\mathbb{Z}$ 或寫明 $x$ 為整數。`;
         }
     },
@@ -552,11 +552,13 @@ createApp({
             
             let placeholderText = text;
 
+            // 🌟 優先把 AI 亂用的 ## 或 \#\# 換成 \text{ 或 }
+            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, ' \\text{ 或 } ');
+
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
-            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
 
             placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
 
@@ -564,14 +566,12 @@ createApp({
 
             placeholderText = placeholderText.replace(/@@BR@@/g, '<br>');
 
-            placeholderText = placeholderText.replace(/#+/g, ''); 
             placeholderText = placeholderText.replace(/\x09heta\b/g, '\\theta'); 
             placeholderText = placeholderText.replace(/\x0Dightharpoonup/g, '\\rightharpoonup');
             placeholderText = placeholderText.replace(/\x0Dightarrow/g, '\\rightarrow');
             placeholderText = placeholderText.replace(/\x0Dight\b/g, '\\right');
             placeholderText = placeholderText.replace(/\x0Crac\b/g, '\\frac'); 
             placeholderText = placeholderText.replace(/\x08eta\b/g, '\\beta');
-            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
             placeholderText = placeholderText.replace(/`/g, '');
             
             placeholderText = placeholderText.replace(/pmatrix/g, 'bmatrix');
@@ -594,9 +594,6 @@ createApp({
             
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
-
-                // 🌟 【最終防呆攔截】：如果在解析前真的遇到 ## 就強制先換回中文「或」，不再讓它跑到畫面去！
-                cleanTex = cleanTex.replace(/(?:\\?#){2,}/g, '\\text{ 或 }');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
