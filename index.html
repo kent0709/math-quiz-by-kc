@@ -294,7 +294,7 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
                     <i class="fas fa-clipboard-check text-teal-500 mr-2"></i> 出題原則與要求
                 </label>
-                <textarea v-model="examRules" rows="6" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
+                <textarea v-model="examRules" rows="8" class="w-full text-sm border border-gray-200 rounded-lg p-3 outline-none focus:border-teal-400 bg-white shadow-inner"></textarea>
             </div>
         </div>
 
@@ -390,7 +390,7 @@ createApp({
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
-            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7.試題不能重複`,
+            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7.試題不能重複\n8. 選擇題選項答案平均分配`,
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
                 { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
