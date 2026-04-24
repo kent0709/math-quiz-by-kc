@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V12.0 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V12.1 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V12.0 -->
+    <!-- 🌟 落款升級為 V12.1 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V12.0 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V12.1 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -402,11 +402,11 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 破除提示詞矛盾：修改第 2 點與第 8 點，開中文後門並移除毒藥範例
+        // 🌟 規則翻新：禁止中文字（除了或、且）、嚴禁使用 # 當空白
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。推導換行請用 <br> 串接。
-2. 公式內中文限制：$ $ 內【原則上禁止】出現中文字（❌ $P(紅球)$ ✅ $P(R)$）。【唯一例外】：集合與範圍的條件連接，允許使用 \\text{ 或 } 與 \\text{ 且 }。
+2. 嚴禁中文入公式：$ $ 內【絕對禁止】出現任何中文字（❌ $P(紅球)=\\frac{1}{2}$ ✅ P(紅球)=$\\frac{1}{2}$）。【特別警告】「或」與「且」等連接詞必須寫在 $ $ 之外（❌ $x<1 \\text{或} x>2$ ✅ $x<1$ 或 $x>2$）。
 3. 嚴格 LaTeX 語法：
    - 分數：強制用 \\frac{}{}，禁用斜線。
    - 矩陣：強制用 \\begin{bmatrix}，禁用 pmatrix。
@@ -421,10 +421,10 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式精確排版：
-   - 【強制連接詞】：若有兩段以上的獨立範圍，【必須】使用 \\text{ 或 } 或 \\text{ 且 } 連接（✅ $x < 5 \\text{ 或 } x > 8$）。
-   - 【嚴禁條件沾黏】：絕對不可將不等式無連接詞直接相連（❌ $x < 3 x > 7$）。
-   - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才標明 $x \\in \\mathbb{Z}$。`;
+8. 集合與填空精確排版：
+   - 【強制連接詞】：兩段獨立範圍之間【必須】使用中文字「或」、「且」連接，且必須放在 $ $ 之外（例如：$x < 5$ 或 $x > 8$）。
+   - 【嚴禁井字號與亂碼】：絕對禁止使用 \`#\`、\`##\`、\`_\` 等符號當作佔位符。若題目需要填空，請使用 \\square 代替。
+   - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才寫 $x \\in \\mathbb{Z}$。`;
         }
     },
     methods: {
@@ -550,15 +550,16 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 優先把 AI 亂用的任何長度的 #、## 或 \#\# 強制淨化為中文「或」
-            placeholderText = placeholderText.replace(/\\text\{\s*or\s*\}/gi, ' 或 ');
-            placeholderText = placeholderText.replace(/\\text\{\s*and\s*\}/gi, ' 且 ');
-            placeholderText = placeholderText.replace(/\\*[#＃]+/g, ' 或 ');
-            
-            // 清理可能出現的連續「或或或」
-            placeholderText = placeholderText.replace(/(?:或\s*){2,}/g, ' 或 ');
-            // 移除多餘的「, 或」這種不合邏輯的組合
-            placeholderText = placeholderText.replace(/,\s*或\s*/g, ' 或 ');
+            // 🌟 1. 預先將「或」跟「且」從公式區塊中扒出來，確保不會被圖片引擎吃掉
+            placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (match, inner) => {
+                let mod = inner.replace(/\\text\s*\{\s*(或|且)\s*\}/g, '$$$1$$');
+                mod = mod.replace(/(或|且)/g, '$$$1$$');
+                return '$' + mod + '$';
+            });
+            // 整理被扒出來後產生的多餘 $$ 符號
+            placeholderText = placeholderText.replace(/\$\$/g, '$');
+            placeholderText = placeholderText.replace(/\$([或且])\$/g, ' $1 ');
+            placeholderText = placeholderText.replace(/\$\s*\$/g, '');
 
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
@@ -600,8 +601,8 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 或
-                cleanTex = cleanTex.replace(/\\*[#＃]+/g, ' 或 ');
+                // 🌟 2. 將殘留的 # 或 ## 轉為方塊，防止圖片引擎當機導致分數不見
+                cleanTex = cleanTex.replace(/[#＃]+/g, '\\square ');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
@@ -755,9 +756,6 @@ createApp({
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
-                
-                // 🌟 最後清理一次所有多餘的 \text{ 或 } 或 重複的 \text{ 或 }，確保排版完美乾淨
-                tex = tex.replace(/(?:\s*\\text\{\s*或\s*\}\s*){2,}/g, ' \\text{ 或 } ');
                 
                 let encoded = encodeURIComponent(tex);
                 let renderedHtml = `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle; max-width: 100%; height: auto;" alt="math" />`;
