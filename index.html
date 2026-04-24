@@ -89,8 +89,8 @@
                         <i class="fas fa-list-check mr-2 text-teal-600"></i>本次出題總覽 (目前共 {{ previewQuestions.length }} 題)
                     </h4>
                     <div class="flex gap-3">
-                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-red-600 bg-red-50 px-4 py-2 rounded-xl border border-red-200 cursor-pointer hover:bg-red-100 transition shadow-sm flex items-center" @click="replenishQuestions">
-                            ⚠️ 距離預設題數還缺 {{ missingQuestions.total }} 題 <span class="text-xs ml-1 bg-red-100 text-red-800 px-2 py-0.5 rounded ml-2">{{ isReplenishing ? '自動補齊中...' : '點擊手動補齊' }}</span>
+                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-amber-700 bg-amber-50 px-4 py-2 rounded-xl border border-amber-200 shadow-sm flex items-center">
+                            <i class="fas fa-sync fa-spin mr-2"></i> 智慧分批出題中... 還缺 {{ missingQuestions.total }} 題 
                         </span>
                         <span v-else class="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-xl border border-green-200 shadow-sm flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>題數完全符合設定
@@ -136,9 +136,9 @@
                 <div class="flex gap-4">
                     <button v-if="missingQuestions.total > 0" @click="replenishQuestions" :disabled="isReplenishing" class="relative overflow-hidden px-6 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 transition shadow-md disabled:opacity-90 disabled:cursor-not-allowed flex items-center">
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
-                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>自動補齊缺額 ({{ missingQuestions.total }} 題)</span>
+                        <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-play mr-2"></i>強制手動補齊</span>
                         <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>系統自動接力補題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
+                            <i class="fas fa-spinner fa-spin mr-2"></i>系統自動分批接力中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
                         </span>
                     </button>
                     <button @click="downloadWord" :disabled="isDownloading || previewQuestions.length === 0 || isReplenishing" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
@@ -362,10 +362,10 @@
 
             <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-700 text-white font-black py-4 px-14 rounded-2xl shadow-[0_10px_20px_rgba(13,148,136,0.3)] hover:shadow-[0_15px_30px_rgba(13,148,136,0.4)] transition-all transform hover:-translate-y-1 text-xl w-full md:w-auto disabled:opacity-80 disabled:cursor-not-allowed disabled:transform-none">
                 <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-black/20 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
-                <span v-if="!isGenerating" class="relative z-10 flex items-center justify-center"><i class="fas fa-magic mr-3 text-2xl"></i> AI 智慧出題並預覽</span>
+                <span v-if="!isGenerating" class="relative z-10 flex items-center justify-center"><i class="fas fa-magic mr-3 text-2xl"></i> AI 智慧分批出題並預覽</span>
                 <span v-else class="relative z-10 flex items-center justify-center text-yellow-300 drop-shadow-md">
-                    <i class="fas fa-circle-notch fa-spin mr-3 text-xl"></i> 
-                    <span class="tracking-widest">AI 深度分析運算中...</span> 
+                    <i class="fas fa-circle-notch fa-spin mr-3 text-xl"></i> 
+                    <span class="tracking-widest">AI 深度分析運算中...</span> 
                     <span class="ml-3 font-black bg-black/20 px-2 py-1 rounded-lg">{{ loadingProgress }}%</span>
                 </span>
             </button>
@@ -376,7 +376,7 @@
     <footer class="mt-16 mb-8 text-center">
         <div class="inline-flex items-center justify-center space-x-2 text-gray-400 font-bold text-sm tracking-widest bg-white px-6 py-2 rounded-full shadow-sm border border-gray-100">
             <i class="fas fa-code-branch"></i>
-            <span>v11.3 Powered by Gemini AI & KC</span>
+            <span>v11.4 Powered by Gemini AI & KC</span>
         </div>
     </footer>
 </div>
@@ -512,6 +512,25 @@ createApp({
         getRequiredCount(tName) {
             const t = this.questionTypes.find(x => x.name === tName); 
             return t && t.enabled ? parseInt(t.count) || 0 : 0;
+        },
+
+        // V11.4 智慧分批引擎：計算每一次最多送出 10 題
+        getBatchRequestText() {
+            let requestStr = [];
+            let remainingBatchCap = 10; // 每次安全數量，最高10題防截斷
+
+            this.questionTypes.forEach(t => {
+                if (t.enabled) {
+                    let currentCount = this.finalGroupedQs[t.name] ? this.finalGroupedQs[t.name].length : 0;
+                    let missing = parseInt(t.count) - currentCount;
+                    if (missing > 0 && remainingBatchCap > 0) {
+                        let askCount = Math.min(missing, remainingBatchCap);
+                        requestStr.push(`${t.name}: ${askCount}題 (難度: ${t.difficulty})`);
+                        remainingBatchCap -= askCount;
+                    }
+                }
+            });
+            return requestStr.join('，');
         },
 
         deleteQuestion(idx) {
@@ -747,7 +766,7 @@ createApp({
                     generationConfig: { 
                         responseMimeType: "application/json",
                         temperature: 0.7,
-                        maxOutputTokens: 8192 // 加入最大產出上限，防止大量題目導致 JSON 遭到截斷
+                        maxOutputTokens: 8192
                     }
                 })
             });
@@ -763,7 +782,7 @@ createApp({
             let rawText = data.candidates[0].content.parts[0].text;
             let finishReason = data.candidates[0].finishReason;
             
-            // 安全清洗 JSON 外的 Markdown 標記 (使用 \x60 避免被 Markdown 解析器截斷)
+            // 安全清洗 JSON 外的 Markdown 標記
             rawText = rawText.replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\x60\x60\x60\s*$/i, '').trim();
             
             try {
@@ -771,14 +790,11 @@ createApp({
             } catch (parseError) {
                 console.error("初次 JSON 解析失敗，原始字串與錯誤：", rawText, parseError);
                 
-                let fixedText = rawText; // 擴大變數作用域
+                let fixedText = rawText;
                 
                 try {
                     // 啟動自癒修復機制
-                    // 1. 修復常見的 LaTeX 單斜線導致 JSON 解析失敗 (如 \pmatrix, \sin 非 JSON 原生跳脫字元)
                     fixedText = rawText.replace(/\\(?=[^"\\/bfnrtu])/g, '\\\\');
-                    
-                    // 2. 處理被 JSON 誤判為原生跳脫字元的 LaTeX
                     fixedText = fixedText.replace(/\\t(?=heta)/g, '\\\\t');
                     fixedText = fixedText.replace(/\\f(?=rac)/g, '\\\\f');
                     fixedText = fixedText.replace(/\\r(?=ight)/g, '\\\\r');
@@ -791,7 +807,6 @@ createApp({
                     console.error("自癒修復後解析仍失敗，啟動截斷搶救模組：", e2);
                     
                     // ✂️ 【V11.3 終極截斷救援模組】
-                    // 找尋最後一個可能完整的 "thought_process" 或 "type" 欄位起點，切掉未完成的部分
                     let lastKeyIdx = fixedText.lastIndexOf('"thought_process"');
                     if (lastKeyIdx === -1) lastKeyIdx = fixedText.lastIndexOf('"type"');
                     
@@ -799,7 +814,6 @@ createApp({
                         let cutIdx = fixedText.lastIndexOf('{', lastKeyIdx);
                         if (cutIdx > 0) {
                             let salvaged = fixedText.substring(0, cutIdx).trim();
-                            // 修復陣列結尾
                             if (salvaged.endsWith(',')) salvaged = salvaged.substring(0, salvaged.length - 1);
                             if (!salvaged.endsWith(']')) salvaged += ']';
                             if (!salvaged.endsWith('}')) salvaged += '}';
@@ -808,7 +822,7 @@ createApp({
                                 let salvagedData = JSON.parse(salvaged);
                                 if (salvagedData.questions && salvagedData.questions.length > 0) {
                                     console.log("✅ 成功搶救出 " + salvagedData.questions.length + " 題！");
-                                    return salvagedData; // 成功回傳殘餘的健康資料
+                                    return salvagedData;
                                 }
                             } catch (e3) {
                                 console.error("搶救再次失敗", e3);
@@ -824,10 +838,9 @@ createApp({
             }
         },
 
-        processAIFeedback(quizData, isReplenish = false) {
+        processAIFeedback(quizData) {
             const tempGroupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
             
-            // 防呆處理，確保有 questions 陣列
             if (!quizData || !Array.isArray(quizData.questions)) return;
 
             quizData.questions.forEach(q => {
@@ -841,24 +854,18 @@ createApp({
                 }
             });
 
-            ['選擇題', '填充題', '計算題'].forEach(t => this.shuffleArray(tempGroupedQs[t]));
-
-            if (!isReplenish) {
-                this.finalGroupedQs = {
-                    '選擇題': tempGroupedQs['選擇題'].slice(0, this.getRequiredCount('選擇題')),
-                    '填充題': tempGroupedQs['填充題'].slice(0, this.getRequiredCount('填充題')),
-                    '計算題': tempGroupedQs['計算題'].slice(0, this.getRequiredCount('計算題'))
-                };
-            } else {
-                ['選擇題', '填充題', '計算題'].forEach(t => {
-                    const missingCount = this.missingQuestions.details[t] || 0;
-                    if (missingCount > 0 && tempGroupedQs[t].length > 0) {
-                        const newQs = tempGroupedQs[t].slice(0, missingCount);
-                        if (!this.finalGroupedQs[t]) this.finalGroupedQs[t] = [];
-                        this.finalGroupedQs[t] = this.finalGroupedQs[t].concat(newQs);
-                    }
-                });
-            }
+            // V11.4 將新取得的題目安全併入最終陣列，不再全部覆蓋
+            ['選擇題', '填充題', '計算題'].forEach(t => {
+                const currentCount = this.finalGroupedQs[t] ? this.finalGroupedQs[t].length : 0;
+                const targetCount = this.getRequiredCount(t);
+                const missingCount = targetCount - currentCount;
+                
+                if (missingCount > 0 && tempGroupedQs[t].length > 0) {
+                    const newQs = tempGroupedQs[t].slice(0, missingCount);
+                    if (!this.finalGroupedQs[t]) this.finalGroupedQs[t] = [];
+                    this.finalGroupedQs[t] = this.finalGroupedQs[t].concat(newQs);
+                }
+            });
 
             this.previewQuestions = [];
             ['選擇題', '填充題', '計算題'].forEach(tName => {
@@ -872,6 +879,10 @@ createApp({
         async generateExam() {
             if (!this.apiKey) { alert('請先輸入 API Key！'); return; }
             
+            // 🚀 V11.4 每次新生成時清空現有題庫
+            this.finalGroupedQs = { '選擇題': [], '填充題': [], '計算題': [] };
+            this.previewQuestions = [];
+
             this.isGenerating = true; 
             this.startLoadingProgress(); 
             
@@ -880,16 +891,18 @@ createApp({
             status.className = "mt-6 font-bold text-lg text-teal-600";
 
             try {
-                const activeTypes = this.questionTypes.filter(t => t.enabled).map(t => `${t.name}: ${t.count}題 (難度: ${t.difficulty})`).join(', ');
-                
-                if(!activeTypes) {
+                const totalNeeded = this.questionTypes.reduce((sum, t) => sum + (t.enabled ? parseInt(t.count) : 0), 0);
+                if(totalNeeded <= 0) {
                     throw new Error("請至少啟用一種題型並設定題數！");
                 }
 
+                // 取得本次安全批次配額 (最多 10 題)
+                const batchTypes = this.getBatchRequestText();
+
                 const promptText = [
-                    "請出扮演專業的高中職數學老師，出一份品質優良的數學考卷。必須嚴格依照設定的 JSON 格式回傳，確保屬性包含 questions 陣列。",
+                    "請扮演專業的高中職數學老師，出一份品質優良的數學考卷。必須嚴格依照設定的 JSON 格式回傳，確保屬性包含 questions 陣列。",
                     "【指定範圍】：" + (this.targetUnit || '根據提供的素材綜合出題'),
-                    "【題型與難度配置】：" + activeTypes + " (⚠️請務必精準依照此數量出題！)",
+                    "【本次智慧分批題數分配】：" + batchTypes + " (⚠️為了避免系統字數截斷，這是智慧分批請求，請務必精準依照此數量出題，不要多也不要少！)",
                     "【特定要求】：" + this.examRules,
                     this.aiFormatRules
                 ].join('\n');
@@ -900,19 +913,18 @@ createApp({
                     throw new Error("AI 未能成功生成題目，請檢查設定後重試！");
                 }
 
-                this.processAIFeedback(quizData, false);
+                this.processAIFeedback(quizData);
                 this.finishLoadingProgress(); 
                 
                 setTimeout(() => {
                     this.isGenerating = false;
                     this.showPreviewConsole = true; 
                     
-                    // 🚀 【V11.3 自動二次出題】
-                    // 開啟控制台後如果還有缺額，等待 1 秒讓使用者看到介面後自動開跑！
+                    // 🚀 【V11.4 自動二次出題】
                     if (this.missingQuestions.total > 0) {
                         setTimeout(() => {
                             this.replenishQuestions();
-                        }, 1000);
+                        }, 1200);
                     }
                 }, 800);
 
@@ -932,14 +944,18 @@ createApp({
             this.startLoadingProgress(); 
             
             try {
-                const missingTypes = Object.entries(this.missingQuestions.details)
-                                           .map(([k, v]) => `${k} 需要補充 ${v} 題`)
-                                           .join('，');
+                // 取得本次安全批次配額 (最多 10 題)
+                const batchTypes = this.getBatchRequestText();
+                
+                if (!batchTypes) {
+                    this.isReplenishing = false;
+                    return; // 已達標
+                }
                                            
                 const promptText = [
-                    "你現在是一位專業的數學出題助理。我們目前正在進行「考卷缺額自動補充出題」。",
+                    "你現在是一位專業的數學出題助理。我們目前正在進行「考卷缺額自動接力補充」。",
                     "【指定範圍】：" + (this.targetUnit || '同上一次的範圍'),
-                    "【補充題型與數量】：" + missingTypes + " (⚠️請務必精準給出剛好數量的題目！)",
+                    "【本次補充題數分配】：" + batchTypes + " (⚠️為了避免系統字數截斷，這是智慧分批請求，請務必精準給出剛好數量的題目！)",
                     "【要求】：請出【全新、不同考點】的題目，絕對不要跟基礎題型重複。" + this.examRules,
                     this.aiFormatRules
                 ].join('\n');
@@ -950,18 +966,17 @@ createApp({
                     throw new Error("AI 未能成功生成補充題目！");
                 }
 
-                this.processAIFeedback(quizData, true);
+                this.processAIFeedback(quizData);
                 this.finishLoadingProgress(); 
                 
                 setTimeout(() => {
                     this.isReplenishing = false;
                     
-                    // 🚀 【V11.3 遞迴自動補齊】
-                    // 如果二次出題後還是被截斷有缺，那就再跑第三次、第四次...直到補滿！
+                    // 🚀 【V11.4 遞迴自動補齊】
                     if (this.missingQuestions.total > 0) {
                         setTimeout(() => {
                             this.replenishQuestions();
-                        }, 1000);
+                        }, 1200);
                     }
                 }, 500);
                 
@@ -969,7 +984,7 @@ createApp({
                 console.error(error);
                 clearInterval(this.progressInterval);
                 this.isReplenishing = false;
-                alert('補題發生異常中斷：' + error.message + '\n\n您可以手動點擊「自動補齊缺額」按鈕接力完成。');
+                alert('接力補題發生異常中斷：' + error.message + '\n\n您可以手動點擊「強制手動補齊」按鈕繼續完成。');
             }
         },
 
@@ -1027,7 +1042,6 @@ createApp({
                                 let qHtml = `<p style="margin: 8px 0; line-height: 1.6; margin-left: 40px; text-indent: -40px; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
                                 
                                 if (tName === '選擇題' && q.options && q.options.length > 0) {
-                                    // 將選項內的 HTML span 拿掉，改為純文字標籤以適應 Word
                                     const formattedOptions = q.options.map(opt => this.formatMath(opt.replace(/<span[^>]*>(.*?)<\/span>/g, '$1')));
                                     qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.6; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                                 } else if (tName === '填充題') {
@@ -1041,9 +1055,8 @@ createApp({
                     });
 
                     if (this.exportOptions.examPaper) {
-                        // 自動分兩欄邏輯 (簡易判斷一半題目)
                         let totalQs = allQuestions.filter(q => !q.isHeader).length;
-                        let midPoint = Math.floor(totalQs * 0.45); // 稍微提早換頁，預留表頭空間
+                        let midPoint = Math.floor(totalQs * 0.45); 
                         let part1HTML = "";
                         let part2HTML = "";
                         let qCount = 0;
@@ -1059,7 +1072,6 @@ createApp({
 
                         contentHTML += this.getHeaderHTML(false);
                         
-                        // Word 多欄位排版設定 (雙欄)
                         contentHTML += '<div style="mso-column-count: 2; mso-column-margin: 20pt;">';
                         contentHTML += part1HTML;
                         contentHTML += part2HTML;
@@ -1070,7 +1082,6 @@ createApp({
                         contentHTML += '<br clear="all" style="page-break-before:always; mso-break-type:page-break;" />';
                         contentHTML += this.getHeaderHTML(true);
                         
-                        // 單選題答案區塊
                         const finalMCQs = this.finalGroupedQs['選擇題'];
                         if (finalMCQs && finalMCQs.length > 0) {
                             contentHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 10px 0 5px 0;">一、單選題解答</p>`;
@@ -1095,7 +1106,6 @@ createApp({
                             contentHTML += '</table>';
                         }
 
-                        // 填充題答案區塊
                         const finalFillQs = this.finalGroupedQs['填充題'];
                         if (finalFillQs && finalFillQs.length > 0) {
                             contentHTML += `<p style="font-weight: bold; font-size: 14pt; margin: 10px 0 5px 0;">二、填充題解答</p>`;
@@ -1111,7 +1121,6 @@ createApp({
                             contentHTML += '</table>';
                         }
 
-                        // 詳解區塊
                         contentHTML += '<h2 style="text-align: center; color: #b91c1c; margin-top: 30px; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid #b91c1c; padding-bottom: 5px;">【全卷試題解析】</h2>';
 
                         ['選擇題', '填充題', '計算題'].forEach(tName => {
@@ -1127,7 +1136,6 @@ createApp({
                     }
 
                     docHTML += contentHTML;
-                    // 頁尾頁碼
                     docHTML += '<div style="mso-element:footer" id="f1"><p style="text-align: center; font-size: 11pt; font-family: \'Times New Roman\', serif;">- <span style="mso-field-code:\' PAGE \'"></span> -</p></div>';
                     docHTML += '</div></body></html>';
 
