@@ -89,8 +89,8 @@
                         <i class="fas fa-list-check mr-2 text-teal-600"></i>本次出題總覽 (目前共 {{ previewQuestions.length }} 題)
                     </h4>
                     <div class="flex gap-3">
-                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-red-600 bg-red-50 px-4 py-2 rounded-xl border border-red-200 cursor-pointer hover:bg-red-100 transition shadow-sm" @click="replenishQuestions">
-                            ⚠️ 距離預設題數還缺 {{ missingQuestions.total }} 題 (點擊補充)
+                        <span v-if="missingQuestions.total > 0" class="text-sm font-bold text-red-600 bg-red-50 px-4 py-2 rounded-xl border border-red-200 cursor-pointer hover:bg-red-100 transition shadow-sm flex items-center" @click="replenishQuestions">
+                            ⚠️ 距離預設題數還缺 {{ missingQuestions.total }} 題 <span class="text-xs ml-1 bg-red-100 text-red-800 px-2 py-0.5 rounded ml-2">{{ isReplenishing ? '自動補齊中...' : '點擊手動補齊' }}</span>
                         </span>
                         <span v-else class="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-xl border border-green-200 shadow-sm flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>題數完全符合設定
@@ -138,10 +138,10 @@
                         <div v-if="isReplenishing" class="absolute left-0 top-0 h-full bg-amber-700 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                         <span v-if="!isReplenishing" class="relative z-10"><i class="fas fa-plus-circle mr-2"></i>自動補齊缺額 ({{ missingQuestions.total }} 題)</span>
                         <span v-else class="relative z-10 flex items-center transition-transform duration-300 ease-out">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>AI 努力生題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
+                            <i class="fas fa-spinner fa-spin mr-2"></i>系統自動接力補題中... <span class="ml-1 text-yellow-200">{{ loadingProgress }}%</span>
                         </span>
                     </button>
-                    <button @click="downloadWord" :disabled="isDownloading || previewQuestions.length === 0" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                    <button @click="downloadWord" :disabled="isDownloading || previewQuestions.length === 0 || isReplenishing" class="px-8 py-3 rounded-xl font-black text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:scale-105 transition transform shadow-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                         <span v-if="!isDownloading"><i class="fas fa-file-word mr-2 text-xl"></i>確認無誤，匯出 Word</span>
                         <span v-else><i class="fas fa-spinner fa-spin mr-2 text-xl"></i>檔案生成中...</span>
                     </button>
@@ -376,7 +376,7 @@
     <footer class="mt-16 mb-8 text-center">
         <div class="inline-flex items-center justify-center space-x-2 text-gray-400 font-bold text-sm tracking-widest bg-white px-6 py-2 rounded-full shadow-sm border border-gray-100">
             <i class="fas fa-code-branch"></i>
-            <span>v11.2 Powered by Gemini AI & KC</span>
+            <span>v11.3 Powered by Gemini AI & KC</span>
         </div>
     </footer>
 </div>
@@ -786,9 +786,36 @@ createApp({
 
                     return JSON.parse(fixedText);
                 } catch (e2) {
-                    console.error("自癒修復後解析仍失敗：", e2);
+                    console.error("自癒修復後解析仍失敗，啟動截斷搶救模組：", e2);
+                    
+                    // ✂️ 【V11.3 終極截斷救援模組】
+                    // 找尋最後一個可能完整的 "thought_process" 或 "type" 欄位起點，切掉未完成的部分
+                    let lastKeyIdx = fixedText.lastIndexOf('"thought_process"');
+                    if (lastKeyIdx === -1) lastKeyIdx = fixedText.lastIndexOf('"type"');
+                    
+                    if (lastKeyIdx > 0) {
+                        let cutIdx = fixedText.lastIndexOf('{', lastKeyIdx);
+                        if (cutIdx > 0) {
+                            let salvaged = fixedText.substring(0, cutIdx).trim();
+                            // 修復陣列結尾
+                            if (salvaged.endsWith(',')) salvaged = salvaged.substring(0, salvaged.length - 1);
+                            if (!salvaged.endsWith(']')) salvaged += ']';
+                            if (!salvaged.endsWith('}')) salvaged += '}';
+                            
+                            try {
+                                let salvagedData = JSON.parse(salvaged);
+                                if (salvagedData.questions && salvagedData.questions.length > 0) {
+                                    console.log("✅ 成功搶救出 " + salvagedData.questions.length + " 題！");
+                                    return salvagedData; // 成功回傳殘餘的健康資料
+                                }
+                            } catch (e3) {
+                                console.error("搶救再次失敗", e3);
+                            }
+                        }
+                    }
+
                     if (finishReason === 'MAX_TOKENS') {
-                        throw new Error("⚠️ 單次生成的內容過多導致「被截斷」！請減少各題型的出題數，再利用「自動補齊缺額」分批出題。");
+                        throw new Error("⚠️ 單次生成的內容過多導致「被截斷」，且無法自動搶救！請減少題數。");
                     }
                     throw new Error("⚠️ AI 產出的資料包含無法解析的格式 (如跳脫字元錯誤或括號未閉合)，請點擊按鈕重新生成！");
                 }
@@ -877,6 +904,14 @@ createApp({
                 setTimeout(() => {
                     this.isGenerating = false;
                     this.showPreviewConsole = true; 
+                    
+                    // 🚀 【V11.3 自動二次出題】
+                    // 開啟控制台後如果還有缺額，等待 1 秒讓使用者看到介面後自動開跑！
+                    if (this.missingQuestions.total > 0) {
+                        setTimeout(() => {
+                            this.replenishQuestions();
+                        }, 1000);
+                    }
                 }, 800);
 
             } catch (error) {
@@ -900,7 +935,7 @@ createApp({
                                            .join('，');
                                            
                 const promptText = [
-                    "你現在是一位專業的數學出題助理。我們目前正在進行「考卷缺額補充出題」。",
+                    "你現在是一位專業的數學出題助理。我們目前正在進行「考卷缺額自動補充出題」。",
                     "【指定範圍】：" + (this.targetUnit || '同上一次的範圍'),
                     "【補充題型與數量】：" + missingTypes + " (⚠️請務必精準給出剛好數量的題目！)",
                     "【要求】：請出【全新、不同考點】的題目，絕對不要跟基礎題型重複。" + this.examRules,
@@ -918,13 +953,21 @@ createApp({
                 
                 setTimeout(() => {
                     this.isReplenishing = false;
+                    
+                    // 🚀 【V11.3 遞迴自動補齊】
+                    // 如果二次出題後還是被截斷有缺，那就再跑第三次、第四次...直到補滿！
+                    if (this.missingQuestions.total > 0) {
+                        setTimeout(() => {
+                            this.replenishQuestions();
+                        }, 1000);
+                    }
                 }, 500);
                 
             } catch (error) {
                 console.error(error);
                 clearInterval(this.progressInterval);
-                alert('補題發生錯誤：' + error.message);
                 this.isReplenishing = false;
+                alert('補題發生異常中斷：' + error.message + '\n\n您可以手動點擊「自動補齊缺額」按鈕接力完成。');
             }
         },
 
