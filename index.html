@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V10.3 byKC</title>
+    <title>數學出題小幫手 - V11.0 Power by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -363,9 +363,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V10.3 -->
+    <!-- 🌟 落款升級為 V11.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V10.3 byKC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.0 Power by Gemini & KC</span>
     </footer>
 </div>
 
@@ -445,7 +445,8 @@ createApp({
    - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
-7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！`;
+7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
+8. 集合與不等式連接詞：集合內的多條件範圍【必須】明確加入「或」、「且」等文字（例如：$B = \\{x \\mid x < 3 \\text{ 或 } x > 7\\}$），【嚴禁】漏掉連接詞導致式子沾黏出錯（❌ $x < 3 x > 7$）。`;
         }
     },
     methods: {
