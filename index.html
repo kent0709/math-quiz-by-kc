@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.9 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V12.0 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.9 -->
+    <!-- 🌟 落款升級為 V12.0 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.9 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V12.0 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -402,11 +402,11 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        // 🌟 新增第 11 點：強制要求使用 Markdown 繪製表格，並在第 3, 4 點補上 sin(\theta) 與連鎖不等式的禁令
+        // 🌟 破除提示詞矛盾：修改第 2 點與第 8 點，開中文後門並移除毒藥範例
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
-1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
-2. 嚴禁中文入公式：$ $ 內【絕對禁止】出現中文字（❌ $P(紅球)$ ✅ $P(R)$）。
+1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。推導換行請用 <br> 串接。
+2. 公式內中文限制：$ $ 內【原則上禁止】出現中文字（❌ $P(紅球)$ ✅ $P(R)$）。【唯一例外】：集合與範圍的條件連接，允許使用 \\text{ 或 } 與 \\text{ 且 }。
 3. 嚴格 LaTeX 語法：
    - 分數：強制用 \\frac{}{}，禁用斜線。
    - 矩陣：強制用 \\begin{bmatrix}，禁用 pmatrix。
@@ -414,19 +414,17 @@ createApp({
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
    - 符號：減號限用 ASCII「-」，角度限用 ^{\\circ}。
    - 三角函數：強制加上反斜線，嚴禁純英文寫法（❌ sin(theta)=4/5 ✅ \\sin \\theta = \\frac{4}{5} 求 \\sin 2\\theta）。
-4. 連鎖不等式排版：【絕對禁止】將連鎖推導或解不等式的過程全擠在同一個 $ $ 內！
-   - ❌ 錯誤示範：$|2x-3| < 9 -9 < 2x-3 < 9 -6 < 2x < 12 -3 < x < 6$
-   - ✅ 正確排版：由 $|2x-3| < 9$，<br>可得 $-9 < 2x-3 < 9$，<br>同加 $3$ 得到 $-6 < 2x < 12$，<br>除以 $2$ 得 $-3 < x < 6$。
-5. JSON 與字串跳脫：所有 LaTeX 反斜線必須雙跳脫（如 \\\\frac）。字串中【禁止】包含 \\n 或 \\r，請全部用 <br> 替代。
+4. 連鎖不等式排版：【絕對禁止】將長篇連鎖推導全擠在同一個 $ $ 內！應分段包覆並用 <br> 換行。
+5. JSON 與字串跳脫：所有 LaTeX 反斜線必須雙跳脫（如 \\\\frac）。字串中【禁止】包含 \\n 或 \\r，全用 <br> 替代。
 6. 內容限制：
    - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
-   - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
+   - 詳解 (solution) 必須為純繁體中文。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式精確寫法：
-   - 【強制連接詞】：兩段獨立範圍之間【必須】寫出中文「或」、「且」來連接（例如：$x < 5 \\text{ 或 } x > 8$）。
-   - 【嚴禁佔位符】：【絕對禁止】使用「#」、「_」、「?」等符號當作佔位符或連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。請務必給出完整的數學式，不可留空。
-   - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才寫 $x \\in \\mathbb{Z}$。`;
+8. 集合與不等式精確排版：
+   - 【強制連接詞】：若有兩段以上的獨立範圍，【必須】使用 \\text{ 或 } 或 \\text{ 且 } 連接（✅ $x < 5 \\text{ 或 } x > 8$）。
+   - 【嚴禁條件沾黏】：絕對不可將不等式無連接詞直接相連（❌ $x < 3 x > 7$）。
+   - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才標明 $x \\in \\mathbb{Z}$。`;
         }
     },
     methods: {
@@ -553,8 +551,10 @@ createApp({
             let placeholderText = text;
 
             // 🌟 優先把 AI 亂用的任何長度的 #、## 或 \#\# 強制淨化為中文「或」
-            // 處理如: #, ##, \#, \#\#
-            placeholderText = placeholderText.replace(/(?:\\?[#＃]\s*)+/g, ' 或 ');
+            placeholderText = placeholderText.replace(/\\text\{\s*or\s*\}/gi, ' 或 ');
+            placeholderText = placeholderText.replace(/\\text\{\s*and\s*\}/gi, ' 且 ');
+            placeholderText = placeholderText.replace(/\\*[#＃]+/g, ' 或 ');
+            
             // 清理可能出現的連續「或或或」
             placeholderText = placeholderText.replace(/(?:或\s*){2,}/g, ' 或 ');
             // 移除多餘的「, 或」這種不合邏輯的組合
@@ -600,8 +600,8 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 \text{ 或 }
-                cleanTex = cleanTex.replace(/(?:\\?[#＃]\s*)+/g, '\\text{ 或 }');
+                // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 或
+                cleanTex = cleanTex.replace(/\\*[#＃]+/g, ' 或 ');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
