@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.2 Power by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.3 Power by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -85,9 +85,9 @@
                 </div>
                 
                 <div class="space-y-4">
-                    <!-- 🌟 使用 paginatedQuestions 代替 previewQuestions -->
-                    <div v-for="(q, idx) in paginatedQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
-                        <button @click="deleteQuestion((currentPage - 1) * pageSize + idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
+                    <!-- 🌟 取消分頁，直接顯示所有題目 -->
+                    <div v-for="(q, idx) in previewQuestions" :key="idx" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition relative group">
+                        <button @click="deleteQuestion(idx)" class="absolute top-4 right-4 text-red-400 hover:text-white hover:bg-red-500 transition px-3 py-1.5 rounded-lg text-sm font-bold border border-red-200 opacity-70 group-hover:opacity-100">
                             <i class="fas fa-trash-alt mr-1"></i> 刪除此題
                         </button>
 
@@ -98,7 +98,7 @@
                                     <i class="fas fa-tag mr-1 opacity-70"></i>單元：{{ q.unit || '未分類' }}
                                 </span>
                             </div>
-                            <span class="text-gray-400 text-sm font-bold shrink-0 bg-gray-50 px-3 py-1 rounded-full">第 {{ (currentPage - 1) * pageSize + idx + 1 }} 題</span>
+                            <span class="text-gray-400 text-sm font-bold shrink-0 bg-gray-50 px-3 py-1 rounded-full">第 {{ idx + 1 }} 題</span>
                         </div>
                         <div class="text-base text-gray-800 leading-relaxed font-bold break-words" v-html="formatMath(q.question)"></div>
                         
@@ -110,19 +110,6 @@
                     <div v-if="previewQuestions.length === 0" class="text-center py-10 text-gray-400 font-bold">
                         <i class="fas fa-inbox text-4xl mb-3"></i><br>目前沒有題目，請補足題目。
                     </div>
-                </div>
-
-                <!-- 🌟 網頁版：最下方的分頁按鈕 (1 2 3 4 5 的頁碼) -->
-                <div v-if="totalPages > 1" class="flex justify-center items-center space-x-2 mt-8 mb-4">
-                    <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="px-3 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button v-for="p in totalPages" :key="p" @click="goToPage(p)" class="px-3.5 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === p ? 'bg-teal-600 text-white shadow-md' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        {{ p }}
-                    </button>
-                    <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="px-3 py-1.5 rounded-lg font-bold text-sm transition" :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-teal-50 hover:text-teal-600'">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
                 </div>
             </div>
             
@@ -363,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.2 -->
+    <!-- 🌟 落款升級為 V11.3 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.2 Power by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.3 Power by Gemini & KC</span>
     </footer>
 </div>
 
@@ -384,8 +371,6 @@ createApp({
             showPreviewConsole: false, 
             loadingProgress: 0, 
             progressInterval: null, 
-            currentPage: 1, // 🌟 分頁系統：目前頁碼
-            pageSize: 10,   // 🌟 分頁系統：每頁題數
             previewQuestions: [], 
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
@@ -417,14 +402,6 @@ createApp({
             });
             return { details: missing, total: total };
         },
-        paginatedQuestions() {
-            let start = (this.currentPage - 1) * this.pageSize;
-            let end = start + this.pageSize;
-            return this.previewQuestions.slice(start, end);
-        },
-        totalPages() {
-            return Math.ceil(this.previewQuestions.length / this.pageSize) || 1;
-        },
         // 🌟 新增第 11 點：強制要求使用 Markdown 繪製表格，並在第 3, 4 點補上 sin(\theta) 與連鎖不等式的禁令
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
@@ -454,12 +431,6 @@ createApp({
     methods: {
         saveApiKey() { localStorage.setItem('gemini_api_key', this.apiKey); },
         
-        goToPage(p) {
-            if (p >= 1 && p <= this.totalPages) {
-                this.currentPage = p;
-            }
-        },
-
         startLoadingProgress() {
             this.loadingProgress = 0;
             this.progressInterval = setInterval(() => {
@@ -522,17 +493,14 @@ createApp({
             return t && t.enabled ? parseInt(t.count) || 0 : 0;
         },
 
-        deleteQuestion(globalIdx) {
-            const q = this.previewQuestions[globalIdx];
-            this.previewQuestions.splice(globalIdx, 1);
+        deleteQuestion(idx) {
+            const q = this.previewQuestions[idx];
+            this.previewQuestions.splice(idx, 1);
             if (this.finalGroupedQs[q.type]) {
                 const gIdx = this.finalGroupedQs[q.type].findIndex(item => item.question === q.question);
                 if (gIdx !== -1) {
                     this.finalGroupedQs[q.type].splice(gIdx, 1);
                 }
-            }
-            if (this.currentPage > this.totalPages) {
-                this.currentPage = this.totalPages || 1;
             }
         },
 
@@ -628,7 +596,8 @@ createApp({
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-                cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
+                // 🌟 修正點：移除「強制刪除中文字」的邏輯，避免「或」、「且」在解析過程被蒸發
+                // cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
                 cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
@@ -777,7 +746,9 @@ createApp({
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
                 
-                tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
+                // 🌟 修正點：防止被重複套用 \text{}，先解開，然後連同可能含有的空白一起用 \text{} 完整包覆
+                tex = tex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
+                tex = tex.replace(/(\s*[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+\s*)/g, '\\text{$1}');
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
@@ -989,10 +960,6 @@ createApp({
                     this.previewQuestions.push(...this.finalGroupedQs[tName]);
                 }
             });
-            
-            if (this.currentPage > this.totalPages) {
-                this.currentPage = this.totalPages || 1;
-            }
         },
 
         async generateExam() {
