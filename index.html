@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.2 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.3 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -363,9 +363,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.2 -->
+    <!-- 🌟 落款升級為 V11.3 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.2 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.3 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -425,7 +425,7 @@ createApp({
         totalPages() {
             return Math.ceil(this.previewQuestions.length / this.pageSize) || 1;
         },
-        // 🌟 更新第 8 點：強制要求分拆條件為獨立的數學式子，將連接詞寫在外面
+        // 🌟 更新第 8 點：強制要求分拆條件為獨立的數學式子，並嚴禁在數學式內填寫中文的「整數」
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -446,7 +446,7 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式寫法：若有多個不等式條件包含「或」、「且」，【必須】分開成兩個獨立的數學式子，中間夾中文連接詞（✅ 正確示範：$x < 3$ 或 $x > 7$；❌ 錯誤示範：$x < 3 \\text{ 或 } x > 7$、❌ $B = \\{x \\mid x < 3 \\text{ 或 } x > 7\\}$）。【嚴禁】在同一個 $ $ 內使用 \\text{} 塞入中文。若為集合定義，請將範圍條件拉出集合外用文字描述（例如：✅ 集合 $A$ 包含所有滿足 $x < 3$ 或 $x > 7$ 的實數 $x$）。`;
+8. 集合與條件寫法：若有多個不等式條件包含「或」、「且」，【必須】分開成兩個獨立的數學式子，中間夾中文連接詞（✅ 正確示範：$x < 3$ 或 $x > 7$；❌ 錯誤示範：$x < 3 \\text{ 或 } x > 7$）。對於整數或實數等條件，【絕對禁止】在 $ $ 內部寫中文（❌ $x \\in 整數$ 或 ❌ $x 屬於整數$ 會破圖消失），請寫在公式外（✅ 滿足 $x < 6$ 的整數 $x$）或純用數學符號（✅ $x \\in \\mathbb{Z}$）。`;
         }
     },
     methods: {
@@ -623,6 +623,16 @@ createApp({
             
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
+
+                // 🌟 防呆機制：搶在中文被清除前，將常見的中文數學條件轉換為 LaTeX 符號，避免 AI 犯錯導致破圖
+                cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
+                cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/屬於實數/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/\\in\s*整數/g, '\\in \\mathbb{Z}');
+                cleanTex = cleanTex.replace(/\\in\s*實數/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/\\in\s*正整數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/\\in\s*自然數/g, '\\in \\mathbb{N}');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
