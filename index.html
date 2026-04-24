@@ -771,10 +771,12 @@ createApp({
             } catch (parseError) {
                 console.error("初次 JSON 解析失敗，原始字串與錯誤：", rawText, parseError);
                 
+                let fixedText = rawText; // 擴大變數作用域
+                
                 try {
                     // 啟動自癒修復機制
                     // 1. 修復常見的 LaTeX 單斜線導致 JSON 解析失敗 (如 \pmatrix, \sin 非 JSON 原生跳脫字元)
-                    let fixedText = rawText.replace(/\\(?=[^"\\/bfnrtu])/g, '\\\\');
+                    fixedText = rawText.replace(/\\(?=[^"\\/bfnrtu])/g, '\\\\');
                     
                     // 2. 處理被 JSON 誤判為原生跳脫字元的 LaTeX
                     fixedText = fixedText.replace(/\\t(?=heta)/g, '\\\\t');
