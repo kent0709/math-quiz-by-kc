@@ -376,7 +376,7 @@
     <footer class="mt-16 mb-8 text-center">
         <div class="inline-flex items-center justify-center space-x-2 text-gray-400 font-bold text-sm tracking-widest bg-white px-6 py-2 rounded-full shadow-sm border border-gray-100">
             <i class="fas fa-code-branch"></i>
-            <span>v11.1 Powered by Gemini AI & KC</span>
+            <span>v11.2 Powered by Gemini AI & KC</span>
         </div>
     </footer>
 </div>
@@ -434,7 +434,7 @@ createApp({
                    "2. 禁止中英混雜於公式內：數學公式 $ $ 內【絕對禁止】出現任何中文字！請將中文移至公式外部。\n" +
                    "   - ❌ 錯誤：$P(紅球) = \\\\frac{3}{5}$\n" +
                    "   - ✅ 正確：抽出紅球的機率 $P(R) = \\\\frac{3}{5}$\n" +
-                   "3. 公式獨立包覆：所有數字、變數、數學式，務必完整用 $ $ 獨立包覆。若為較長推導過程，請拆分成多個 $ $ 區塊，並使用 HTML 的 `<br>` 來換行，【絕對禁止】將多個不等式或推導擠在同一個 $ $ 內。\n" +
+                   "3. 公式獨立包覆：所有數字、變數、數學式，務必完整用 $ $ 獨立包覆。若為較長推導過程，請拆分成多個 $ $區塊，並使用 HTML 的 `<br>` 來換行，【絕對禁止】將多個不等式或推導擠在同一個 $$ 內。\n" +
                    "4. 絕對禁用純換行符號：JSON 字串值中【絕對禁止】包含純文字換行代碼（\\n）。需要換行請填寫 `<br>`。\n\n" +
                    "=== 📐 數學語法規範 ===\n" +
                    "1. 矩陣：強制使用中括號 `\\\\begin{bmatrix} ... \\\\end{bmatrix}`。\n" +
@@ -761,20 +761,37 @@ createApp({
             }
 
             let rawText = data.candidates[0].content.parts[0].text;
+            let finishReason = data.candidates[0].finishReason;
             
-            // 安全清洗 JSON 外的 Markdown 標記
-            rawText = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '');
-            let startIndex = rawText.indexOf('{');
-            let endIndex = rawText.lastIndexOf('}');
-            if (startIndex !== -1 && endIndex !== -1) {
-                rawText = rawText.substring(startIndex, endIndex + 1);
-            }
+            // 安全清洗 JSON 外的 Markdown 標記 (使用 \x60 避免被 Markdown 解析器截斷)
+            rawText = rawText.replace(/^\x60\x60\x60(?:json)?\s*/i, '').replace(/\x60\x60\x60\s*$/i, '').trim();
             
             try {
                 return JSON.parse(rawText);
             } catch (parseError) {
-                console.error("JSON解析失敗，原始字串：", rawText);
-                throw new Error("AI 產出的資料格式異常，請點擊按鈕重新生成！");
+                console.error("初次 JSON 解析失敗，原始字串與錯誤：", rawText, parseError);
+                
+                try {
+                    // 啟動自癒修復機制
+                    // 1. 修復常見的 LaTeX 單斜線導致 JSON 解析失敗 (如 \pmatrix, \sin 非 JSON 原生跳脫字元)
+                    let fixedText = rawText.replace(/\\(?=[^"\\/bfnrtu])/g, '\\\\');
+                    
+                    // 2. 處理被 JSON 誤判為原生跳脫字元的 LaTeX
+                    fixedText = fixedText.replace(/\\t(?=heta)/g, '\\\\t');
+                    fixedText = fixedText.replace(/\\f(?=rac)/g, '\\\\f');
+                    fixedText = fixedText.replace(/\\r(?=ight)/g, '\\\\r');
+                    fixedText = fixedText.replace(/\\b(?=eta|egin|matrix|f)/g, '\\\\b');
+                    fixedText = fixedText.replace(/\\n(?=abla|u|eq)/g, '\\\\n');
+                    fixedText = fixedText.replace(/\\u(?=parrow|nderbrace)/g, '\\\\u');
+
+                    return JSON.parse(fixedText);
+                } catch (e2) {
+                    console.error("自癒修復後解析仍失敗：", e2);
+                    if (finishReason === 'MAX_TOKENS') {
+                        throw new Error("⚠️ 單次生成的內容過多導致「被截斷」！請減少各題型的出題數，再利用「自動補齊缺額」分批出題。");
+                    }
+                    throw new Error("⚠️ AI 產出的資料包含無法解析的格式 (如跳脫字元錯誤或括號未閉合)，請點擊按鈕重新生成！");
+                }
             }
         },
 
