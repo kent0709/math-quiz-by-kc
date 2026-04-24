@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.3 Power by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.4 Power by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.3 -->
+    <!-- 🌟 落款升級為 V11.4 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.3 Power by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.4 Power by Gemini & KC</span>
     </footer>
 </div>
 
@@ -424,7 +424,8 @@ createApp({
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
 8. 集合與不等式寫法：
-   - 【強制連接詞】：兩個不連續的範圍【絕對必須】用「或」或「且」連接（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$，或是 $\\{x \\mid 2 \\le x < 5 \\text{ 或 } 8 < x \\le 10\\}$）。【嚴禁】條件沾黏（❌ $x < 5 x > 8$、❌ $2 \\le x < 5 8 < x \\le 10$）。
+   - 【強制連接詞】：兩個不連續的範圍【絕對必須】用中文「或」或「且」連接，且必須用 \\text{} 包覆（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$）。
+   - 【嚴禁怪異符號】：【絕對禁止】使用「##」、「||」等任何非中文符號來代替連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。【嚴禁】條件沾黏不寫連接詞。
    - 【實數域省略】：一般實數範圍【不需要】寫出 $x \\in \\mathbb{R}$。只有在限定「整數」時，才需特別標明 $x \\in \\mathbb{Z}$ 或寫明 $x$ 為整數。`;
         }
     },
@@ -594,10 +595,10 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                // 🌟 【最終防呆攔截】：如果在解析前真的遇到 ## 就強制先換回中文「或」，不再讓它跑到畫面去！
+                cleanTex = cleanTex.replace(/(?:\\?#){2,}/g, '\\text{ 或 }');
 
-                // 🌟 修正點：移除「強制刪除中文字」的邏輯，避免「或」、「且」在解析過程被蒸發
-                // cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
+                cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
                 cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
@@ -692,10 +693,8 @@ createApp({
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            // 修正：移除對 | 的阻擋，讓絕對值能被正常包覆解析為單一區塊
             placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 修正：使用擷取群組保留 \frac 前面的字元，避免發生吞字元的現象
             placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
@@ -746,7 +745,6 @@ createApp({
             mathBlocks.forEach((block, idx) => {
                 let tex = block.tex;
                 
-                // 🌟 修正點：防止被重複套用 \text{}，先解開，然後連同可能含有的空白一起用 \text{} 完整包覆
                 tex = tex.replace(/\\text\s*\{([^}]+)\}/g, '$1');
                 tex = tex.replace(/(\s*[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+\s*)/g, '\\text{$1}');
                 
@@ -759,7 +757,6 @@ createApp({
                 if (block.isBlock) {
                     renderedHtml = `<div style="text-align: center; margin: 2px 0;">${renderedHtml}</div>`;
                 }
-                // 🌟 【極限防呆】：改用相容所有設備的 split.join 來避免舊版瀏覽器 replaceAll 報錯導致的 @@MATHBLOCK 外洩！
                 result = result.split(`@@MATHBLOCK${idx}@@`).join(renderedHtml);
             });
 
