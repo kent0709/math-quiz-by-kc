@@ -424,8 +424,8 @@ createApp({
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
 8. 集合與不等式寫法：
-   - 【強制連接詞】：兩段範圍之間【只能】使用 \\text{ 或 } 或 \\text{ 且 } 作為連接，例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$。
-   - 【嚴禁井字號】：數學式中【絕對禁止】出現井字號（#）、雙井字號（##）或連續井字號。若使用 # 會導致系統嚴重崩潰！（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）
+   - 【強制連接詞】：兩段範圍之間【只能】使用中文字「或」、「且」連接，且必須用 \\text{} 包覆（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$）。
+   - 【嚴禁發明符號】：【絕對禁止】使用「#」、「##」、「||」或「or」等符號代替連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。系統遇到 # 號會直接判定錯誤！
    - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才要標 $x \\in \\mathbb{Z}$。`;
         }
     },
@@ -552,8 +552,8 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 優先把 AI 亂用的 ## 或 \#\# 換成 \text{ 或 }
-            placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, ' \\text{ 或 } ');
+            // 🌟 優先把 AI 亂用的 ## 或 \#\# 換成 \text{ 或 }，避免後面正則匹配不到
+            placeholderText = placeholderText.replace(/(?:\\?#\s*){2,}/g, ' \\text{ 或 } ');
 
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
@@ -595,8 +595,8 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 【最終防呆攔截】：如果在解析前真的遇到 ## 就強制先換回中文「或」，不再讓它跑到畫面去！
-                cleanTex = cleanTex.replace(/(?:\\?#){2,}/g, '\\text{ 或 }');
+                // 🌟 【最終防呆攔截】：如果在解析前真的遇到 # 相關佔位符，就強制換回中文「或」，不再讓它跑到畫面去！
+                cleanTex = cleanTex.replace(/(?:\\?#\s*)+/g, '\\text{ 或 }');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
@@ -975,7 +975,7 @@ createApp({
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️請你務必「精準」依照此數量的題型出題！絕對不可多出或少於指定題數！)
 【要求】：${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string"、"null"、"#"、"####" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1017,7 +1017,7 @@ ${this.aiFormatRules}`;
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
 【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string"、"null"、"#"、"####" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
