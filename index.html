@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.1 Power by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.2 Power by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -363,9 +363,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.1 -->
+    <!-- 🌟 落款升級為 V11.2 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.1 Power by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.2 Power by Gemini & KC</span>
     </footer>
 </div>
 
@@ -446,7 +446,9 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與不等式寫法：集合內的多條件範圍【必須】明確加入「或」、「且」等文字（例如：$B = \\{x \\mid x < 3 \\text{ 或 } x > 7\\}$），【嚴禁】漏掉連接詞導致式子沾黏出錯（❌ $x < 3 x > 7$）。若題目限定範圍為整數，【必須】在集合內完整標示條件（例如：$A = \\{x \\mid x \\ge -4, x \\in \\mathbb{Z}\\}$ 或寫明 $x$ 為整數），嚴禁文字或條件被截斷。`;
+8. 集合與不等式寫法：
+   - 【強制連接詞】：兩個不連續的範圍【絕對必須】用「或」或「且」連接（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$，或是 $\\{x \\mid 2 \\le x < 5 \\text{ 或 } 8 < x \\le 10\\}$）。【嚴禁】條件沾黏（❌ $x < 5 x > 8$、❌ $2 \\le x < 5 8 < x \\le 10$）。
+   - 【實數域省略】：一般實數範圍【不需要】寫出 $x \\in \\mathbb{R}$。只有在限定「整數」時，才需特別標明 $x \\in \\mathbb{Z}$ 或寫明 $x$ 為整數。`;
         }
     },
     methods: {
