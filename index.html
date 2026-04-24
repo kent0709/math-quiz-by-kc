@@ -424,8 +424,8 @@ createApp({
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
 8. 集合與不等式精確寫法：
-   - 【強制連接詞】：兩段獨立範圍之間【必須】使用中文字「或」、「且」連接（例如：$x < 5 \\text{ 或 } x > 8$）。
-   - 【嚴禁佔位符】：【絕對禁止】使用「#」、「##」、「_」、「?」等符號當作佔位符或連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。請務必給出完整的數學式，不可留空。
+   - 【強制連接詞】：兩段獨立範圍之間【必須】寫出中文「或」、「且」來連接（例如：$x < 5 \\text{ 或 } x > 8$）。
+   - 【嚴禁佔位符】：【絕對禁止】使用「#」、「_」、「?」等符號當作佔位符或連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。請務必給出完整的數學式，不可留空。
    - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才寫 $x \\in \\mathbb{Z}$。`;
         }
     },
@@ -553,7 +553,8 @@ createApp({
             let placeholderText = text;
 
             // 🌟 優先把 AI 亂用的任何長度的 #、## 或 \#\# 強制淨化為中文「或」
-            placeholderText = placeholderText.replace(/(?:\\[#＃]|[#＃])+/g, ' 或 ');
+            // 處理如: #, ##, \#, \#\#
+            placeholderText = placeholderText.replace(/(?:\\?[#＃]\s*)+/g, ' 或 ');
             // 清理可能出現的連續「或或或」
             placeholderText = placeholderText.replace(/(?:或\s*){2,}/g, ' 或 ');
             // 移除多餘的「, 或」這種不合邏輯的組合
@@ -600,7 +601,7 @@ createApp({
                 let cleanTex = tex.trim();
 
                 // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 \text{ 或 }
-                cleanTex = cleanTex.replace(/(?:\\[#＃]|[#＃])+/g, ' 或 ');
+                cleanTex = cleanTex.replace(/(?:\\?[#＃]\s*)+/g, '\\text{ 或 }');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
