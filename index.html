@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - V11.6 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - V11.7 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 V11.6 -->
+    <!-- 🌟 落款升級為 V11.7 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.6 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">V11.7 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -424,8 +424,7 @@ createApp({
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
 8. 集合與不等式寫法：
-   - 【強制連接詞】：兩段範圍之間【只能】使用中文字「或」、「且」連接，且必須用 \\text{} 包覆（例如：$B = \\{x \\mid x < 5 \\text{ 或 } x > 8\\}$）。
-   - 【嚴禁發明符號】：【絕對禁止】使用「#」、「##」、「||」或「or」等符號代替連接詞（❌ $x < 3 \\#\\# x > 7$ ✅ $x < 3 \\text{ 或 } x > 7$）。系統遇到 # 號會直接判定錯誤！
+   - 【強制連接詞】：兩段獨立範圍之間【必須】寫出中文「或」、「且」來連接（例如：$x < 5 \\text{ 或 } x > 8$）。
    - 【實數域省略】：一般實數範圍不寫 $x \\in \\mathbb{R}$。限定整數才要標 $x \\in \\mathbb{Z}$。`;
         }
     },
@@ -552,8 +551,8 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 優先把 AI 亂用的 ## 或 \#\# 換成 \text{ 或 }，避免後面正則匹配不到
-            placeholderText = placeholderText.replace(/(?:\\?#\s*){2,}/g, ' \\text{ 或 } ');
+            // 🌟 優先把 AI 亂用的任何長度的 #、## 或 \#\# 強制淨化為 \text{ 或 }
+            placeholderText = placeholderText.replace(/(\\(?:#|＃)|[#＃])+/g, ' \\text{ 或 } ');
 
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
@@ -595,8 +594,8 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 【最終防呆攔截】：如果在解析前真的遇到 # 相關佔位符，就強制換回中文「或」，不再讓它跑到畫面去！
-                cleanTex = cleanTex.replace(/(?:\\?#\s*)+/g, '\\text{ 或 }');
+                // 🌟 【雙重防呆攔截】：如果在處理中又有任何 # 殘留，一律淨化為 \text{ 或 }
+                cleanTex = cleanTex.replace(/(\\(?:#|＃)|[#＃])+/g, '\\text{ 或 }');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
@@ -750,6 +749,9 @@ createApp({
                 
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
+                
+                // 最後清理一次所有多餘的 \text{ 或 } 或 重複的 \text{ 或 }
+                tex = tex.replace(/(?:\s*\\text\{\s*或\s*\}\s*){2,}/g, ' \\text{ 或 } ');
                 
                 let encoded = encodeURIComponent(tex);
                 let renderedHtml = `<img src="https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}" style="vertical-align: middle; max-width: 100%; height: auto;" alt="math" />`;
@@ -975,7 +977,7 @@ createApp({
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️請你務必「精準」依照此數量的題型出題！絕對不可多出或少於指定題數！)
 【要求】：${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string"、"null"、"#"、"####" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】回傳 "string"、"null" 等無意義單字。如果該題為選擇題且未提供選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！嚴禁輸出未完成的選項佔位符。
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1017,7 +1019,7 @@ ${this.aiFormatRules}`;
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
 【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string"、"null"、"#"、"####" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】回傳 "string"、"null" 等無意義單字。如果該題為選擇題且未提供選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！嚴禁輸出未完成的選項佔位符。
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
