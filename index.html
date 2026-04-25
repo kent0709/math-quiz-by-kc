@@ -375,7 +375,8 @@ createApp({
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
             textbookFiles: [], examFiles: [], scopeFiles: [], targetUnit: '',
-            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7.試題不能重複\n8. 選擇題選項答案平均分配`,
+            // 🌟 加入第 8 點：強制選擇題正確答案必須平均分配，【絕對禁止】出現連續三題相同答案
+            examRules: `1. 至少 70%為課本、習作為出題標準\n2. 數據必須修改，不可直接照抄原題\n3. 選擇題至少佔 40 分\n4. 範圍題型平均分佈，一種觀念以三題為上限\n5. 題幹明確：避免過短或過長。\n6. 誘答力：錯誤選項要具似真性。\n7.試題不能重複\n8. 選擇題正確答案必須隨機且平均分配，【絕對禁止】出現連續三題相同答案（例如不可連續出 A, A, A）。`,
             questionTypes: [
                 { name: '選擇題', enabled: true, count: 10, score: 6, difficulty: '中階 (Procedural)' },
                 { name: '填充題', enabled: true, count: 8, score: 5, difficulty: '中階 (Procedural)' },
@@ -409,7 +410,6 @@ createApp({
             if (this.loadingProgress < 100) return "最終雙重防呆檢查...";
             return "準備就緒！";
         },
-        // 🌟 更新第 8 點：強制要求分拆條件為獨立的數學式子，並嚴禁在數學式內填寫中文的「整數」
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -427,6 +427,7 @@ createApp({
 5. JSON 與字串跳脫：所有 LaTeX 反斜線必須雙跳脫（如 \\\\frac）。字串中【禁止】包含 \\n 或 \\r，請全部用 <br> 替代。
 6. 內容限制：
    - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
+   - 選擇題答案分佈必須平均，【嚴禁】連續三題答案相同。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
@@ -551,7 +552,8 @@ createApp({
             return q;
         },
 
-        formatMath(text) {
+        // 🌟 新增參數 useBackupEngine：為了解決試題與解答同時產生導致算圖引擎被阻擋的問題，提供分流機制
+        formatMath(text, useBackupEngine = false) {
             if (!text) return '';
             
             let placeholderText = text;
@@ -599,7 +601,6 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 防呆機制：搶在中文被清除前，將常見的中文數學條件轉換為 LaTeX 符號，避免 AI 犯錯導致破圖
                 cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
                 cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
@@ -623,7 +624,11 @@ createApp({
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
 
-                const convertVector = (m, p1) => `\\overset{\\rightharpoonup}{${p1.trim()}}`;
+                // 🌟 【向量最佳化】：確保單字元為標準 \vec{a}，多字元為 \overrightarrow{AB}，徹底解決相容性破圖
+                const convertVector = (m, p1) => {
+                    let inner = p1.trim();
+                    return inner.length > 1 ? `\\overrightarrow{${inner}}` : `\\vec{${inner}}`;
+                };
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec)\s*\{([^{}]+)\}/g, convertVector);
@@ -671,7 +676,6 @@ createApp({
                     cleanTex = '\\displaystyle ' + cleanTex;
                 }
 
-                // 🌟 【智慧分流引擎】：單一變數或數字使用原生字體渲染，不呼叫圖片引擎，解決破圖與提速
                 let coreTex = cleanTex.replace(/\\(?:text|display)style\s*/g, '').trim();
                 let checkTex = coreTex.replace(/[{}]/g, ''); 
 
@@ -706,10 +710,8 @@ createApp({
             placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            // 修正：移除對 | 的阻擋，讓絕對值能被正常包覆解析為單一區塊
             placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
 
-            // 修正：使用擷取群組保留 \frac 前面的字元，避免發生吞字元的現象
             placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
             placeholderText = placeholderText.replace(/\\overline\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
@@ -761,20 +763,23 @@ createApp({
                 let tex = block.tex;
                 
                 tex = tex.replace(/([\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+)/g, '\\text{$1}');
-                
                 tex = tex.replace(/\n/g, ' ').replace(/\r/g, '');
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
+                let encoded = encodeURIComponent(tex).replace(/'/g, '%27'); 
                 
-                let encoded = encodeURIComponent(tex).replace(/'/g, '%27'); // 確保引號不會破壞 HTML 屬性
-                let srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
+                let srcUrl = '';
+                // 🌟 【算圖引擎雙重分流】：考卷核心使用 CodeCogs，詳解卷切換為備用的 Upmath，降低瞬間請求量！
+                if (!useBackupEngine) {
+                    srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
+                } else {
+                    srcUrl = `https://i.upmath.me/png/${encoded}`;
+                }
                 
-                // 🌟 【防破圖黑科技】：如果伺服器連線中斷或回傳錯誤，自動在背景重試 3 次，完美解決 rate limit 阻擋問題！
                 let renderedHtml = `<img src="${srcUrl}" style="vertical-align: middle; max-width: 100%; height: auto;" alt="math" onerror="let c=parseInt(this.getAttribute('retry')||'0');if(c<3){this.setAttribute('retry',c+1);setTimeout(()=>this.src='${srcUrl}',1000);}" />`;
                 
                 if (block.isBlock) {
                     renderedHtml = `<div style="text-align: center; margin: 2px 0;">${renderedHtml}</div>`;
                 }
-                // 🌟 【極限防呆】：改用相容所有設備的 split.join 來避免舊版瀏覽器 replaceAll 報錯導致的 @@MATHBLOCK 外洩！
                 result = result.split(`@@MATHBLOCK${idx}@@`).join(renderedHtml);
             });
 
@@ -1090,6 +1095,7 @@ ${this.aiFormatRules}`;
                     let sectionNum = ['一', '二', '三'];
                     let sectionIdx = 0;
 
+                    // 🌟 【傳遞分流參數】：試題卷使用主力引擎 (false)
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         const limitedQs = this.finalGroupedQs[tName];
                         if (limitedQs && limitedQs.length > 0) {
@@ -1101,13 +1107,13 @@ ${this.aiFormatRules}`;
                             
                             limitedQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
+                                let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question, false)}</p>`;
                                 
                                 if (tName === '選擇題' && q.options && q.options.length > 0) {
-                                    const formattedOptions = q.options.map(opt => this.formatMath(opt));
+                                    const formattedOptions = q.options.map(opt => this.formatMath(opt, false));
                                     qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; mso-text-control: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                                 } else if (tName === '填充題') {
-                                    qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
+                                    qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question, false)}</p>`;
                                 }
                                 
                                 if (tName === '計算題') qHtml += `<br><br><br><br>`;
@@ -1201,6 +1207,7 @@ ${this.aiFormatRules}`;
                         }
 
                         const finalFillQs = this.finalGroupedQs['填充題'];
+                        // 🌟 【傳遞分流參數】：解答卷使用備用引擎 (true) 徹底減輕伺服器負擔
                         if (finalFillQs && finalFillQs.length > 0) {
                             contentHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid blue; text-align: center; margin-bottom: 15px;">`;
                             let count = finalFillQs.length;
@@ -1208,7 +1215,7 @@ ${this.aiFormatRules}`;
                                 contentHTML += `<tr>`;
                                 for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td width="25%" style="font-size:14pt; height:35px; border: 1px solid blue;">(${i + j + 1})</td>`; else contentHTML += `<td width="25%" style="border: 1px solid blue;"></td>`; }
                                 contentHTML += `</tr><tr>`;
-                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer)}</td>`; else contentHTML += `<td style="border: 1px solid blue;"></td>`; }
+                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer, true)}</td>`; else contentHTML += `<td style="border: 1px solid blue;"></td>`; }
                                 contentHTML += `</tr>`;
                             }
                             contentHTML += `</table>`;
@@ -1222,7 +1229,7 @@ ${this.aiFormatRules}`;
                                 contentHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                                 finalQs.forEach((q, idx) => {
                                     let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                    contentHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
+                                    contentHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer, true)}</span><br><b>【詳解】</b>${this.formatMath(q.solution, true)}</p>`;
                                 });
                             }
                         });
