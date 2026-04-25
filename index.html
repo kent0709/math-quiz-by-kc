@@ -624,10 +624,10 @@ createApp({
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
 
-                // 🌟 【向量最佳化】：確保單字元為標準 \vec{a}，多字元為 \overrightarrow{AB}，徹底解決相容性破圖
+                // 🌟 【向量最佳化】：配合台灣高中數學標準，強制所有向量統一使用單邊半箭頭 \overset{\rightharpoonup}{...}
                 const convertVector = (m, p1) => {
                     let inner = p1.trim();
-                    return inner.length > 1 ? `\\overrightarrow{${inner}}` : `\\vec{${inner}}`;
+                    return `\\overset{\\rightharpoonup}{${inner}}`;
                 };
                 cleanTex = cleanTex.replace(/\\?overset\s*\{\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to)\s*\}\s*\{([^{}]+)\}/g, convertVector);
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*\{([^{}]+)\}/g, convertVector);
