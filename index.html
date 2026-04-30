@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.1 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - v12.2 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.1 -->
+    <!-- 🌟 落款升級為 v12.2 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.1 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.2 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -416,6 +416,7 @@ createApp({
 2. 嚴禁中文入公式：$ $ 內【絕對禁止】出現中文字（❌ $P(紅球)$ ✅ $P(R)$）。
 3. 嚴格 LaTeX 語法：
    - 分數：強制用 \\frac{}{}，禁用斜線。
+   - 根號與精確值：若答案或選項包含根號，必須保留精確的 LaTeX 根號表示（如 \\sqrt{2} 或 $2\\sqrt{3}$），【絕對禁止】偷懶轉換成相近的整數或小數。
    - 矩陣：強制用 \\begin{bmatrix}，禁用 pmatrix。
    - 向量與線段：強制用 \\overset{\\rightharpoonup}{AB} 與 \\overline{AB}。
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
