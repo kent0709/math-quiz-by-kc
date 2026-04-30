@@ -422,7 +422,7 @@ createApp({
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
    - 符號：減號限用 ASCII「-」，角度限用 ^{\\circ}。
    - 三角函數：強制加上反斜線，嚴禁純英文寫法（❌ sin(theta)=4/5 ✅ \\sin \\theta = \\frac{4}{5} 求 \\sin 2\\theta）。
-   - 導函數：請使用標準單引號 $f'(x)$，【絕對禁止】使用反引號 $f\`(x)$ 或其他奇怪標點符號。
+   - 導函數：強制使用 LaTeX 語法 $f^{\\prime}(x)$，【絕對禁止】直接打單引號 $f'(x)$ 或反引號 $f\`(x)$。
 4. 連鎖不等式排版：【絕對禁止】將連鎖推導或解不等式的過程全擠在同一個 $ $ 內！
    - ❌ 錯誤示範：$|2x-3| < 9 -9 < 2x-3 < 9 -6 < 2x < 12 -3 < x < 6$
    - ✅ 正確排版：由 $|2x-3| < 9$，<br>可得 $-9 < 2x-3 < 9$，<br>同加 $3$ 得到 $-6 < 2x < 12$，<br>除以 $2$ 得 $-3 < x < 6$。
@@ -569,10 +569,9 @@ createApp({
             // 🌟 將 C(n,k) 與 P(n,k) 轉為 C^n_k 與 P^n_k (上下標)
             placeholderText = placeholderText.replace(/\b([CP])\(\s*([^,()]+)\s*,\s*([^,()]+)\s*\)/g, '$1^{$2}_{$3}');
             
-            // 🌟 修正導函數符號防呆：將錯誤的反引號轉換為正確的單引號
-            placeholderText = placeholderText.replace(/f`\(/g, "f'(");
-            placeholderText = placeholderText.replace(/f‵\(/g, "f'(");
-            placeholderText = placeholderText.replace(/fˋ\(/g, "f'(");
+            // 🌟 修正導函數符號防呆：轉換成標準 LaTeX \prime (上方一撇)，避免單引號被後續過濾程式吃掉
+            placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
+            placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
