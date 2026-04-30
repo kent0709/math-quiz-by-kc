@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.2 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - v12.3 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.2 -->
+    <!-- 🌟 落款升級為 v12.3 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.2 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.3 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -432,7 +432,9 @@ createApp({
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
 7. 表格排版：如需產生表格，【絕對禁止】使用 HTML <table> 標籤，必須使用 Markdown 表格語法（使用 | 與 - 繪製）！
-8. 集合與條件寫法：若有多個不等式條件包含「或」、「且」，【必須】分開成兩個獨立的數學式子，中間夾中文連接詞（✅ 正確示範：$x < 3$ 或 $x > 7$；❌ 錯誤示範：$x < 3 \\text{ 或 } x > 7$）。對於整數或實數等條件，【絕對禁止】在 $ $ 內部寫中文（❌ $x \\in 整數$ 或 ❌ $x 屬於整數$ 會破圖消失），請寫在公式外（✅ 滿足 $x < 6$ 的整數 $x$）或純用數學符號（✅ $x \\in \\mathbb{Z}$）。`;
+8. 集合與條件寫法：
+   - 當表示「定義域」、「值域」或「集合」時，最外層【必須】加上大括號（✅ 正確：$\\{x \\in \\mathbb{R} \\mid x \\ge 6\\}$；❌ 錯誤：$x \\in \\mathbb{R} \\mid x \\ge 6$ 不加大括號）。
+   - 若有多個不等式條件包含「或」、「且」，【必須】分開成兩個獨立的數學式子，中間夾中文連接詞（✅ 正確示範：$x < 3$ 或 $x > 7$；❌ 錯誤示範：$x < 3 \\text{ 或 } x > 7$）。對於整數或實數等條件，【絕對禁止】在 $ $ 內部寫中文（❌ $x \\in 整數$ 或 ❌ $x 屬於整數$ 會破圖消失），請寫在公式外（✅ 滿足 $x < 6$ 的整數 $x$）或純用數學符號（✅ $x \\in \\mathbb{Z}$）。`;
         }
     },
     methods: {
