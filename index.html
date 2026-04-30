@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.3 Powered by Gemini & KC</title>
+    <title>數學出題小幫手 - v12.4 Powered by Gemini & KC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.3 -->
+    <!-- 🌟 落款升級為 v12.4 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.3 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.4 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -422,11 +422,13 @@ createApp({
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
    - 符號：減號限用 ASCII「-」，角度限用 ^{\\circ}。
    - 三角函數：強制加上反斜線，嚴禁純英文寫法（❌ sin(theta)=4/5 ✅ \\sin \\theta = \\frac{4}{5} 求 \\sin 2\\theta）。
+   - 導函數：請使用標準單引號 $f'(x)$，【絕對禁止】使用反引號 $f\`(x)$ 或其他奇怪標點符號。
 4. 連鎖不等式排版：【絕對禁止】將連鎖推導或解不等式的過程全擠在同一個 $ $ 內！
    - ❌ 錯誤示範：$|2x-3| < 9 -9 < 2x-3 < 9 -6 < 2x < 12 -3 < x < 6$
    - ✅ 正確排版：由 $|2x-3| < 9$，<br>可得 $-9 < 2x-3 < 9$，<br>同加 $3$ 得到 $-6 < 2x < 12$，<br>除以 $2$ 得 $-3 < x < 6$。
 5. JSON 與字串跳脫：所有 LaTeX 反斜線必須雙跳脫（如 \\\\frac）。字串中【禁止】包含 \\n 或 \\r，請全部用 <br> 替代。
-6. 內容限制：
+6. 內容與邏輯限制：
+   - 【關鍵生成順序】：對於選擇題，你【必須】先在 thought_process 計算出結果，並完整寫出詳解 (solution) 後，最後再針對算出的答案去設計選項 (options) 與指定解答 (answer)。這能確保答案正確且具備誘答力！
    - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
    - 選擇題答案分佈必須平均，【嚴禁】連續三題答案相同。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
@@ -563,6 +565,14 @@ createApp({
 
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
+
+            // 🌟 將 C(n,k) 與 P(n,k) 轉為 C^n_k 與 P^n_k (上下標)
+            placeholderText = placeholderText.replace(/\b([CP])\(\s*([^,()]+)\s*,\s*([^,()]+)\s*\)/g, '$1^{$2}_{$3}');
+            
+            // 🌟 修正導函數符號防呆：將錯誤的反引號轉換為正確的單引號
+            placeholderText = placeholderText.replace(/f`\(/g, "f'(");
+            placeholderText = placeholderText.replace(/f‵\(/g, "f'(");
+            placeholderText = placeholderText.replace(/fˋ\(/g, "f'(");
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
@@ -898,11 +908,12 @@ createApp({
                                             type: { type: "STRING" },
                                             unit: { type: "STRING" },
                                             question: { type: "STRING" },
+                                            // 🌟 強制 JSON 輸出邏輯順序：先算詳解，才給選項與答案
+                                            solution: { type: "STRING" },
                                             options: { type: "ARRAY", items: { type: "STRING" } },
-                                            answer: { type: "STRING" },
-                                            solution: { type: "STRING" }
+                                            answer: { type: "STRING" }
                                         },
-                                        required: ["thought_process", "type", "unit", "question", "options", "answer", "solution"]
+                                        required: ["thought_process", "type", "unit", "question", "solution", "options", "answer"]
                                     }
                                 }
                             },
