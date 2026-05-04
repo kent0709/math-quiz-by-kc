@@ -410,6 +410,7 @@ createApp({
             if (this.loadingProgress < 100) return "最終雙重防呆檢查...";
             return "準備就緒！";
         },
+        // 🌟 修正點在這裡：增加嚴格的 Prompt 以區分排列組合 P^{n}_{k} 與坐標點 P(x,y)
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -419,6 +420,7 @@ createApp({
    - 根號與精確值：若答案或選項包含根號，必須保留精確的 LaTeX 根號表示（如 \\sqrt{2} 或 $2\\sqrt{3}$），【絕對禁止】偷懶轉換成相近的整數或小數。
    - 矩陣：強制用 \\begin{bmatrix}，禁用 pmatrix。
    - 向量與線段：強制用 \\overset{\\rightharpoonup}{AB} 與 \\overline{AB}。
+   - 排列組合：強制使用 P^{n}_{k} 與 C^{n}_{k}（例如 P^{5}_{2}），【絕對禁止】寫成 P(n,k) 或 C(n,k) 以免與點坐標 P(x,y) 混淆。如果是點坐標請維持 P(x,y)。
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
    - 符號：減號限用 ASCII「-」，角度限用 ^{\\circ}。
    - 三角函數：強制加上反斜線，嚴禁純英文寫法（❌ sin(theta)=4/5 ✅ \\sin \\theta = \\frac{4}{5} 求 \\sin 2\\theta）。
@@ -566,12 +568,12 @@ createApp({
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
 
-            // 🌟 將 C(n,k) 與 P(n,k) 轉為 C^n_k 與 P^n_k (上下標)
-            placeholderText = placeholderText.replace(/\b([CP])\(\s*([^,()]+)\s*,\s*([^,()]+)\s*\)/g, '$1^{$2}_{$3}');
-            
             // 🌟 修正導函數符號防呆：轉換成標準 LaTeX \prime (上方一撇)，避免單引號被後續過濾程式吃掉
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
+
+            // 🌟 【重大修正】：已移除原本用 Regex 暴力替換 P(n,k) 與 C(n,k) 的邏輯，避免把坐標 P(5,0) 變成 P^5_0 
+            // 改由 Prompt (aiFormatRules) 強制 AI 針對排列組合原生輸出正確的 P^{n}_{k} 語法。
 
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
@@ -1046,9 +1048,9 @@ ${this.aiFormatRules}`;
             
             try {
                 const missingTypes = Object.entries(this.missingQuestions.details)
-                                           .map(([k, v]) => `${k}: 需要補充 ${v} 題`)
-                                           .join('，');
-                                           
+                                            .map(([k, v]) => `${k}: 需要補充 ${v} 題`)
+                                            .join('，');
+                                            
                 const promptText = `你現在是一位專業的數學出題助理。我們目前正在進行「後續分段補題」。
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
