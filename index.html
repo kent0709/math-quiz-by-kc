@@ -423,7 +423,7 @@ createApp({
    - 排列組合：強制使用 P^{n}_{k} 與 C^{n}_{k}（例如 P^{5}_{2}），【絕對禁止】寫成 P(n,k) 或 C(n,k) 以免與點坐標 P(x,y) 混淆。如果是點坐標請維持 P(x,y)。
    - 聯立方程：強制用 \\begin{cases}，換行用 \\\\\\\\。
    - 符號：減號限用 ASCII「-」，角度限用 ^{\\circ}。
-   - 三角函數：強制加上反斜線，嚴禁純英文寫法（❌ sin(theta)=4/5 ✅ \\sin \\theta = \\frac{4}{5} 求 \\sin 2\\theta）。
+   - 函數與極限：sin, cos, tan, log, ln, lim 等【強制】加上反斜線，嚴禁純英文寫法（❌ lim_{x \\to 0} ✅ \\lim_{x \\to 0}）。
    - 導函數：強制使用 LaTeX 語法 $f^{\\prime}(x)$，【絕對禁止】直接打單引號 $f'(x)$ 或反引號 $f\`(x)$。
 4. 連鎖不等式排版：【絕對禁止】將連鎖推導或解不等式的過程全擠在同一個 $ $ 內！
    - ❌ 錯誤示範：$|2x-3| < 9 -9 < 2x-3 < 9 -6 < 2x < 12 -3 < x < 6$
@@ -663,7 +663,7 @@ createApp({
                 cleanTex = cleanTex.replace(/\|\|/g, '|');
                 cleanTex = cleanTex.replace(/\\dfrac/g, '\\frac');
                 cleanTex = cleanTex.replace(/\^circ\b/g, '^{\\circ}');
-                cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln)\b/g, '$1\\$2');
+                cleanTex = cleanTex.replace(/(^|[^\\])\b(sin|cos|tan|log|ln|lim)\b/g, '$1\\$2');
                 cleanTex = cleanTex.replace(/，/g, ', ').replace(/、/g, ', ').replace(/。/g, '. ').replace(/：/g, ': ');
 
                 let openBraces = (cleanTex.match(/\{/g) || []).length;
