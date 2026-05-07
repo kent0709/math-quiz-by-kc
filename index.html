@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.8 超大檔優化版</title>
+    <title>數學出題小幫手 - v12.9 超大檔優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.8 -->
+    <!-- 🌟 落款升級為 v12.9 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.8 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.9 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -661,8 +661,9 @@ createApp({
             
             let placeholderText = text;
 
-            placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
-            placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
+            // 🌟 V12.9 增強防呆：處理機率 P(甲或乙)，即使裡面包含英文或中文，也強制拔出轉為純文字不被當作公式砍掉
+            placeholderText = placeholderText.replace(/\$P\(([a-zA-Z0-9\u4e00-\u9fa5\s]+)\)\$/g, 'P($1)');
+            placeholderText = placeholderText.replace(/P\(([a-zA-Z0-9\u4e00-\u9fa5\s]+)\)/g, 'P($1)');
 
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
@@ -707,17 +708,31 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
+                // 🌟 V12.9 修復實數/整數等中文表示符號被吃掉的問題
                 cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
                 cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/屬於實數/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/為整數/g, '\\in \\mathbb{Z}');
+                cleanTex = cleanTex.replace(/為正整數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/為自然數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/為實數/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/是整數/g, '\\in \\mathbb{Z}');
+                cleanTex = cleanTex.replace(/是正整數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/是自然數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/是實數/g, '\\in \\mathbb{R}');
                 cleanTex = cleanTex.replace(/\\in\s*整數/g, '\\in \\mathbb{Z}');
                 cleanTex = cleanTex.replace(/\\in\s*實數/g, '\\in \\mathbb{R}');
                 cleanTex = cleanTex.replace(/\\in\s*正整數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/\\in\s*自然數/g, '\\in \\mathbb{N}');
 
+                // 🌟 V12.9 針對集合或數學式子內的或、且，加入逗號防止黏在一起
+                cleanTex = cleanTex.replace(/或/g, ', ');
+                cleanTex = cleanTex.replace(/且/g, ', ');
+
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
+                // 清除所有尚未處理的中文字 (交給 Codecogs 會引發錯誤)
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
