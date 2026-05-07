@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.6 大檔支援版</title>
+    <title>數學出題小幫手 - v12.7 超大檔優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.6 -->
+    <!-- 🌟 落款升級為 v12.7 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.6 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.7 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -489,9 +489,9 @@ createApp({
             }
         },
         
-        // 🌟🌟🌟 新增的核心功能：File API 超大檔專用上傳通道 🌟🌟🌟
+        // 🌟🌟🌟 V12.7 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
         async uploadFileToGemini(file) {
-            // 1. 強制修正 MIME Type (部分瀏覽器可能無法正確辨識，導致上傳 octet-stream 被 API 拒絕)
+            // 1. 強制修正 MIME Type，防呆處裡瀏覽器無法辨識檔案格式的問題
             let mimeType = file.type;
             if (!mimeType || mimeType === 'application/octet-stream') {
                 const ext = file.name.split('.').pop().toLowerCase();
@@ -501,39 +501,73 @@ createApp({
                 else mimeType = 'text/plain';
             }
 
-            const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${this.apiKey}`;
-            const headers = {
-                'X-Goog-Upload-Protocol': 'raw',
+            this.loadingTextOverride = `準備上傳大檔 ${file.name}...`;
+
+            // 2. 第一階段：取得專屬的續傳連結 (Resumable Upload)
+            const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${this.apiKey}`;
+            const initHeaders = {
+                'X-Goog-Upload-Protocol': 'resumable',
+                'X-Goog-Upload-Command': 'start',
                 'X-Goog-Upload-Header-Content-Length': file.size.toString(),
                 'X-Goog-Upload-Header-Content-Type': mimeType,
-                'Content-Type': mimeType
+                'Content-Type': 'application/json'
             };
 
-            const response = await fetch(url, {
+            const initResponse = await fetch(initUrl, {
                 method: 'POST',
-                headers: headers,
+                headers: initHeaders,
+                body: JSON.stringify({ file: { displayName: file.name } })
+            });
+
+            if (!initResponse.ok) {
+                throw new Error(`檔案 ${file.name} 初始化上傳失敗 (${initResponse.status})`);
+            }
+
+            let uploadUrl = initResponse.headers.get('x-goog-upload-url');
+            if (!uploadUrl) {
+                throw new Error(`無法取得伺服器上傳連結，請稍後再試。`);
+            }
+
+            // 確保金鑰存在於上傳連結
+            if (!uploadUrl.includes('key=')) {
+                uploadUrl += (uploadUrl.includes('?') ? '&' : '?') + `key=${this.apiKey}`;
+            }
+
+            this.loadingTextOverride = `正在上傳 ${file.name} (請稍候)...`;
+
+            // 3. 第二階段：真實傳輸檔案 (突破 20MB 限制)
+            const uploadHeaders = {
+                'X-Goog-Upload-Protocol': 'resumable',
+                'X-Goog-Upload-Command': 'upload, finalize',
+                'X-Goog-Upload-Offset': '0'
+            };
+
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: uploadHeaders,
                 body: file
             });
 
-            if (!response.ok) {
-                let errorMsg = await response.text();
-                throw new Error(`檔案 ${file.name} 上傳失敗 (${response.status})`);
+            if (!uploadResponse.ok) {
+                throw new Error(`檔案 ${file.name} 傳輸失敗 (${uploadResponse.status})`);
             }
 
-            const data = await response.json();
+            const data = await uploadResponse.json();
             let fileMeta = data.file;
             
-            // 2. 🌟 終極防呆：等待檔案處理完成 (PROCESSING -> ACTIVE)
-            // PDF 或解析度太高的圖片上傳後，Google 伺服器需要幾秒鐘解析。
-            // 若在此時直接丟給 AI，就會觸發 400 Request contains an invalid argument 錯誤！
+            // 4. 🌟 終極防呆：等待 Google 伺服器把大檔解析完成 (PROCESSING -> ACTIVE)
+            // 將原本 60 秒的等待大幅延長至 5 分鐘，確保 AI 不會提早抓取檔案而引發 400 錯誤！
             let attempts = 0;
-            while (fileMeta.state === 'PROCESSING' && attempts < 30) {
-                this.loadingTextOverride = `檔案 ${file.name} 正在伺服器端解析中 (${attempts + 1}/30)...`;
-                await new Promise(resolve => setTimeout(resolve, 2000)); // 等待 2 秒
+            while (fileMeta.state === 'PROCESSING' && attempts < 100) {
+                this.loadingTextOverride = `檔案 ${file.name} 正在伺服器端解析中 (${attempts + 1}/100)... 這可能需要幾分鐘，請保持網頁開啟。`;
+                await new Promise(resolve => setTimeout(resolve, 3000)); // 每次等待 3 秒
                 try {
                     const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${this.apiKey}`);
                     if (checkRes.ok) {
-                        fileMeta = await checkRes.json();
+                        const checkData = await checkRes.json();
+                        if (checkData && checkData.state) {
+                            fileMeta.state = checkData.state;
+                        }
                     }
                 } catch(e) {
                     console.log("Polling error:", e);
@@ -541,8 +575,12 @@ createApp({
                 attempts++;
             }
             
+            if (fileMeta.state === 'PROCESSING') {
+                throw new Error(`檔案 ${file.name} 解析時間過長（超過 5 分鐘），伺服器尚未處理完畢。建議將 PDF 分割成較小章節後再上傳！`);
+            }
+            
             if (fileMeta.state === 'FAILED') {
-                throw new Error(`檔案 ${file.name} 解析失敗，請轉換格式或壓縮後再試。`);
+                throw new Error(`檔案 ${file.name} 解析失敗，可能包含無法讀取的內容，請重新列印為 PDF 或截圖再試。`);
             }
 
             // 回傳可以讓 AI 識別的 fileData 格式
