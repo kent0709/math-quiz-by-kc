@@ -628,7 +628,9 @@ createApp({
                     let parts = cleanedOpt.split(/(?=\([A-E]\)|[A-E]\.)/);
                     parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                 });
-                q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.)\s*/i, '').trim());
+                
+                // 🌟 修正選項重複標籤的問題：強制清除開頭所有形式的 A. (A) A) 
+                q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.|[A-E]\))\s*/i, '').trim());
                 
                 q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.toLowerCase() !== 'null' && opt.toLowerCase() !== '選項待補' && opt.trim() !== '');
                 
