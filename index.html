@@ -798,8 +798,7 @@ createApp({
                 let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
                 let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
 
-                // 🌟 已加上替換減號優化：當遇到 - 會轉為全形的數學減號 &minus;
-                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '&minus;')}</span>`;
+                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>')}</span>`;
 
                 if (mVar) {
                     let html = `${toSpan(mVar[1], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mVar[2]}</span>`;
