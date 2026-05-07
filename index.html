@@ -410,7 +410,7 @@ createApp({
             if (this.loadingProgress < 100) return "最終雙重防呆檢查...";
             return "準備就緒！";
         },
-        // 🌟 修正點在這裡：增加嚴格的 Prompt 區分排列組合 P^{n}_{k} 與坐標點 P(x,y)，並嚴格限制兩點距離線段的表現法
+        // 🌟 修正點：加強選擇題選項防呆與非選擇題的問句防呆
         aiFormatRules() {
             return `【系統強制規範：請嚴格遵守，否則系統無法解析】
 1. 數學公式包覆：所有數字、變數、數學式【必須】用 $ $ 獨立包住（如：$x=3$、$5$ 人）。【禁止】將多個推導步驟塞入同一個 $ $（❌ $x=1 y=2$ ✅ $x=1$，且 $y=2$），推導換行請用 <br> 串接。
@@ -430,8 +430,9 @@ createApp({
    - ✅ 正確排版：由 $|2x-3| < 9$，<br>可得 $-9 < 2x-3 < 9$，<br>同加 $3$ 得到 $-6 < 2x < 12$，<br>除以 $2$ 得 $-3 < x < 6$。
 5. JSON 與字串跳脫：所有 LaTeX 反斜線必須雙跳脫（如 \\\\frac）。字串中【禁止】包含 \\n 或 \\r，請全部用 <br> 替代。
 6. 內容與邏輯限制：
-   - 【關鍵生成順序】：對於選擇題，你【必須】先在 thought_process 計算出結果，並完整寫出詳解 (solution) 後，最後再針對算出的答案去設計選項 (options) 與指定解答 (answer)。這能確保答案正確且具備誘答力！
-   - 選擇題的 options 必須提供 (A)(B)(C)(D) 四個選項。
+   - 【關鍵生成順序與選項一致性】：對於選擇題，你【必須】依照「先詳解 (solution) -> 再出選項 (options) -> 最後給答案 (answer)」的順序思考。⚠️【絕對強制防呆】：你最後輸出的 options 陣列裡面，【必定要包含】你算出來的那個正確解答！如果選項裡沒有正確答案，請重新生成選項！
+   - 【非選擇題防呆】：若題型為「計算題」或「填充題」，題目敘述中【絕對禁止】出現「下列哪一個正確」、「下列何者」等選擇題專屬字眼，必須直接問求解（例如：求其值為多少、其方程式為何）。
+   - 選擇題的 options 必須嚴格提供 (A)(B)(C)(D) 四個選項。
    - 選擇題答案分佈必須平均，【嚴禁】連續三題答案相同。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
    - 必須修改原題數字重新出題。
@@ -559,7 +560,6 @@ createApp({
             return q;
         },
 
-        // 🌟 新增參數 useBackupEngine：為了解決試題與解答同時產生導致算圖引擎被阻擋的問題，提供分流機制
         formatMath(text, useBackupEngine = false) {
             if (!text) return '';
             
@@ -568,7 +568,6 @@ createApp({
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
 
-            // 🌟 修正導函數符號防呆：轉換成標準 LaTeX \prime (上方一撇)，避免單引號被後續過濾程式吃掉
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
 
@@ -635,7 +634,6 @@ createApp({
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
                 cleanTex = cleanTex.replace(/\\frac\s*([a-zA-Z0-9])\s*([a-zA-Z0-9])/g, '\\frac{$1}{$2}');
 
-                // 🌟 【向量最佳化】：配合台灣高中數學標準，強制所有向量統一使用單邊半箭頭 \overset{\rightharpoonup}{...}
                 const convertVector = (m, p1) => {
                     let inner = p1.trim();
                     return `\\overset{\\rightharpoonup}{${inner}}`;
@@ -647,14 +645,10 @@ createApp({
                 cleanTex = cleanTex.replace(/\\?overset\s*\\?(?:rightharpoonup|rightarrow|longrightarrow|to|⇀|→)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
 
-                // 🌟 【線段與距離自動補全防呆】：針對漏掉 \overline 的幾何距離進行修正
-                // 1. 處理相加相減的絕對值 (例如雙曲線、橢圓定義：|PF_1 - PF_2| = 4)
                 cleanTex = cleanTex.replace(/\|([A-Z][a-zA-Z0-9_]*)\s*([+-])\s*([A-Z][a-zA-Z0-9_]*)\|/g, '|\\overline{$1} $2 \\overline{$3}|');
                 
-                // 2. 處理未加 \overline 的線段加減 (例如 PF_1 + PF_2 = 10)
                 cleanTex = cleanTex.replace(/(^|[^a-zA-Z{}])([A-Z])([A-Z](?:_[a-zA-Z0-9]+)?)\b\s*([+-])\s*([A-Z])([A-Z](?:_[a-zA-Z0-9]+)?)\b/g, '$1\\overline{$2$3} $4 \\overline{$5$6}');
 
-                // 3. 處理未加 \overline 的線段等於 (例如 AB = 5, PF_1 = 3)
                 cleanTex = cleanTex.replace(/(^|[^a-zA-Z{}])([A-Z])([A-Z](?:_[a-zA-Z0-9]+)?)\b\s*=/g, '$1\\overline{$2$3} =');
                 
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
@@ -789,7 +783,6 @@ createApp({
                 let encoded = encodeURIComponent(tex).replace(/'/g, '%27'); 
                 
                 let srcUrl = '';
-                // 🌟 【算圖引擎雙重分流】：考卷核心使用 CodeCogs，詳解卷切換為備用的 Upmath，降低瞬間請求量！
                 if (!useBackupEngine) {
                     srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
                 } else {
@@ -916,7 +909,6 @@ createApp({
                                             type: { type: "STRING" },
                                             unit: { type: "STRING" },
                                             question: { type: "STRING" },
-                                            // 🌟 強制 JSON 輸出邏輯順序：先算詳解，才給選項與答案
                                             solution: { type: "STRING" },
                                             options: { type: "ARRAY", items: { type: "STRING" } },
                                             answer: { type: "STRING" }
@@ -1020,7 +1012,7 @@ createApp({
 【指定範圍】：${this.targetUnit || '無'}
 【題型配置】：${activeTypes} (⚠️請你務必「精準」依照此數量的題型出題！絕對不可多出或少於指定題數！)
 【要求】：${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！另外，選擇題正確答案【必須】被包含在你最後輸出的 options 中！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1062,7 +1054,7 @@ ${this.aiFormatRules}`;
 【指定範圍】：${this.targetUnit || '無'}
 【補充題型與數量】：${missingTypes} (⚠️請你務必「精準」依照此數量的題型出題！)
 【要求】：請務必出【全新、不同考點】的題目，不要跟剛剛出過的類似。${this.examRules}
-⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！
+⚠️絕對警告：【嚴禁】在選項或題目中回傳 "string" 等無意義佔位符。如果沒有選項，請發揮專業自行計算並提供三個具誘答力的錯誤選項！選擇題正確答案【必須】被包含在輸出的 options 中！
 ${this.aiFormatRules}`;
 
                 const quizData = await this.requestGeminiGeneration(promptText);
@@ -1117,7 +1109,6 @@ ${this.aiFormatRules}`;
                     let sectionNum = ['一', '二', '三'];
                     let sectionIdx = 0;
 
-                    // 🌟 【傳遞分流參數】：試題卷使用主力引擎 (false)
                     ['選擇題', '填充題', '計算題'].forEach(tName => {
                         const limitedQs = this.finalGroupedQs[tName];
                         if (limitedQs && limitedQs.length > 0) {
@@ -1229,7 +1220,6 @@ ${this.aiFormatRules}`;
                         }
 
                         const finalFillQs = this.finalGroupedQs['填充題'];
-                        // 🌟 【傳遞分流參數】：解答卷使用備用引擎 (true) 徹底減輕伺服器負擔
                         if (finalFillQs && finalFillQs.length > 0) {
                             contentHTML += `<table width="100%" border="1" cellspacing="0" cellpadding="5" style="border-collapse: collapse; border: 2px solid blue; text-align: center; margin-bottom: 15px;">`;
                             let count = finalFillQs.length;
