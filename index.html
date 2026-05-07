@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.9 超大檔優化版</title>
+    <title>數學出題小幫手 - v12.10 超大檔優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.9 -->
+    <!-- 🌟 落款升級為 v12.10 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.9 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.10 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -371,7 +371,7 @@ createApp({
             showPreviewConsole: false, 
             loadingProgress: 0, 
             progressInterval: null, 
-            loadingTextOverride: '', // 🌟 新增：用於顯示上傳進度
+            loadingTextOverride: '', 
             previewQuestions: [], 
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
@@ -489,9 +489,7 @@ createApp({
             }
         },
         
-        // 🌟🌟🌟 V12.8 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
         async uploadFileToGemini(file) {
-            // 1. 強制修正 MIME Type，防呆處裡瀏覽器無法辨識檔案格式的問題
             let mimeType = file.type;
             if (!mimeType || mimeType === 'application/octet-stream') {
                 const ext = file.name.split('.').pop().toLowerCase();
@@ -503,7 +501,6 @@ createApp({
 
             this.loadingTextOverride = `準備上傳大檔 ${file.name}...`;
 
-            // 2. 第一階段：取得專屬的續傳連結 (Resumable Upload)
             const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${this.apiKey}`;
             const initHeaders = {
                 'X-Goog-Upload-Protocol': 'resumable',
@@ -528,14 +525,12 @@ createApp({
                 throw new Error(`無法取得伺服器上傳連結，請稍後再試。`);
             }
 
-            // 確保金鑰存在於上傳連結
             if (!uploadUrl.includes('key=')) {
                 uploadUrl += (uploadUrl.includes('?') ? '&' : '?') + `key=${this.apiKey}`;
             }
 
             this.loadingTextOverride = `正在上傳 ${file.name} (請稍候)...`;
 
-            // 3. 第二階段：真實傳輸檔案 (突破 20MB 限制)
             const uploadHeaders = {
                 'X-Goog-Upload-Protocol': 'resumable',
                 'X-Goog-Upload-Command': 'upload, finalize',
@@ -555,12 +550,10 @@ createApp({
             const data = await uploadResponse.json();
             let fileMeta = data.file;
             
-            // 4. 🌟 終極防呆：等待 Google 伺服器把大檔解析完成 (PROCESSING -> ACTIVE)
-            // 將原本 60 秒的等待大幅延長至 5 分鐘，確保 AI 不會提早抓取檔案而引發 400 錯誤！
             let attempts = 0;
             while (fileMeta.state === 'PROCESSING' && attempts < 100) {
                 this.loadingTextOverride = `檔案 ${file.name} 正在伺服器端解析中 (${attempts + 1}/100)... 這可能需要幾分鐘，請保持網頁開啟。`;
-                await new Promise(resolve => setTimeout(resolve, 3000)); // 每次等待 3 秒
+                await new Promise(resolve => setTimeout(resolve, 3000)); 
                 try {
                     const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${this.apiKey}`);
                     if (checkRes.ok) {
@@ -583,7 +576,6 @@ createApp({
                 throw new Error(`檔案 ${file.name} 解析失敗，可能包含無法讀取的內容，請重新列印為 PDF 或截圖再試。`);
             }
 
-            // 回傳可以讓 AI 識別的 fileData 格式
             return {
                 fileData: {
                     mimeType: fileMeta.mimeType,
@@ -629,7 +621,6 @@ createApp({
                     parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                 });
                 
-                // 🌟 修正選項重複標籤的問題：強制清除開頭所有形式的 A. (A) A) 
                 q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.|[A-E]\))\s*/i, '').trim());
                 
                 q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.toLowerCase() !== 'null' && opt.toLowerCase() !== '選項待補' && opt.trim() !== '');
@@ -661,9 +652,21 @@ createApp({
             
             let placeholderText = text;
 
-            // 🌟 V12.9 增強防呆：處理機率 P(甲或乙)，即使裡面包含英文或中文，也強制拔出轉為純文字不被當作公式砍掉
-            placeholderText = placeholderText.replace(/\$P\(([a-zA-Z0-9\u4e00-\u9fa5\s]+)\)\$/g, 'P($1)');
-            placeholderText = placeholderText.replace(/P\(([a-zA-Z0-9\u4e00-\u9fa5\s]+)\)/g, 'P($1)');
+            // 🌟 V12.10 增強防呆：處理機率 P(甲或乙)，即使裡面包含英文或中文，也強制拔出轉為純文字不被當作公式砍掉
+            placeholderText = placeholderText.replace(/\$P\(([a-zA-Z0-9\u4e00-\u9fa5\s\\{}]+)\)\$/g, (m, p1) => {
+                if (/[\u4e00-\u9fa5]/.test(p1)) {
+                    let clean = p1.replace(/\\text\s*\{\s*([^{}]+)\s*\}/g, '$1');
+                    return `P(${clean})`;
+                }
+                return m;
+            });
+            placeholderText = placeholderText.replace(/P\(([a-zA-Z0-9\u4e00-\u9fa5\s\\{}]+)\)/g, (m, p1) => {
+                if (/[\u4e00-\u9fa5]/.test(p1)) {
+                    let clean = p1.replace(/\\text\s*\{\s*([^{}]+)\s*\}/g, '$1');
+                    return `P(${clean})`;
+                }
+                return m;
+            });
 
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
@@ -708,7 +711,30 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟 V12.9 修復實數/整數等中文表示符號被吃掉的問題
+                // 🌟 V12.10 預先將 AI 亂加的 \text{} 剝除，避免後續替換產生 \text{\in \mathbb{Z}} 導致 Invalid Equation
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*([^{}]*)\s*\}/g, (match, p1) => {
+                    if (/(整數|正整數|自然數|實數|或|且)/.test(p1)) {
+                        return p1;
+                    }
+                    return match;
+                });
+
+                // 🌟 V12.10 將常見 Unicode 數學符號轉為 LaTeX 語法，防止 CodeCogs 渲染崩潰
+                const unicodeMathMap = {
+                    '∩': '\\cap ', '∪': '\\cup ', '∈': '\\in ', '∉': '\\notin ', 
+                    '⊂': '\\subset ', '⊆': '\\subseteq ', '⊃': '\\supset ', '⊇': '\\supseteq ',
+                    '∅': '\\emptyset ', '≤': '\\le ', '≥': '\\ge ', '≠': '\\neq ',
+                    '≈': '\\approx ', '≡': '\\equiv ', '×': '\\times ', '÷': '\\div ',
+                    '±': '\\pm ', '∓': '\\mp ', '∞': '\\infty ', '∀': '\\forall ',
+                    '∃': '\\exists ', '∵': '\\because ', '∴': '\\therefore ', '∠': '\\angle ',
+                    '△': '\\triangle ', '⊥': '\\perp ', '∥': '\\parallel ',
+                    'π': '\\pi ', 'θ': '\\theta ', 'α': '\\alpha ', 'β': '\\beta ', 'γ': '\\gamma '
+                };
+                for (let [char, t] of Object.entries(unicodeMathMap)) {
+                    cleanTex = cleanTex.split(char).join(t);
+                }
+
+                // 🌟 V12.9/12.10 修復實數/整數等中文表示符號被吃掉的問題
                 cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
                 cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
@@ -734,6 +760,9 @@ createApp({
 
                 // 清除所有尚未處理的中文字 (交給 Codecogs 會引發錯誤)
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
+
+                // 🌟 V12.10 移除因刪除中文而殘留的空 \text{} 避免 CodeCogs 報錯
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*\}/g, '');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
                 cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
@@ -813,7 +842,6 @@ createApp({
                 let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
                 let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
 
-                // 🌟 V12.8 核心修改：將純文字渲染模式中的減號替換為全形數學減號(&minus;)，確保在字體下不會太短
                 const toSpan = (text, isItalic) => {
                     let processedText = text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '&minus;');
                     return `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${processedText}</span>`;
@@ -990,7 +1018,6 @@ createApp({
             let contentsParts = [{ text: promptText }];
             const allFiles = [...this.scopeFiles, ...this.textbookFiles, ...this.examFiles];
             
-            // 🌟 逐一透過 File API 處理並上傳檔案
             for (let i = 0; i < allFiles.length; i++) {
                 this.loadingTextOverride = `正在上傳素材 (${i + 1}/${allFiles.length})，大檔案需稍候...`;
                 const fileDataPart = await this.uploadFileToGemini(allFiles[i]);
@@ -1032,7 +1059,7 @@ createApp({
                 })
             });
 
-            this.loadingTextOverride = ''; // 清除文字覆蓋狀態，回到原本百分比的文字提示
+            this.loadingTextOverride = ''; 
 
             if (!response.ok) {
                 let errorDetail = "";
