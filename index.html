@@ -432,6 +432,7 @@ createApp({
 6. 內容與邏輯限制：
    - 【關鍵生成順序與選項一致性】：對於選擇題，你【必須】依照「先詳解 (solution) -> 再出選項 (options) -> 最後給答案 (answer)」的順序思考。⚠️【絕對強制防呆】：你最後輸出的 options 陣列裡面，【必定要包含】你算出來的那個正確解答！如果選項裡沒有正確答案，請重新生成選項！
    - 【非選擇題防呆】：若題型為「計算題」或「填充題」，題目敘述中【絕對禁止】出現「下列哪一個正確」、「下列何者」等選擇題專屬字眼，必須直接問求解（例如：求其值為多少、其方程式為何）。
+   - 【禁止雙問號】：絕對禁止在數學式或文字中使用「??」或連續多個問號作為未知數或填空佔位符（❌ $P(B) = ??$ ✅ $P(B) = ?$）。
    - 選擇題的 options 必須嚴格提供 (A)(B)(C)(D) 四個選項。
    - 選擇題答案分佈必須平均，【嚴禁】連續三題答案相同。
    - 詳解 (solution) 必須為純繁體中文，禁止 Let, step 等英文單字。所有思考推導過程放入 thought_process。
@@ -667,6 +668,10 @@ createApp({
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
+            
+            // 👇 新增：禁止連續雙問號
+            placeholderText = placeholderText.replace(/\?{2,}/g, '?');
+            placeholderText = placeholderText.replace(/？{2,}/g, '？');
             
             // 防呆處理 &amp;
             placeholderText = placeholderText.replace(/&amp;/g, '&');
