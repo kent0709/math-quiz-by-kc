@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v12.7 超大檔優化版</title>
+    <title>數學出題小幫手 - v12.8 超大檔優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v12.7 -->
+    <!-- 🌟 落款升級為 v12.8 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.7 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.8 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -489,7 +489,7 @@ createApp({
             }
         },
         
-        // 🌟🌟🌟 V12.7 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
+        // 🌟🌟🌟 V12.8 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
         async uploadFileToGemini(file) {
             // 1. 強制修正 MIME Type，防呆處裡瀏覽器無法辨識檔案格式的問題
             let mimeType = file.type;
@@ -637,12 +637,8 @@ createApp({
                 while (q.options.length < 4) { q.options.push(`選項待補`); }
                 const labels = ['(A)', '(B)', '(C)', '(D)', '(E)'];
                 q.options = q.options.map((opt, i) => {
-                    let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '').trim();
-                    
-                    // 🌟 修正：確保簡單數字也被套上數學模式，如此一來負號 -9 就會渲染成完美的長減號 −9
-                    if (/^-?[0-9]+(\.[0-9]+)?$/.test(cleanOpt)) {
-                        cleanOpt = `$${cleanOpt}$`;
-                    } else if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
+                    let cleanOpt = opt.replace(/[＿_]{2,}/g, '').replace(/[-─—\-−–—―]{2,}/g, '');
+                    if (cleanOpt.includes('\\') && !cleanOpt.includes('$')) {
                         cleanOpt = `$${cleanOpt}$`;
                     }
                     return (i < labels.length) ? `${labels[i]} ${cleanOpt}` : cleanOpt;
@@ -711,13 +707,6 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                // 🌟🌟🌟 修正：確保中文字在方程式中被拔除之前，先將「或」與「且」轉換為逗號！
-                // 這樣像 {x | x < 1 或 x > 7} 就會順利轉換成 {x | x < 1, x > 7}
-                cleanTex = cleanTex.replace(/\\text\{\s*或\s*\}/g, ', ');
-                cleanTex = cleanTex.replace(/\\text\{\s*且\s*\}/g, ', ');
-                cleanTex = cleanTex.replace(/或/g, ', ');
-                cleanTex = cleanTex.replace(/且/g, ', ');
-
                 cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
                 cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
                 cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
@@ -729,7 +718,6 @@ createApp({
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-                // 過濾所有的中文防呆機制 (上面已經把 "或/且" 變成逗號，所以安全了)
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
@@ -810,8 +798,11 @@ createApp({
                 let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
                 let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
 
-                // 🌟🌟🌟 修正：當渲染純 HTML 的數字 (如 -9 或 -2) 時，把小連字號替換為真正的全寬數學減號 (−)
-                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '−')}</span>`;
+                // 🌟 V12.8 核心修改：將純文字渲染模式中的減號替換為全形數學減號(&minus;)，確保在字體下不會太短
+                const toSpan = (text, isItalic) => {
+                    let processedText = text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '&minus;');
+                    return `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${processedText}</span>`;
+                };
 
                 if (mVar) {
                     let html = `${toSpan(mVar[1], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mVar[2]}</span>`;
