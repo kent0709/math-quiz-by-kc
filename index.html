@@ -706,17 +706,21 @@ createApp({
             const saveMath = (tex, isBlock) => {
                 let cleanTex = tex.trim();
 
-                cleanTex = cleanTex.replace(/屬於整數/g, '\\in \\mathbb{Z}');
-                cleanTex = cleanTex.replace(/屬於正整數/g, '\\in \\mathbb{N}');
-                cleanTex = cleanTex.replace(/屬於自然數/g, '\\in \\mathbb{N}');
-                cleanTex = cleanTex.replace(/屬於實數/g, '\\in \\mathbb{R}');
-                cleanTex = cleanTex.replace(/\\in\s*整數/g, '\\in \\mathbb{Z}');
-                cleanTex = cleanTex.replace(/\\in\s*實數/g, '\\in \\mathbb{R}');
-                cleanTex = cleanTex.replace(/\\in\s*正整數/g, '\\in \\mathbb{N}');
-                cleanTex = cleanTex.replace(/\\in\s*自然數/g, '\\in \\mathbb{N}');
+                // 移除原有的 \text{} 錯誤包裝防呆
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*(?:屬於|為|是|\\in)?\s*正整數\s*\}/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*(?:屬於|為|是|\\in)?\s*自然數\s*\}/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*(?:屬於|為|是|\\in)?\s*實數\s*\}/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/\\text\s*\{\s*(?:屬於|為|是|\\in)?\s*整數\s*\}/g, '\\in \\mathbb{Z}');
+
+                // 擴充對「是整數」、「為整數」、單獨「整數」的捕捉
+                cleanTex = cleanTex.replace(/(?:屬於|為|是|\\in)?\s*正整數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/(?:屬於|為|是|\\in)?\s*自然數/g, '\\in \\mathbb{N}');
+                cleanTex = cleanTex.replace(/(?:屬於|為|是|\\in)?\s*實數/g, '\\in \\mathbb{R}');
+                cleanTex = cleanTex.replace(/(?:屬於|為|是|\\in)?\s*整數/g, '\\in \\mathbb{Z}');
 
                 cleanTex = cleanTex.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
+                // 清除剩餘中文字符 (這會把沒被上述正則捕捉到的中文殺掉，所以上面必須寫得周全)
                 cleanTex = cleanTex.replace(/[\u4e00-\u9fa5\u3000-\u303f\uFF00-\uFFEF]+/g, '');
 
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
@@ -727,7 +731,6 @@ createApp({
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
                 
                 // 🌟 修正1：智能清除矩陣結尾的空行，防止 CodeCogs 解析崩潰
-                // 當矩陣寫成 `... \\ \end{bmatrix}` 時會產生空列，這裡強制將邊界的換行剔除
                 cleanTex = cleanTex.replace(/(\\\\\s*)+\\end\s*\{/g, '\\end{');
                 cleanTex = cleanTex.replace(/\\begin\s*\{([^}]+)\}\s*\\\\/g, '\\begin{$1}');
                 // 連續執行兩次以防多餘空格干擾
@@ -755,7 +758,6 @@ createApp({
                 cleanTex = cleanTex.replace(/\\(?:overrightarrow|overrightharpoon|vec)\s*([a-zA-Z0-9_]{1,3})/g, convertVector);
 
                 // 🌟 修正3：移除容易誤傷矩陣 (AB = BA) 的過度 \overline 替換邏輯
-                // 將其刪除後，矩陣變數不再會莫名其妙被加上線段，也不會干擾括號平衡。
                 
                 cleanTex = cleanTex.replace(/\\lVert/g, '|').replace(/\\rVert/g, '|');
                 cleanTex = cleanTex.replace(/\\left\\\|/g, '\\left|').replace(/\\right\\\|/g, '\\right|');
