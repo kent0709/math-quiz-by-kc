@@ -491,7 +491,16 @@ createApp({
         
         // 🌟🌟🌟 新增的核心功能：File API 超大檔專用上傳通道 🌟🌟🌟
         async uploadFileToGemini(file) {
-            const mimeType = file.type || 'application/octet-stream';
+            // 1. 強制修正 MIME Type (部分瀏覽器可能無法正確辨識，導致上傳 octet-stream 被 API 拒絕)
+            let mimeType = file.type;
+            if (!mimeType || mimeType === 'application/octet-stream') {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext === 'pdf') mimeType = 'application/pdf';
+                else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+                else if (ext === 'png') mimeType = 'image/png';
+                else mimeType = 'text/plain';
+            }
+
             const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${this.apiKey}`;
             const headers = {
                 'X-Goog-Upload-Protocol': 'raw',
@@ -512,12 +521,35 @@ createApp({
             }
 
             const data = await response.json();
+            let fileMeta = data.file;
             
+            // 2. 🌟 終極防呆：等待檔案處理完成 (PROCESSING -> ACTIVE)
+            // PDF 或解析度太高的圖片上傳後，Google 伺服器需要幾秒鐘解析。
+            // 若在此時直接丟給 AI，就會觸發 400 Request contains an invalid argument 錯誤！
+            let attempts = 0;
+            while (fileMeta.state === 'PROCESSING' && attempts < 30) {
+                this.loadingTextOverride = `檔案 ${file.name} 正在伺服器端解析中 (${attempts + 1}/30)...`;
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 等待 2 秒
+                try {
+                    const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${this.apiKey}`);
+                    if (checkRes.ok) {
+                        fileMeta = await checkRes.json();
+                    }
+                } catch(e) {
+                    console.log("Polling error:", e);
+                }
+                attempts++;
+            }
+            
+            if (fileMeta.state === 'FAILED') {
+                throw new Error(`檔案 ${file.name} 解析失敗，請轉換格式或壓縮後再試。`);
+            }
+
             // 回傳可以讓 AI 識別的 fileData 格式
             return {
                 fileData: {
-                    mimeType: mimeType,
-                    fileUri: data.file.uri
+                    mimeType: fileMeta.mimeType,
+                    fileUri: fileMeta.uri
                 }
             };
         },
