@@ -635,6 +635,14 @@ createApp({
                     return (i < labels.length) ? `${labels[i]} ${cleanOpt}` : cleanOpt;
                 });
             } else if (tName === '填充題') {
+                // 🌟 新增：優先清除被 $ 包覆的純底線/括號 (避免取代後殘留空 $$ 符號)
+                q.question = q.question.replace(/\$\$\s*\\underline\{[^\}]*\}\s*\$\$/g, '')
+                                       .replace(/\$\$\s*[＿_]{2,}\s*\$\$/g, '')
+                                       .replace(/\$\s*\\underline\{[^\}]*\}\s*\$/g, '')
+                                       .replace(/\$\s*[＿_]{2,}\s*\$/g, '')
+                                       .replace(/\$\s*\(\s*\)\s*\$/g, '')
+                                       .replace(/\$\s*（\s*）\s*\$/g, '');
+
                 q.question = q.question.replace(/\\underline\{.*?\}/g, '')
                                        .replace(/[＿_]{2,}/g, '')
                                        .replace(/[-─—\-−–—―]{2,}/g, '')
