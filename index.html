@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數學出題小幫手 - v13.0 超大檔優化版</title>
+    <title>數學出題小幫手 - v12.7 超大檔優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -350,9 +350,9 @@
         </div>
     </div>
     
-    <!-- 🌟 落款升級為 v13.0 -->
+    <!-- 🌟 落款升級為 v12.7 -->
     <footer class="mt-12 mb-6 text-center">
-        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v13.0 Powered by Gemini & KC</span>
+        <span class="text-gray-400 font-black tracking-[0.2em] text-lg">v12.7 Powered by Gemini & KC</span>
     </footer>
 </div>
 
@@ -489,7 +489,7 @@ createApp({
             }
         },
         
-        // 🌟🌟🌟 V13.0 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
+        // 🌟🌟🌟 V12.7 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
         async uploadFileToGemini(file) {
             // 1. 強制修正 MIME Type，防呆處裡瀏覽器無法辨識檔案格式的問題
             let mimeType = file.type;
@@ -798,8 +798,8 @@ createApp({
                 let mEqNum = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + numP + '([,.;:]?)$'));
                 let mEqVar = checkTex.match(new RegExp('^' + varP + '\\s*=\\s*' + varP + '([,.;:]?)$'));
 
-                // 🌟 核心修改點：在轉化為 span 的過程，將普通的連字號 (-) 替換為標準全形數學減號 (U+2212)
-                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '−')}</span>`;
+                // 🌟 已加上替換減號優化：當遇到 - 會轉為全形的數學減號 &minus;
+                const toSpan = (text, isItalic) => `<span style="font-family: 'Times New Roman', serif; ${isItalic ? 'font-style: italic;' : ''} padding: 0 2px;">${text.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>').replace(/-/g, '&minus;')}</span>`;
 
                 if (mVar) {
                     let html = `${toSpan(mVar[1], true)}<span style="font-family: 'Noto Sans TC', sans-serif;">${mVar[2]}</span>`;
