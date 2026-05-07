@@ -656,7 +656,7 @@ createApp({
             return q;
         },
 
-        formatMath(text, useBackupEngine = false) {
+        formatMath(text) {
             if (!text) return '';
             
             let placeholderText = text;
@@ -878,12 +878,7 @@ createApp({
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
                 let encoded = encodeURIComponent(tex).replace(/'/g, '%27'); 
                 
-                let srcUrl = '';
-                if (!useBackupEngine) {
-                    srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
-                } else {
-                    srcUrl = `https://i.upmath.me/png/${encoded}`;
-                }
+                let srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
                 
                 let renderedHtml = `<img src="${srcUrl}" style="vertical-align: middle; max-width: 100%; height: auto;" alt="math" onerror="let c=parseInt(this.getAttribute('retry')||'0');if(c<3){this.setAttribute('retry',c+1);setTimeout(()=>this.src='${srcUrl}',1000);}" />`;
                 
@@ -1228,13 +1223,13 @@ ${this.aiFormatRules}`;
                             
                             limitedQs.forEach((q, idx) => {
                                 let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question, false)}</p>`;
+                                let qHtml = `<p style="margin: 5px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
                                 
                                 if (tName === '選擇題' && q.options && q.options.length > 0) {
-                                    const formattedOptions = q.options.map(opt => this.formatMath(opt, false));
+                                    const formattedOptions = q.options.map(opt => this.formatMath(opt));
                                     qHtml += `<p style="margin: 5px 0 15px 40px; line-height: 1.5; text-valign: center; mso-text-control: center; vertical-align: middle;">${formattedOptions.join('　　　')}</p>`;
                                 } else if (tName === '填充題') {
-                                    qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question, false)}</p>`;
+                                    qHtml = `<p style="margin: 5px 0 25px 0; line-height: 1.5; margin-left: 40px; text-indent: -40px; text-valign: center; mso-text-control: center; vertical-align: middle;">${numStr}&nbsp;&nbsp;${this.formatMath(q.question)}</p>`;
                                 }
                                 
                                 if (tName === '計算題') qHtml += `<br><br><br><br>`;
@@ -1315,8 +1310,8 @@ ${this.aiFormatRules}`;
                                 for (let j = 0; j < 5; j++) { 
                                     if (i + j < count) {
                                         let rawAns = finalMCQs[i+j].answer;
-                                        let matchAns = rawAns.match(/[A-D]/i);
-                                        let shortAns = matchAns ? matchAns[0].toUpperCase() : rawAns;
+                                        let matchAns = rawAns.match(/[A-E]/i);
+                                        let shortAns = matchAns ? matchAns[0].toUpperCase() : this.formatMath(rawAns);
                                         contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${shortAns}</td>`; 
                                     } else {
                                         contentHTML += `<td style="border: 1px solid blue;"></td>`; 
@@ -1335,7 +1330,7 @@ ${this.aiFormatRules}`;
                                 contentHTML += `<tr>`;
                                 for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td width="25%" style="font-size:14pt; height:35px; border: 1px solid blue;">(${i + j + 1})</td>`; else contentHTML += `<td width="25%" style="border: 1px solid blue;"></td>`; }
                                 contentHTML += `</tr><tr>`;
-                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer, true)}</td>`; else contentHTML += `<td style="border: 1px solid blue;"></td>`; }
+                                for (let j = 0; j < 4; j++) { if (i + j < count) contentHTML += `<td style="height:35px; color:red; font-weight:bold; border: 1px solid blue;">${this.formatMath(finalFillQs[i+j].answer)}</td>`; else contentHTML += `<td style="border: 1px solid blue;"></td>`; }
                                 contentHTML += `</tr>`;
                             }
                             contentHTML += `</table>`;
@@ -1349,7 +1344,7 @@ ${this.aiFormatRules}`;
                                 contentHTML += `<h3 style="background-color: #f3f4f6; padding: 5px 10px; display: inline-block;">${tName} 詳解</h3>`;
                                 finalQs.forEach((q, idx) => {
                                     let numStr = tName === '填充題' ? `(${idx + 1})` : `${idx + 1}.`;
-                                    contentHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer, true)}</span><br><b>【詳解】</b>${this.formatMath(q.solution, true)}</p>`;
+                                    contentHTML += `<p style="line-height: 1.5; margin-bottom: 25px; text-valign: center; mso-text-control: center; vertical-align: middle;"><b>第 ${numStr} 題：</b> <span style="font-size: 11pt; color: #059669;">[單元：${q.unit || '未分類'}]</span><br><span style="color:red; font-weight:bold;">【答案】${this.formatMath(q.answer)}</span><br><b>【詳解】</b>${this.formatMath(q.solution)}</p>`;
                                 });
                             }
                         });
