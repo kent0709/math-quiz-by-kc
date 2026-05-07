@@ -335,7 +335,7 @@
                 </label>
             </div>
 
-            <!-- 🌟 產生試題按鈕：移除縮放，改用循序漸進的狀態文字 -->
+            <!-- 🌟 產生試題按鈕 -->
             <button @click="generateExam" :disabled="isGenerating" class="relative overflow-hidden bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-black py-4 px-12 rounded-full shadow-lg hover:scale-105 transition transform text-xl w-full md:w-auto disabled:opacity-90 disabled:cursor-not-allowed">
                 <div v-if="isGenerating" class="absolute left-0 top-0 h-full bg-teal-800 transition-all duration-300 ease-out z-0" :style="{ width: loadingProgress + '%' }"></div>
                 <span v-if="!isGenerating" class="relative z-10"><i class="fas fa-magic mr-3 text-2xl"></i> 產生試題並預覽</span>
@@ -371,7 +371,7 @@ createApp({
             showPreviewConsole: false, 
             loadingProgress: 0, 
             progressInterval: null, 
-            loadingTextOverride: '', // 🌟 新增：用於顯示上傳進度
+            loadingTextOverride: '',
             previewQuestions: [], 
             finalGroupedQs: {}, 
             exam: { school: '三重商工', year: '114', semester: '1', name: '期末考', dept: '工科', grade: '高二', useCard: false, specialNeeds: false },
@@ -489,9 +489,7 @@ createApp({
             }
         },
         
-        // 🌟🌟🌟 V12.7 核心升級：Resumable Upload 分段續傳通道與智慧等待防呆 🌟🌟🌟
         async uploadFileToGemini(file) {
-            // 1. 強制修正 MIME Type，防呆處裡瀏覽器無法辨識檔案格式的問題
             let mimeType = file.type;
             if (!mimeType || mimeType === 'application/octet-stream') {
                 const ext = file.name.split('.').pop().toLowerCase();
@@ -503,7 +501,6 @@ createApp({
 
             this.loadingTextOverride = `準備上傳大檔 ${file.name}...`;
 
-            // 2. 第一階段：取得專屬的續傳連結 (Resumable Upload)
             const initUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${this.apiKey}`;
             const initHeaders = {
                 'X-Goog-Upload-Protocol': 'resumable',
@@ -528,14 +525,12 @@ createApp({
                 throw new Error(`無法取得伺服器上傳連結，請稍後再試。`);
             }
 
-            // 確保金鑰存在於上傳連結
             if (!uploadUrl.includes('key=')) {
                 uploadUrl += (uploadUrl.includes('?') ? '&' : '?') + `key=${this.apiKey}`;
             }
 
             this.loadingTextOverride = `正在上傳 ${file.name} (請稍候)...`;
 
-            // 3. 第二階段：真實傳輸檔案 (突破 20MB 限制)
             const uploadHeaders = {
                 'X-Goog-Upload-Protocol': 'resumable',
                 'X-Goog-Upload-Command': 'upload, finalize',
@@ -555,12 +550,10 @@ createApp({
             const data = await uploadResponse.json();
             let fileMeta = data.file;
             
-            // 4. 🌟 終極防呆：等待 Google 伺服器把大檔解析完成 (PROCESSING -> ACTIVE)
-            // 將原本 60 秒的等待大幅延長至 5 分鐘，確保 AI 不會提早抓取檔案而引發 400 錯誤！
             let attempts = 0;
             while (fileMeta.state === 'PROCESSING' && attempts < 100) {
                 this.loadingTextOverride = `檔案 ${file.name} 正在伺服器端解析中 (${attempts + 1}/100)... 這可能需要幾分鐘，請保持網頁開啟。`;
-                await new Promise(resolve => setTimeout(resolve, 3000)); // 每次等待 3 秒
+                await new Promise(resolve => setTimeout(resolve, 3000));
                 try {
                     const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${this.apiKey}`);
                     if (checkRes.ok) {
@@ -583,7 +576,6 @@ createApp({
                 throw new Error(`檔案 ${file.name} 解析失敗，可能包含無法讀取的內容，請重新列印為 PDF 或截圖再試。`);
             }
 
-            // 回傳可以讓 AI 識別的 fileData 格式
             return {
                 fileData: {
                     mimeType: fileMeta.mimeType,
@@ -629,7 +621,6 @@ createApp({
                     parts.forEach(p => { if (p.trim()) tempOptions.push(p.trim()); });
                 });
                 
-                // 🌟 修正選項重複標籤的問題：強制清除開頭所有形式的 A. (A) A) 
                 q.options = tempOptions.map(opt => opt.replace(/^(\([A-E]\)|[A-E]\.|[A-E]\))\s*/i, '').trim());
                 
                 q.options = q.options.filter(opt => opt && opt.toLowerCase() !== 'string' && opt.toLowerCase() !== 'null' && opt.toLowerCase() !== '選項待補' && opt.trim() !== '');
@@ -661,19 +652,19 @@ createApp({
             
             let placeholderText = text;
 
+            // 基本的文字與符號整理
             placeholderText = placeholderText.replace(/\$P\(([\u4e00-\u9fa5]+)\)\$/g, 'P($1)');
             placeholderText = placeholderText.replace(/P\(([\u4e00-\u9fa5]+)\)/g, 'P($1)');
-
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ]{2}(?=\(|=|\s)/g, "$1^{\\prime\\prime}");
             placeholderText = placeholderText.replace(/([a-zA-Z])['`‵ˋ](?=\(|=|\s)/g, "$1^{\\prime}");
-
             placeholderText = placeholderText.replace(/[－—–−─]/g, '-');
             placeholderText = placeholderText.replace(/(?:\\?#){2,}/g, '-');
+            
+            // 防呆處理 &amp;
+            placeholderText = placeholderText.replace(/&amp;/g, '&');
 
             placeholderText = placeholderText.replace(/<br\s*\/?>/gi, '@@BR@@');
-
             placeholderText = placeholderText.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
             placeholderText = placeholderText.replace(/@@BR@@/g, '<br>');
 
             placeholderText = placeholderText.replace(/#+/g, ''); 
@@ -723,8 +714,14 @@ createApp({
                 cleanTex = cleanTex.replace(/<\s*br\s*\/?>/gi, ' \\\\ ');
                 cleanTex = cleanTex.replace(/@@BR@@/g, ' \\\\ ');
 
+                // 換行處理
                 cleanTex = cleanTex.replace(/\n/g, ' \\\\ ');
                 cleanTex = cleanTex.replace(/(\\\\\s*){2,}/g, '\\\\ '); 
+                
+                // 🌟 核心修正：自動剔除 \begin{} 與 \end{} 內部首尾不合法多餘的空行 \\，避免 Codecogs 解析矩陣時報錯
+                cleanTex = cleanTex.replace(/\\begin\s*\{([a-zA-Z*]+)\}\s*\\\\/g, '\\begin{$1} ');
+                cleanTex = cleanTex.replace(/\\\\\s*\\end\s*\{([a-zA-Z*]+)\}/g, ' \\end{$1}');
+
                 cleanTex = cleanTex.replace(/["']/g, '').replace(/&quot;/g, '');
                 
                 cleanTex = cleanTex.replace(/\\\{\s*\\\{/g, '\\{').replace(/\\\}\s*\\\}/g, '\\}');
@@ -818,10 +815,11 @@ createApp({
                 return `@@MATHBLOCK${mathBlocks.length - 1}@@`;
             };
 
-            placeholderText = placeholderText.replace(/\$\$([^\$]+?)\$\$/g, (m, p1) => saveMath(p1, true));
+            // 🌟 核心修正：將原先的 \$([^\$\n]+?)\$ 替換為允許內部換行的寫法，避免漏抓跨行的矩陣公式
+            placeholderText = placeholderText.replace(/\$\$([\s\S]+?)\$\$/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\[([\s\S]+?)\\\]/g, (m, p1) => saveMath(p1, true));
             placeholderText = placeholderText.replace(/\\\(([\s\S]+?)\\\)/g, (m, p1) => saveMath(p1, false));
-            placeholderText = placeholderText.replace(/\$([^\$\n]+?)\$/g, (m, p1) => saveMath(p1, false));
+            placeholderText = placeholderText.replace(/\$([^\$]+?)\$/g, (m, p1) => saveMath(p1, false));
 
             placeholderText = placeholderText.replace(/(^|[^\$\\])(\\d?frac\s*\{[^{}]*\}\s*\{[^{}]*\})/g, (m, p1, p2) => p1 + saveMath(p2.trim(), false));
             placeholderText = placeholderText.replace(/\\overset\s*\{[^{}]+\}\s*\{[^{}]+\}/g, (m) => saveMath(m.trim(), false));
@@ -878,7 +876,8 @@ createApp({
                 tex = tex.replace(/(^|[^\\])%/g, '$1\\%');
                 let encoded = encodeURIComponent(tex).replace(/'/g, '%27'); 
                 
-                let srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white} ${encoded}`;
+                // 🌟 強化防呆：將 \bg{white} 後面的空格顯式替換為 %20 避免某些瀏覽器解析 URL 失敗
+                let srcUrl = `https://latex.codecogs.com/png.image?\\dpi{125}\\bg{white}%20${encoded}`;
                 
                 let renderedHtml = `<img src="${srcUrl}" style="vertical-align: middle; max-width: 100%; height: auto;" alt="math" onerror="let c=parseInt(this.getAttribute('retry')||'0');if(c<3){this.setAttribute('retry',c+1);setTimeout(()=>this.src='${srcUrl}',1000);}" />`;
                 
@@ -971,7 +970,6 @@ createApp({
             let contentsParts = [{ text: promptText }];
             const allFiles = [...this.scopeFiles, ...this.textbookFiles, ...this.examFiles];
             
-            // 🌟 逐一透過 File API 處理並上傳檔案
             for (let i = 0; i < allFiles.length; i++) {
                 this.loadingTextOverride = `正在上傳素材 (${i + 1}/${allFiles.length})，大檔案需稍候...`;
                 const fileDataPart = await this.uploadFileToGemini(allFiles[i]);
@@ -1013,7 +1011,7 @@ createApp({
                 })
             });
 
-            this.loadingTextOverride = ''; // 清除文字覆蓋狀態，回到原本百分比的文字提示
+            this.loadingTextOverride = ''; 
 
             if (!response.ok) {
                 let errorDetail = "";
